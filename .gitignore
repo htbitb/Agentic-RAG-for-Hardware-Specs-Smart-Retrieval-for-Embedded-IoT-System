@@ -1,0 +1,7 @@
+.venv/
+.env
+__pycache__/
+data/processed/
+logs/
+workspace_out/
+eval/results/run_*/
