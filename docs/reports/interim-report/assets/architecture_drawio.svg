@@ -1,0 +1,230 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760">
+  <defs>
+    <style>
+      .font { font-family: Arial, Helvetica, sans-serif; }
+      .title { font-family: Arial, Helvetica, sans-serif; font-size: 18px; font-weight: 700; fill: #18344B; }
+      .hdr { font-family: Arial, Helvetica, sans-serif; font-size: 16px; font-weight: 700; fill: #FFFFFF; }
+      .hdr-dark { font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 700; fill: #164B78; }
+      .hdr-amber { font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 700; fill: #7C4A0E; }
+      .box-title { font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 700; fill: #18344B; }
+      .body { font-family: Arial, Helvetica, sans-serif; font-size: 13.5px; fill: #243B53; }
+      .small { font-family: Arial, Helvetica, sans-serif; font-size: 12.5px; fill: #486581; }
+      .badge { font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; fill: #FFFFFF; }
+      .edge-lbl { font-family: Arial, Helvetica, sans-serif; font-size: 12.5px; font-weight: 700; fill: #164B78; }
+      .edge-warn { font-family: Arial, Helvetica, sans-serif; font-size: 12.5px; font-weight: 700; fill: #925D16; }
+    </style>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#EEF2F6" stroke-width="1"/>
+    </pattern>
+    <filter id="shadow" x="-3%" y="-3%" width="106%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#164B78"/>
+    </marker>
+    <marker id="arr-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#16756A"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#B76E14"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas draw.io style -->
+  <rect x="4" y="4" width="1592" height="752" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="8" y="8" width="1584" height="744" rx="8" fill="url(#grid)"/>
+
+  <!-- Top Legend Bar -->
+  <rect x="24" y="18" width="1552" height="44" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+  <text x="42" y="46" class="title">Kiến trúc Hardware Co-Design Agent v2 (S3@P5)</text>
+  <rect x="770" y="27" width="22" height="18" rx="4" fill="#E8F1F8" stroke="#164B78" stroke-width="1.8"/>
+  <text x="800" y="41" class="body" font-weight="700">Đang chạy end-to-end (P0–P5)</text>
+  <rect x="1030" y="27" width="22" height="18" rx="4" fill="#E6F4F1" stroke="#16756A" stroke-width="1.8"/>
+  <text x="1060" y="41" class="body" font-weight="700">Kho tri thức &amp; trạng thái SQLite</text>
+  <rect x="1310" y="27" width="22" height="18" rx="4" fill="#FFF8EB" stroke="#B76E14" stroke-width="1.8" stroke-dasharray="5,3"/>
+  <text x="1340" y="41" class="body" font-weight="700">Kế hoạch tiếp theo (P6–P8)</text>
+
+  <!-- LANE 1: USER & API -->
+  <g filter="url(#shadow)">
+    <rect x="24" y="82" width="250" height="475" rx="8" fill="#FFFFFF" stroke="#164B78" stroke-width="1.8"/>
+    <path d="M 24 90 Q 24 82 32 82 L 266 82 Q 274 82 274 90 L 274 120 L 24 120 Z" fill="#164B78"/>
+    <text x="149" y="106" text-anchor="middle" class="hdr">1. Người dùng &amp; Giao tiếp</text>
+  </g>
+
+  <rect x="42" y="140" width="214" height="84" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.4"/>
+  <text x="149" y="164" text-anchor="middle" class="box-title">Kỹ sư Nhúng / IoT</text>
+  <text x="149" y="185" text-anchor="middle" class="body">Mục tiêu thiết kế, ràng buộc,</text>
+  <text x="149" y="204" text-anchor="middle" class="body">duyệt ghi file &amp; trả lời làm rõ</text>
+
+  <rect x="42" y="252" width="214" height="104" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.4"/>
+  <text x="149" y="276" text-anchor="middle" class="box-title">CLI &amp; Run API (HTTP/SSE)</text>
+  <text x="149" y="297" text-anchor="middle" class="small">POST /api/runs • GET /events</text>
+  <text x="149" y="316" text-anchor="middle" class="small">POST /api/runs/{id}/resume</text>
+  <text x="149" y="335" text-anchor="middle" class="body" font-weight="700">Tuần tự hoá &amp; khôi phục phiên</text>
+
+  <rect x="42" y="384" width="214" height="150" rx="6" fill="#FFF8EB" stroke="#B76E14" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="149" y="408" text-anchor="middle" class="hdr-amber">Web UI v2 Panels (P8)</text>
+  <text x="149" y="430" text-anchor="middle" class="body">• Plan &amp; Replan Diff Panel</text>
+  <text x="149" y="450" text-anchor="middle" class="body">• Board Pin/Clock/Power View</text>
+  <text x="149" y="470" text-anchor="middle" class="body">• Timeline &amp; Interrupt Cards</text>
+  <text x="149" y="490" text-anchor="middle" class="body">• Lesson &amp; Budget Monitor</text>
+  <text x="149" y="514" text-anchor="middle" class="small">(Hiện dùng CLI + Run API; UI ở P8)</text>
+
+  <!-- LANE 2: AGENT RUNTIME V2 -->
+  <g filter="url(#shadow)">
+    <rect x="310" y="82" width="600" height="475" rx="8" fill="#FFFFFF" stroke="#164B78" stroke-width="2"/>
+    <path d="M 310 90 Q 310 82 318 82 L 902 82 Q 910 82 910 90 L 910 120 L 310 120 Z" fill="#164B78"/>
+    <text x="610" y="106" text-anchor="middle" class="hdr">2. Agent Runtime v2 — Vòng điều khiển có trạng thái &amp; Checkpoint</text>
+  </g>
+
+  <!-- Intake -->
+  <rect x="332" y="138" width="255" height="82" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.5"/>
+  <text x="459" y="161" text-anchor="middle" class="box-title">INTAKE &amp; Guardrail v1</text>
+  <text x="459" y="181" text-anchor="middle" class="body">Chặn injection / quá áp đầu vào;</text>
+  <text x="459" y="200" text-anchor="middle" class="body">nạp BoardState, plan &amp; lịch sử</text>
+
+  <!-- LLM Policy + Plan -->
+  <rect x="625" y="138" width="263" height="82" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.5"/>
+  <text x="756" y="161" text-anchor="middle" class="box-title">PLAN &amp; LLM Policy</text>
+  <text x="756" y="181" text-anchor="middle" class="body">ag/gemini-3.8-flash-medium</text>
+  <text x="756" y="200" text-anchor="middle" class="body">Tự lập kế hoạch &amp; chọn công cụ</text>
+
+  <!-- ACT / OBSERVE -->
+  <rect x="332" y="252" width="255" height="92" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.5"/>
+  <text x="459" y="276" text-anchor="middle" class="box-title">ACT ⇄ OBSERVE</text>
+  <text x="459" y="297" text-anchor="middle" class="body">Gọi MCP tools / local controls;</text>
+  <text x="459" y="316" text-anchor="middle" class="body">ghi nhận observation &amp; artifacts</text>
+  <text x="459" y="334" text-anchor="middle" class="small">Ngân sách: 40 bước • 1,5M tok • 600s</text>
+
+  <!-- Verification Gate -->
+  <rect x="625" y="246" width="263" height="118" rx="6" fill="#E6F4F1" stroke="#16756A" stroke-width="1.8"/>
+  <text x="756" y="269" text-anchor="middle" class="box-title" fill="#0F5132">CHECK &amp; FINISH_GATE (G1–G5)</text>
+  <text x="756" y="289" text-anchor="middle" class="body">G1 Provenance • G2 Functional Sim</text>
+  <text x="756" y="308" text-anchor="middle" class="body">G3 Board DRC • G4 Hardware Safety</text>
+  <text x="756" y="327" text-anchor="middle" class="body">G5 Clang ARM -fsyntax-only</text>
+  <text x="756" y="347" text-anchor="middle" class="small">Lỗi cục bộ → tự sửa | Lỗi cấu trúc → Replan</text>
+
+  <!-- Interrupt / HITL -->
+  <rect x="332" y="382" width="255" height="86" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.5"/>
+  <text x="459" y="405" text-anchor="middle" class="box-title">INTERRUPTED ⇄ RESUME</text>
+  <text x="459" y="425" text-anchor="middle" class="body">ask_human (clarify / choice)</text>
+  <text x="459" y="444" text-anchor="middle" class="body">write_config_file (approval gate)</text>
+  <text x="459" y="461" text-anchor="middle" class="small">Bền qua khởi động lại tiến trình</text>
+
+  <!-- Terminal states -->
+  <rect x="625" y="388" width="263" height="74" rx="6" fill="#F8FAFC" stroke="#486581" stroke-width="1.4"/>
+  <text x="756" y="411" text-anchor="middle" class="box-title">Trạng thái kết thúc</text>
+  <text x="756" y="432" text-anchor="middle" class="body">DONE (Gate chấp nhận) • REFUSED</text>
+  <text x="756" y="451" text-anchor="middle" class="body">ESCALATED (hết ngân sách / lặp lỗi)</text>
+
+  <!-- Planned Policy Engine inside runtime -->
+  <rect x="332" y="486" width="556" height="54" rx="6" fill="#FFF8EB" stroke="#B76E14" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="610" y="509" text-anchor="middle" class="hdr-amber">Action Policy Engine &amp; Taint Tracking trước mọi công cụ (Kế hoạch P6)</text>
+  <text x="610" y="528" text-anchor="middle" class="small">Chặn tham số quá áp/chân không FT trước khi ghi trạng thái; ngăn dữ liệu dính cờ injection kích hoạt ghi file</text>
+
+  <!-- LANE 3: TOOLHUB & 4 MCP SERVERS -->
+  <g filter="url(#shadow)">
+    <rect x="946" y="82" width="630" height="475" rx="8" fill="#FFFFFF" stroke="#164B78" stroke-width="1.8"/>
+    <path d="M 946 90 Q 946 82 954 82 L 1568 82 Q 1576 82 1576 90 L 1576 120 L 946 120 Z" fill="#164B78"/>
+    <text x="1261" y="106" text-anchor="middle" class="hdr">3. MCP ToolHub (inproc) &amp; 32 Công cụ theo mức quyền</text>
+  </g>
+
+  <rect x="968" y="136" width="586" height="52" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.4"/>
+  <text x="1261" y="158" text-anchor="middle" class="box-title">ToolHub Dispatcher: Allowlist • Project Scope • Sanitize • Audit JSONL</text>
+  <text x="1261" y="177" text-anchor="middle" class="small">Chỉ retry công cụ read-only • Tự gắn project_id • 3 công cụ điều khiển: update_plan, ask_human, finish</text>
+
+  <!-- 4 MCP boxes + 1 Guarded write -->
+  <rect x="968" y="204" width="282" height="102" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.4"/>
+  <rect x="980" y="214" width="76" height="20" rx="4" fill="#164B78"/>
+  <text x="1018" y="228" text-anchor="middle" class="badge">READ-ONLY</text>
+  <text x="1066" y="229" class="box-title">text-manual (3 tools)</text>
+  <text x="980" y="253" class="body">• search_manual (BM25 + MiniLM RRF)</text>
+  <text x="980" y="273" class="body">• get_chunk_context • list_documents</text>
+  <text x="980" y="293" class="small">(naive_search ẩn, chỉ dùng cho baseline)</text>
+
+  <rect x="1272" y="204" width="282" height="102" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.4"/>
+  <rect x="1284" y="214" width="76" height="20" rx="4" fill="#164B78"/>
+  <text x="1322" y="228" text-anchor="middle" class="badge">READ-ONLY</text>
+  <text x="1370" y="229" class="box-title">hw-knowledge (8 tools)</text>
+  <text x="1284" y="253" class="body">• query_pin_af • find_pins_for_signal</text>
+  <text x="1284" y="273" class="body">• get_register_bitfields • search_registers</text>
+  <text x="1284" y="293" class="body">• electrical/clock limits • logic_compat</text>
+
+  <rect x="968" y="320" width="282" height="112" rx="6" fill="#E6F4F1" stroke="#16756A" stroke-width="1.5"/>
+  <rect x="980" y="330" width="110" height="20" rx="4" fill="#16756A"/>
+  <text x="1035" y="344" text-anchor="middle" class="badge">STATE-MUTATING</text>
+  <text x="1100" y="345" class="box-title">board-state (13 tools)</text>
+  <text x="980" y="369" class="body">• 4 đọc: state, power, run_drc, diff</text>
+  <text x="980" y="389" class="body">• 9 ghi có hoàn tác: target, reqs, pin,</text>
+  <text x="980" y="409" class="body">  clock, device, connect, decision, rollback</text>
+
+  <rect x="1272" y="320" width="282" height="112" rx="6" fill="#E6F4F1" stroke="#16756A" stroke-width="1.5"/>
+  <rect x="1284" y="330" width="112" height="20" rx="4" fill="#16756A"/>
+  <text x="1340" y="344" text-anchor="middle" class="badge">SANDBOXED-EXEC</text>
+  <text x="1404" y="345" class="box-title">hw-sandbox (4 tools)</text>
+  <text x="1284" y="369" class="body">• solve_timer_config (PSC/ARR/CCR)</text>
+  <text x="1284" y="389" class="body">• analyze_c_code • simulate_reg_writes</text>
+  <text x="1284" y="409" class="body">• compile_check (clang -fsyntax-only)</text>
+
+  <rect x="968" y="446" width="586" height="94" rx="6" fill="#FFF8EB" stroke="#925D16" stroke-width="1.5"/>
+  <rect x="980" y="456" width="132" height="20" rx="4" fill="#925D16"/>
+  <text x="1046" y="470" text-anchor="middle" class="badge">IRREVERSIBLE-WRITE</text>
+  <text x="1124" y="471" class="box-title">Local Guarded Write: write_config_file (1 tool)</text>
+  <text x="980" y="495" class="body">• Kiểm tên file, đuôi (.c/.h/.txt/.json/.md), dung lượng ≤ 20 KB, chống path traversal ngoài workspace_out/</text>
+  <text x="980" y="516" class="body">• Bắt buộc tạo interrupt approval; chỉ ghi sau khi người dùng Approve và kiểm tra lại đường dẫn lúc ghi</text>
+
+  <!-- BOTTOM BAND: DATA & MEMORY LAYER -->
+  <g filter="url(#shadow)">
+    <rect x="24" y="582" width="1552" height="156" rx="8" fill="#FFFFFF" stroke="#16756A" stroke-width="1.8"/>
+    <path d="M 24 590 Q 24 582 32 582 L 1568 582 Q 1576 582 1576 590 L 1576 618 L 24 618 Z" fill="#16756A"/>
+    <text x="800" y="605" text-anchor="middle" class="hdr">4. Tầng Dữ liệu Kỹ thuật Thật (Corpus chung) &amp; Bộ nhớ Bền vững (SQLite)</text>
+  </g>
+
+  <rect x="44" y="632" width="365" height="90" rx="6" fill="#E6F4F1" stroke="#16756A" stroke-width="1.4"/>
+  <text x="226" y="654" text-anchor="middle" class="box-title">hw_specs.sqlite (Dữ liệu cấu trúc)</text>
+  <text x="226" y="675" text-anchor="middle" class="body">3 chip • 210 peripheral • 6.338 thanh ghi</text>
+  <text x="226" y="694" text-anchor="middle" class="body">27.186 bitfield • 189 chân / 1.045 AF • 104 giới hạn</text>
+
+  <rect x="427" y="632" width="365" height="90" rx="6" fill="#E6F4F1" stroke="#16756A" stroke-width="1.4"/>
+  <text x="609" y="654" text-anchor="middle" class="box-title">text_index.sqlite + .npy (Hybrid RAG)</text>
+  <text x="609" y="675" text-anchor="middle" class="body">6 PDF hãng (4.520 trang) → 9.583 chunk</text>
+  <text x="609" y="694" text-anchor="middle" class="body">BM25 (FTS5) + MiniLM 384 chiều, trộn RRF</text>
+
+  <rect x="810" y="632" width="365" height="90" rx="6" fill="#E8F1F8" stroke="#164B78" stroke-width="1.4"/>
+  <text x="992" y="654" text-anchor="middle" class="box-title">checkpoints.sqlite &amp; board_state.sqlite</text>
+  <text x="992" y="675" text-anchor="middle" class="body">Checkpoint sau mỗi bước, lịch sử phiên,</text>
+  <text x="992" y="694" text-anchor="middle" class="body">BoardState event-sourced (diff / rollback)</text>
+
+  <rect x="1193" y="632" width="363" height="90" rx="6" fill="#FFF8EB" stroke="#B76E14" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="1374" y="654" text-anchor="middle" class="hdr-amber">Lesson &amp; Project Memory (P7)</text>
+  <text x="1374" y="675" text-anchor="middle" class="body">Lưu bài học sửa lỗi đã được simulator xác nhận;</text>
+  <text x="1374" y="694" text-anchor="middle" class="body">nạp trạng thái thiết kế xuyên phiên</text>
+
+  <!-- ARROWS & ORTHOGONAL CONNECTORS -->
+  <path d="M 149 224 L 149 250" stroke="#164B78" stroke-width="2" fill="none" marker-end="url(#arr-blue)"/>
+  <path d="M 256 286 L 330 182" stroke="#164B78" stroke-width="2" fill="none" marker-end="url(#arr-blue)"/>
+  <path d="M 332 425 L 256 322" stroke="#164B78" stroke-width="2" fill="none" marker-end="url(#arr-blue)" marker-start="url(#arr-blue)"/>
+
+  <path d="M 587 179 L 623 179" stroke="#164B78" stroke-width="2.2" fill="none" marker-end="url(#arr-blue)"/>
+  <path d="M 756 220 L 465 250" stroke="#164B78" stroke-width="2" fill="none" marker-end="url(#arr-blue)"/>
+  <path d="M 587 298 L 623 298" stroke="#16756A" stroke-width="2.2" fill="none" marker-end="url(#arr-teal)"/>
+
+  <!-- Gate feedback loop to ACT and PLAN -->
+  <path d="M 625 332 L 589 332" stroke="#B76E14" stroke-width="2.2" fill="none" marker-end="url(#arr-amber)"/>
+  <path d="M 888 265 L 902 265 L 902 179 L 890 179" stroke="#B76E14" stroke-width="2" fill="none" marker-end="url(#arr-amber)"/>
+  <text x="606" y="360" text-anchor="middle" class="edge-warn">Typed Error / Replan</text>
+
+  <!-- ACT to INTERRUPTED and Gate to DONE -->
+  <path d="M 459 344 L 459 380" stroke="#164B78" stroke-width="2" fill="none" marker-end="url(#arr-blue)" marker-start="url(#arr-blue)"/>
+  <path d="M 756 364 L 756 386" stroke="#16756A" stroke-width="2.2" fill="none" marker-end="url(#arr-teal)"/>
+
+  <!-- Runtime <-> ToolHub -->
+  <path d="M 587 272 L 966 162" stroke="#164B78" stroke-width="2.2" fill="none" marker-end="url(#arr-blue)" marker-start="url(#arr-blue)"/>
+  <path d="M 888 292 L 966 174" stroke="#16756A" stroke-width="1.8" fill="none" marker-end="url(#arr-teal)"/>
+
+  <!-- ToolHub to Data Layer -->
+  <path d="M 1390 306 L 260 630" stroke="#16756A" stroke-width="1.6" stroke-dasharray="4,3" fill="none" marker-end="url(#arr-teal)"/>
+  <path d="M 1090 306 L 609 630" stroke="#16756A" stroke-width="1.6" stroke-dasharray="4,3" fill="none" marker-end="url(#arr-teal)"/>
+  <path d="M 1090 432 L 992 630" stroke="#164B78" stroke-width="1.8" fill="none" marker-end="url(#arr-blue)"/>
+  <path d="M 610 557 L 950 630" stroke="#164B78" stroke-width="1.8" fill="none" marker-end="url(#arr-blue)"/>
+</svg>

@@ -1,4 +1,4 @@
-"""Agent v3 làm hệ được đánh giá: S3@P4 (runtime + Gate P4, snapshot `snapshots/agent_p4`) và S3@P5 (thêm HITL v2 + các sửa D36/D37, `snapshots/agent_p5`),
+"""Agent v2 làm hệ được đánh giá: S3@P4 (runtime + Gate P4, snapshot `snapshots/agent_p4`) và S3@P5 (thêm HITL v2 + các sửa D36/D37, `snapshots/agent_p5`),
 kèm các biến thể ablation (RunResult.variant). Mỗi task chạy trong một tiến trình worker riêng (xem agent_v3_worker.py); worker trả kết quả của `rt.ask(...)` /
 `rt.resume(...)` (plan/P4_interfaces.md §3, plan/P5_interfaces.md §1) cộng `llm_calls`, `flags`. Sự kiện chuẩn hoá của mỗi lần gọi (`events`, chỉ phần mới) được nối PHẲNG
 vào `RunResult.trace`. P5: `send` có thể trả `status="interrupted"` (+ `interrupt`); `resume(interrupt_id, decision, payload)` trả lời nó."""

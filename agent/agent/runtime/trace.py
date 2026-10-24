@@ -1,4 +1,4 @@
-"""Trace chuẩn hoá của runtime v3 (plan/P4_interfaces.md §4): tiện ích rút gọn dữ liệu cho sự kiện + ghi JSONL."""
+"""Trace chuẩn hoá của runtime v2 (plan/P4_interfaces.md §4): tiện ích rút gọn dữ liệu cho sự kiện + ghi JSONL."""
 from __future__ import annotations
 
 import json

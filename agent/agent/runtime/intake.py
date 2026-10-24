@@ -1,4 +1,4 @@
-"""INTAKE của runtime v3: hardware safety pre-check xác định, chuyển nguyên hành vi từ `HardwareAgent._hardware_check` của v1 (P6 mới sửa guardrail),
+"""INTAKE của runtime v2: hardware safety pre-check xác định, chuyển nguyên hành vi từ `HardwareAgent._hardware_check` của v1 (P6 mới sửa guardrail),
 và tóm tắt Board State/kế hoạch thành ngữ cảnh dự án cho lượt mới."""
 from __future__ import annotations
 

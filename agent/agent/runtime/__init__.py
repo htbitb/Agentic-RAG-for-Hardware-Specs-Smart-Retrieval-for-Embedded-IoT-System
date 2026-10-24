@@ -1,1 +1,1 @@
-"""Agent Runtime v3 (W4): state machine có checkpoint."""
+"""Agent Runtime v2 (W4): state machine có checkpoint."""

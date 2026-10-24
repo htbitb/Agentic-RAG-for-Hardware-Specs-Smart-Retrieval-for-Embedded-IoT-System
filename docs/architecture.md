@@ -2,7 +2,7 @@
 
 Tài liệu này mô tả kiến trúc của dự án (môn CO5151 Agentic AI), gồm ba phần:
 
-1. **Hệ của nhóm (Agent v3)**: agent hỗ trợ thiết kế phần cứng nhúng cho STM32G474, ESP32, nRF52840 và FreeRTOS.
+1. **Hệ của nhóm (Agent v2)**: agent hỗ trợ thiết kế phần cứng nhúng cho STM32G474, ESP32, nRF52840 và FreeRTOS.
 2. **Các hệ baseline**: Direct LLM, Native RAG, Agent v1 và biến thể Agent v1 + dữ liệu thật.
 3. **Pipeline đánh giá**: chạy từng hệ trên cùng bộ task, chấm bằng grader xác định, rồi sinh ra bảng số liệu so sánh.
 
@@ -26,7 +26,7 @@ Trạng thái hiện tại: P0–P5 đã xong (hệ đo được gọi là `S3@P
                   │                                   │
                   ▼                                   ▼
    ┌──────────────────────────────┐      ┌─────────────────────────┐
-   │ agent/  (Agent v3 = S3)      │      │ native-RAG/  (S1)       │
+   │ agent/  (Agent v2 = S3)      │      │ native-RAG/  (S1)       │
    │ runtime + MCP tools + Gate   │      │ top-4 → 1 lời gọi LLM   │
    └──────────────┬───────────────┘      └────────────┬────────────┘
                   │       snapshots/ (S2, S2D, S3@P4, S3@P5 đóng băng)
@@ -42,7 +42,7 @@ Trạng thái hiện tại: P0–P5 đã xong (hệ đo được gọi là `S3@P
 | Thư mục | Vai trò |
 |---|---|
 | `corpus/` | Nguồn dữ liệu duy nhất cho mọi hệ. `manifest.yaml` ghi `doc_id`, sha256 và `page_offset` của từng PDF. `.cache/pages/` chứa text từng trang để grader kiểm trích dẫn. |
-| `agent/` | Agent v3: runtime, Gate, MCP server, `hwmodel/`, ingestion, UI. Có `agent/README.md`. |
+| `agent/` | Agent v2: runtime, Gate, MCP server, `hwmodel/`, ingestion, UI. Có `agent/README.md`. |
 | `native-RAG/` | Baseline S1. Giữ nguyên bản chất "naive" (xem [§6.2](#62-s1--native-rag)). |
 | `eval/` | Harness đánh giá: adapter, runner, task C1–C8, grader, báo cáo, kết quả. Có `eval/README.md`. |
 | `snapshots/` | Bản đóng băng của agent theo từng giai đoạn (`agent_v1`, `agent_p1`, `agent_p4`, `agent_p5`). Harness chỉ import từ đây, không import từ `agent/`. |
@@ -63,7 +63,7 @@ Mọi hệ đọc cùng một corpus để so sánh công bằng. Corpus gồm 6
 | `nRF52840_PS` | Product Specification nRF52840 |
 | `FreeRTOS_Ref_Manual` | FreeRTOS Reference Manual V8.2.1 |
 
-Agent v3 không đọc PDF trực tiếp. `agent/ingestion/` dựng hai kho dữ liệu, chạy bằng một lệnh `python -m ingestion.build_all --fresh`:
+Agent v2 không đọc PDF trực tiếp. `agent/ingestion/` dựng hai kho dữ liệu, chạy bằng một lệnh `python -m ingestion.build_all --fresh`:
 
 ```
 svd_ingest ──► pinout_extract ──► limits_curate ──► build_text_index
@@ -92,9 +92,9 @@ Số chunk khác với S1 (11.251 chunk): index của agent cắt theo cấu tr�
 
 ---
 
-## 3. Agent v3: tổng quan
+## 3. Agent v2: tổng quan
 
-Agent v3 là một agent thật, không phải workflow cố định: LLM tự chọn tool, tự lập kế hoạch, tự viết code và tự quyết định khi nào dừng. Runtime chỉ quyết định **được phép làm gì** và **khi nào mới được coi là xong**.
+Agent v2 là một agent thật, không phải workflow cố định: LLM tự chọn tool, tự lập kế hoạch, tự viết code và tự quyết định khi nào dừng. Runtime chỉ quyết định **được phép làm gì** và **khi nào mới được coi là xong**.
 
 ```
  Người dùng
@@ -125,9 +125,9 @@ Agent v3 là một agent thật, không phải workflow cố định: LLM tự c
    text_index     hw_specs.sqlite   hwmodel/ (simulator, DRC, solver)
 ```
 
-So với v1 (một vòng ReAct trên dữ liệu chỉ đọc), v3 bổ sung năm thứ:
+So với v1 (một vòng ReAct trên dữ liệu chỉ đọc), v2 bổ sung năm thứ:
 
-| Khía cạnh | v1 | v3 |
+| Khía cạnh | v1 | v2 |
 |---|---|---|
 | Dữ liệu | 8 đoạn văn, 11 thanh ghi viết tay | SVD + PDF thật |
 | Môi trường | Chỉ đọc | Board State, DRC, sandbox mô phỏng thanh ghi |
@@ -137,7 +137,7 @@ So với v1 (một vòng ReAct trên dữ liệu chỉ đọc), v3 bổ sung nă
 
 ---
 
-## 4. Các thành phần của Agent v3
+## 4. Các thành phần của Agent v2
 
 ### 4.1. Runtime (`agent/agent/runtime/`)
 
@@ -253,7 +253,7 @@ Có ba loại interrupt, đều dừng run ở `INTERRUPTED` với checkpoint đ
 
 `resume(run_id, interrupt_id, decision, payload)` nạp checkpoint, chèn kết quả vào đúng `tool_call_id` rồi chạy tiếp, kể cả ở tiến trình khác. Prompt hệ thống (`prompts/system_v3.md`) cấm hỏi thứ tool tra được hoặc thứ có thể giả định hợp lý.
 
-`RunService` là Run API (Python) dùng chung. `ui/server.py` bọc nó thành HTTP: `POST /api/runs`, `POST /api/runs/<id>/resume`, `GET /api/runs/<id>/events`; ngoài ra có `/api/ask`, `/api/approve`, `/api/audit`, `/api/history`, `/api/info`. UI hiện tại (`ui/static/index.html`) vẫn chủ yếu hiển thị pipeline v1 (panel của v3 là P8).
+`RunService` là Run API (Python) dùng chung. `ui/server.py` bọc nó thành HTTP: `POST /api/runs`, `POST /api/runs/<id>/resume`, `GET /api/runs/<id>/events`; ngoài ra có `/api/ask`, `/api/approve`, `/api/audit`, `/api/history`, `/api/info`. UI hiện tại (`ui/static/index.html`) vẫn chủ yếu hiển thị pipeline v1 (panel của v2 là P8).
 
 ### 4.8. Cờ ablation
 
@@ -303,8 +303,8 @@ Mọi hệ dùng **cùng model, cùng endpoint, cùng temperature (0,0) và cùn
 | **S1** | Native RAG | Chroma, chunk cố định, top-4, một lời gọi LLM | `native-RAG/` qua `adapters/native_rag.py` | Baseline RAG kinh điển |
 | **S2** | Agent v1 (đóng băng) | Vòng ReAct, 8 đoạn văn, 11 thanh ghi viết tay | `snapshots/agent_v1/` | Điểm xuất phát trước khi nâng cấp |
 | **S2D** | Agent v1 + dữ liệu thật | Vòng lặp v1 giữ nguyên byte, dữ liệu P1 | `snapshots/agent_p1/` | Tách đóng góp của **dữ liệu** |
-| **S3@P4** | Agent v3 | Runtime, Board State, sandbox, Gate | `snapshots/agent_p4/` | Đóng góp của **kiến trúc agentic** |
-| **S3@P5** | Agent v3 + HITL v2 | S3@P4 cộng `ask_human`, interrupt/resume, sửa D36/D37 | `snapshots/agent_p5/` | Hệ hiện tại |
+| **S3@P4** | Agent v2 | Runtime, Board State, sandbox, Gate | `snapshots/agent_p4/` | Đóng góp của **kiến trúc agentic** |
+| **S3@P5** | Agent v2 + HITL | S3@P4 cộng `ask_human`, interrupt/resume, sửa D36/D37 | `snapshots/agent_p5/` | Hệ hiện tại |
 
 Chuỗi so sánh được thiết kế để mỗi bước chỉ đổi một biến: `S0 → S1` (thêm truy hồi), `S2 → S2D` (đổi dữ liệu), `S2D → S3` (đổi kiến trúc, cùng dữ liệu), và các ablation A1–A6 trên S3.
 
@@ -511,14 +511,14 @@ Nguồn: `eval/results/dev_baseline_v2/report.md`. TSR (%), CI 95% theo task xem
 | P1 | Dữ liệu thật (SVD, PDF, text index), S2D | Xong |
 | P2 | Sandbox: simulator, solver, compile check, task C3 | Xong |
 | P3 | Board State, DRC, task C4 | Xong |
-| P4 | Runtime v3, Gate G1–G5, grader `process`, ablation | Xong |
+| P4 | Runtime v2, Gate G1–G5, grader `process`, ablation | Xong |
 | P5 | HITL v2, task C5, người dùng mô phỏng, Run API | Xong |
 | P6 | Policy Engine thay `hardware_check`, C7 v2, cờ A7 | Chưa |
 | P7 | Lesson memory, task chuỗi cho learning curve, cờ A5 | Chưa |
-| P8 | UI cho v3 (Plan, Board, Timeline, Interrupt, Lessons, Budget) | Chưa |
+| P8 | UI cho v2 (Plan, Board, Timeline, Interrupt, Lessons, Budget) | Chưa |
 | P9 | Fault injection, C9, ablation đầy đủ, chạy `test`, kiểm định H1–H9 | Chưa |
 
-Giả thuyết cần kiểm ở P9: H1 (v3 hơn baseline trên C3–C5), H2 (vòng phản hồi kín là nguyên nhân), H3 (Board State là nguyên nhân phát hiện xung đột), H4 (lesson memory), H5 (hỏi lại đúng lúc), H6 (Policy Engine giữ ASR ≈ 0), H7 (phục hồi khi tool lỗi), H8 (Pareto chi phí), H9 (không thua v1 trên tra cứu thuần).
+Giả thuyết cần kiểm ở P9: H1 (v2 hơn baseline trên C3–C5), H2 (vòng phản hồi kín là nguyên nhân), H3 (Board State là nguyên nhân phát hiện xung đột), H4 (lesson memory), H5 (hỏi lại đúng lúc), H6 (Policy Engine giữ ASR ≈ 0), H7 (phục hồi khi tool lỗi), H8 (Pareto chi phí), H9 (không thua v1 trên tra cứu thuần).
 
 **Hạn chế đã biết:** review task do model chứ chưa có người duyệt độc lập; C5 dev chỉ có 4 task; model đổi giữa P2 và P3 nên baseline mới dùng `dev_baseline_v2`; `rollback` có thể làm mất requirement người dùng nêu; Premature-Finish của S3@P5 là 104/241 (43,2%), chủ yếu do G1 trên câu tra cứu.
 
@@ -541,7 +541,7 @@ Các quy tắc này bảo vệ giá trị của bằng chứng; chi tiết ở `
 | Cài đặt, chạy agent, UI, REST API | `agent/README.md` |
 | Chạy harness, định dạng task, grader chi tiết | `eval/README.md` |
 | Baseline Native RAG | `native-RAG/README.md`, `native-RAG/CHANGELOG_EVAL.md` |
-| Kế hoạch tổng thể v3, ma trận chứng minh, demo | `plan/AgenticUpgradePlan.md` |
+| Kế hoạch tổng thể v2, ma trận chứng minh, demo | `plan/AgenticUpgradePlan.md` |
 | Các quyết định D01–D44 | `plan/DECISIONS.md` |
 | Trạng thái hiện tại và việc P6–P9 | `plan/HANDOFF_P6_P9.md` |
 | Thiết kế v2.1 ban đầu (DuckDB/LanceDB, nay đã đổi sang SQLite) | `plan/SystemDesign.md` |

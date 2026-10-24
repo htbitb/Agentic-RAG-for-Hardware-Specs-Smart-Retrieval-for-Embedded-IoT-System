@@ -17,7 +17,7 @@ Preset/HSE do INTAKE trích từ lời người dùng (hoặc clock có sẵn tr
 * Cờ ablation **A6 `-HITL`** (`AGENT_ABLATIONS=A6`): ẩn `ask_human`, approval tự duyệt.
 * Run API: `POST /api/runs`, `POST /api/runs/{id}/resume`, `GET /api/runs/{id}`, `GET /api/runs/{id}/events` (JSON hoặc SSE); lớp Python `RunService` dùng chung cho UI và eval.
 * CLI: `python -m agent.runtime.cli --goal ... [--answers JSON | --interactive | --stop-on-interrupt]`, `--resume RUN --interrupt ID --decision ...`.
-* Prompt v3: quy tắc 4 (trạng thái khởi đầu), 6 (giả định chỉ cho chi tiết nhỏ), 9 (approval), 11 (khi nào được hỏi) — xem `PROMPT_DEVLOG.md` VÒNG 3.
+* Prompt v2: quy tắc 4 (trạng thái khởi đầu), 6 (giả định chỉ cho chi tiết nhỏ), 9 (approval), 11 (khi nào được hỏi) — xem `PROMPT_DEVLOG.md` VÒNG 3.
 
 ## Test
 `agent/tests`: `test_runtime_p5_fixes`, `test_runtime_start_state`, `test_runtime_hitl`, `test_run_api` (+ cập nhật các test cũ theo D36/I4). Test helper `build(...)` mặc định bật A6 (hành vi P4); test HITL truyền `hitl=True`.

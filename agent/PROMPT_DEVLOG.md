@@ -1,4 +1,4 @@
-# PROMPT_DEVLOG — nhật ký mọi thay đổi system prompt / tham số runtime của Agent v3 (D32, D05)
+# PROMPT_DEVLOG — nhật ký mọi thay đổi system prompt / tham số runtime của Agent v2 (D32, D05)
 
 Quy tắc: chỉ chỉnh theo kết quả trên `dev`; không đọc/chỉnh theo task `test`; không thêm luật hay ví dụ đặc thù cho từng task vào prompt hoặc runtime.
 Mỗi dòng: ngày · thay đổi · lý do (triệu chứng có bằng chứng trong trace) · điểm dev trước/sau · số lời gọi LLM đã dùng để đo.

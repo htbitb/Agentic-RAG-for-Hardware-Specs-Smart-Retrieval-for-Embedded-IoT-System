@@ -20,7 +20,7 @@ from agent.tools import PERMISSIONS
 STATIC = Path(__file__).parent / "static"
 MAX_BODY = 10_000
 AGENT: HardwareAgent | None = None
-RUNS: RunService | None = None  # Run API của runtime v3 (P5): tạo lười ở lần gọi /api/runs đầu tiên
+RUNS: RunService | None = None  # Run API của runtime v2 (P5): tạo lười ở lần gọi /api/runs đầu tiên
 LOCK = threading.Lock()  # one agent / one MCP session pair -> serialize questions
 
 

@@ -60,7 +60,7 @@ def pending(session_id: str | None = None) -> list[dict]:
 
 
 def write_approved(filename: str, content: str, session_id: str = "", approver: str = "user", action_id: str | None = None) -> dict:
-    """Ghi file đã được DUYỆT vào sandbox (kiểm lại tên/nội dung/đường dẫn ngay lúc ghi, ghi audit). Dùng chung cho HITL v1 (`decide`) và interrupt `approval` của runtime v3."""
+    """Ghi file đã được DUYỆT vào sandbox (kiểm lại tên/nội dung/đường dẫn ngay lúc ghi, ghi audit). Dùng chung cho HITL v1 (`decide`) và interrupt `approval` của runtime v2."""
     err = validate(filename, content)
     if err:
         audit.log("guarded_action_rejected_by_policy", action_id=action_id, reason=err, session=session_id)

@@ -25,7 +25,7 @@ def _short(obj, n=400):
 class HardwareAgent:
     def __init__(self, transport="stdio", use_verification=True, use_guardrail=True, disabled_servers=None,
                  llm=None, name="full"):
-        # vòng lặp v1 (UI cũ) chỉ có tool tra cứu: verifier v1 không hiểu bằng chứng sandbox/Board State (runtime v3 mới dùng chúng)
+        # vòng lặp v1 (UI cũ) chỉ có tool tra cứu: verifier v1 không hiểu bằng chứng sandbox/Board State (runtime v2 mới dùng chúng)
         disabled_servers = ("hw-sandbox", "board-state") if disabled_servers is None else disabled_servers
         self.hub = ToolHub(transport=transport, disabled_servers=disabled_servers, sanitize=use_guardrail)
         self.llm = llm or get_llm()

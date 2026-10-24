@@ -1,24 +1,24 @@
-# BÀN GIAO P6–P9: Hardware Support Agent v3 (CO5151 Agentic AI)
+# BÀN GIAO P6–P9: Hardware Support Agent v2 (CO5151 Agentic AI)
 
 > Gửi nhóm tiếp nhận. Đọc hết tài liệu này trước khi làm. Đây là tài liệu gốc cho phần việc còn lại.
-> Kế hoạch tổng thể: **`plan/AgenticUpgradePlan.md`** (mục tiêu, kiến trúc v3, W1–W9, ma trận chứng minh §5, demo §6, harness §7, lộ trình §8).
+> Kế hoạch tổng thể: **`plan/AgenticUpgradePlan.md`** (mục tiêu, kiến trúc v2, W1–W9, ma trận chứng minh §5, demo §6, harness §7, lộ trình §8).
 > Sổ quyết định: **`plan/DECISIONS.md`** (D01–D44). Mỗi quyết định ở đó là ràng buộc, trừ khi được ghi đè bằng một quyết định mới có lý do.
 > Thư mục gốc: `/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project`. Không phải git repo; lịch sử nằm ở ledger `plan/P<n>_progress.md`
 > và snapshot trong `snapshots/`.
 
 ---
 
-## 1. Dự án là gì, và v3 khác v1 thế nào
+## 1. Dự án là gì, và v2 khác v1 thế nào
 
 Đây là agent hỗ trợ phần cứng nhúng (STM32G474, ESP32, nRF52840, FreeRTOS). Đề tài yêu cầu một **agent thật**, không phải workflow hay
-chatbot hỏi đáp. Bản v1 là một vòng ReAct trên dữ liệu chỉ đọc, xếp mức L3 trong thang ở §1.2 của kế hoạch. Mục tiêu của v3 là L4–L5.
+chatbot hỏi đáp. Bản v1 là một vòng ReAct trên dữ liệu chỉ đọc, xếp mức L3 trong thang ở §1.2 của kế hoạch. Mục tiêu của v2 là L4–L5.
 
-| Khía cạnh | v1 (`snapshots/agent_v1/`, hệ S2) | v3 hiện tại (`agent/` ≡ `snapshots/agent_p5/`, hệ S3@P5) |
+| Khía cạnh | v1 (`snapshots/agent_v1/`, hệ S2) | v2 hiện tại (`agent/` ≡ `snapshots/agent_p5/`, hệ S3@P5) |
 |---|---|---|
 | Dữ liệu | 8 đoạn văn, 11 thanh ghi viết tay | CMSIS-SVD đầy đủ (3 chip) + PDF thật, bảng AF, giới hạn điện; corpus dùng chung với baseline (P1) |
 | Môi trường | Chỉ đọc | **Board State** event-sourced + 8 luật DRC (P3); **sandbox**: simulator thanh ghi, solver, `analyze_c_code`, compile check (P2) |
 | Vòng điều khiển | `for step in range(MAX_STEPS)`, dừng khi LLM thôi gọi tool | State machine INTAKE→PLAN→ACT⇄OBSERVE→CHECK→FINISH_GATE→DONE / ESCALATED / REFUSED / **INTERRUPTED**; checkpoint SQLite mỗi bước, kill rồi resume được (P4–P5) |
-| Kiểm chứng | Verifier đếm số (chặn cả giá trị tính đúng) | **Gate v3** G1 provenance, G2 mô phỏng chức năng, G3 DRC, G4 an toàn, G5 compile; lỗi có kiểu `{code, where, expected, actual, hint_source}` (P4) |
+| Kiểm chứng | Verifier đếm số (chặn cả giá trị tính đúng) | **Gate v2** G1 provenance, G2 mô phỏng chức năng, G3 DRC, G4 an toàn, G5 compile; lỗi có kiểu `{code, where, expected, actual, hint_source}` (P4) |
 | Kế hoạch | Không có | `update_plan`, `REPLAN_REQUIRED` khi lỗi cấu trúc, ngân sách, ESCALATED trả bản nháp tốt nhất kèm requirement chưa đạt (P4) |
 | Con người | Duyệt ở cuối, agent không chạy tiếp | `ask_human` (choice/clarify), approval qua interrupt, resume từ checkpoint ở tiến trình khác, Run API (P5) |
 | Đánh giá | Không có | Harness `eval/` chung cho S0 (LLM trần), S1 (Native RAG), S2 (v1), S2D (v1 + dữ liệu P1), S3; 8 nhóm task; grader xác định; CI bootstrap + McNemar; chỉ số quá trình (P0–P5) |
@@ -155,7 +155,7 @@ và D5); P8 chỉ cần đủ để quay demo. P9 **không được cắt**, vì
 - **Demo D3** (5 V → PA0 → policy chặn → `ask_human(choice)` → kỹ sư chọn): bị dời từ P5 sang đây.
 - **Thoát:** ASR và Unsafe-Action Rate đo được trên C6, C7 (v2); Unsafe-Action = 0; Over-refusal ≤ 5 % (H6); cờ **A7 `-Guardrail`**; S3@P6 chạy dev đầy đủ.
 
-### P7 — Memory v3 (W6, plan §4)
+### P7 — Memory v2 (W6, plan §4)
 - **Project memory:** Board State + decisions + artifacts xuyên phiên. Phần lớn đã có; cần nạp ở INTAKE và hoàn thiện.
 - **Lesson memory** kiểu Reflexion: `{trigger_pattern, error_code, fix, evidence_run_id, chip, peripheral}`.
   - Chỉ lưu khi fix đã được simulator xác nhận.

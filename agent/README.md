@@ -172,13 +172,13 @@ Nếu muốn gọi Agent từ script hoặc công cụ bên ngoài (như `curl` 
 - **`GET /api/audit?n=50`**: Lấy `n` dòng log kiểm toán gần nhất.
 - **`GET /api/history?session=demo`**: Xem lịch sử Episodic Memory của phiên làm việc.
 
-## 7. Agent Runtime v3 (P4) — chạy bằng dòng lệnh
+## 7. Agent Runtime v2 (P4) — chạy bằng dòng lệnh
 
-Giao diện Web ở trên vẫn dùng vòng lặp ReAct v1 (`react_agent.py`, bộ tool tra cứu). Runtime v3 (state machine có kế hoạch, Board State, sandbox, Gate, checkpoint/resume) nằm ở
+Giao diện Web ở trên vẫn dùng vòng lặp ReAct v1 (`react_agent.py`, bộ tool tra cứu). Runtime v2 (state machine có kế hoạch, Board State, sandbox, Gate, checkpoint/resume) nằm ở
 `agent/runtime/` + `agent/gate/`; chi tiết trong `CHANGELOG_P4.md`, nhật ký chỉnh prompt trong `PROMPT_DEVLOG.md`.
 
 ```bash
-# cần LLM_API_KEY trong .env (runtime v3 không rơi về mô phỏng); dùng DB tạm trong --out
+# cần LLM_API_KEY trong .env (runtime v2 không rơi về mô phỏng); dùng DB tạm trong --out
 .venv/bin/python -m agent.runtime.cli --goal "Trên STM32G474 chạy 170 MHz, tạo PWM 20 kHz, duty 25% ở PA8. Sinh code CMSIS." --out /tmp/run
 # nhiều lượt trên cùng project: lặp --goal; cờ ablation: --ablate A1,A3 (A1 -Planner, A2 -BoardState, A3 -Sandbox, A4 -Reflection)
 ```

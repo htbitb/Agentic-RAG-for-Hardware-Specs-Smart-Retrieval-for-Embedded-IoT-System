@@ -1,4 +1,4 @@
-"""Human-in-the-loop v2 (W7): ba loại interrupt — `approval` (write_config_file), `choice` và `clarify` (tool `ask_human`) — thay `approval.py` cho runtime v3.
+"""Human-in-the-loop v2 (W7): ba loại interrupt — `approval` (write_config_file), `choice` và `clarify` (tool `ask_human`) — thay `approval.py` cho runtime v2.
 
 Runtime lưu checkpoint với `pending_interrupt`, đặt status INTERRUPTED và trả về `status="interrupted"`; `resume(run_id, interrupt_id, decision, payload)` nạp checkpoint,
 chèn kết quả như tin nhắn `tool` đúng `tool_call_id` rồi chạy tiếp. Module này chứa phần KHÔNG phụ thuộc vòng lặp: spec của `ask_human`, kiểm tra tham số, dựng

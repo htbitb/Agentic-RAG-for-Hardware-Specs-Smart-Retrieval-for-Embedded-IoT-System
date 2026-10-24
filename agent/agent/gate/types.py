@@ -1,4 +1,4 @@
-"""Kiểu dữ liệu của Gate v3 (P4_interfaces §2.1): Finding (phản hồi có kiểu) và GateReport.
+"""Kiểu dữ liệu của Gate v2 (P4_interfaces §2.1): Finding (phản hồi có kiểu) và GateReport.
 
 severity: error (chặn) | warning (không chặn) | unknown (không kiểm được — KHÔNG chặn nhưng KHÔNG BAO GIỜ được tính là pass).
 kind: local (agent tự sửa) | structural (runtime chèn REPLAN_REQUIRED).

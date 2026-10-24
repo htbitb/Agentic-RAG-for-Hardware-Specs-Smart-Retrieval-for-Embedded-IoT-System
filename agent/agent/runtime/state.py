@@ -1,4 +1,4 @@
-"""AgentState: toàn bộ trạng thái của MỘT run (một lượt người dùng) của runtime v3, serialize được sang JSON (W4).
+"""AgentState: toàn bộ trạng thái của MỘT run (một lượt người dùng) của runtime v2, serialize được sang JSON (W4).
 
 `checkpoint.CheckpointStore` ghi nó vào SQLite sau mỗi bước nên run có thể resume sau khi tiến trình bị kill. Mọi thứ cần để chạy tiếp
 (messages gửi LLM, kế hoạch, ngân sách đã dùng, bộ đếm lỗi, tool call còn dang dở) nằm ở đây; không có trạng thái ẩn trong tiến trình.

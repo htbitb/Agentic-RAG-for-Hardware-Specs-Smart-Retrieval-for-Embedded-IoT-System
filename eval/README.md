@@ -8,7 +8,7 @@
 | S1 | Native RAG (`native-RAG/`, chunk 1000/150, MiniLM, top-4) | `adapters/native_rag.py` → subprocess `native-RAG/eval_adapter.py` |
 | S2 | Agent v1 **đóng băng** (`snapshots/agent_v1/`) | `adapters/agent_v1.py` → worker `adapters/agent_v1_worker.py` (một tiến trình/task) |
 | S2D | Vòng lặp Agent v1 (byte-identical) + **dữ liệu thật P1** (`snapshots/agent_p1/`) | cùng adapter, `name="S2D"`, chạy bằng `agent/.venv/bin/python -I -B` (cần numpy/sentence-transformers) |
-| S3@P4 | Agent v3: runtime (planner, Board State, checkpoint) + Gate P4 (`snapshots/agent_p4/`) — xem §10 | `adapters/agent_v3.py` → worker `adapters/agent_v3_worker.py`; chỉ chạy khi nêu rõ `--systems S3@P4` |
+| S3@P4 | Agent v2: runtime (planner, Board State, checkpoint) + Gate P4 (`snapshots/agent_p4/`) — xem §10 | `adapters/agent_v3.py` → worker `adapters/agent_v3_worker.py`; chỉ chạy khi nêu rõ `--systems S3@P4` |
 
 ## 1. Cài đặt
 
@@ -160,7 +160,7 @@ Quy trình thêm task: (1) viết YAML trong `tasks/<nhóm>/`; (2) **mọi giá 
 * **Chạy:** `eval/.venv/bin/python -m eval.run --resume eval/results/dev_baseline_v2 --systems S0,S1,S2,S2D --split dev --categories C4 --seeds 3 --cache record --llm-rpm 60`.
 
 
-## 10. S3@P4 (P4): Agent v3, grader `process`, ablation
+## 10. S3@P4 (P4): Agent v2, grader `process`, ablation
 
 * **Hệ:** `S3@P4` = `rt.ask(...)` của `agent.runtime.factory.build_runtime` trong snapshot `snapshots/agent_p4/` (đóng băng bằng `eval.tools.freeze_snapshot`, loại `data/board_state.sqlite`, `data/checkpoints.sqlite`, `data/traces/`). Không nằm trong `--systems` mặc định (S0,S1,S2,S2D); phải gọi rõ. Giá trị `ASSUMPTIONS["S3@P4"]` (18 call/lượt, 14.000 token vào, 700 ra) là **tạm**, hiệu chỉnh sau pilot.
 * **Worker** (`python -I -B` bằng `agent/.venv/bin/python`, một tiến trình/task, init JSONL như S2 cộng `ablations` và `budgets`): đặt `MEMORY_DB`, `AUDIT_LOG`, `SANDBOX_DIR`, `BOARD_STATE_DB` (`<run>/board_state.sqlite`), `AGENT_CHECKPOINT_DB` (`<run>/checkpoints.sqlite`), `AGENT_TRACE_DIR` (`<run>/trace`), `AGENT_ABLATIONS` (`A1,A3`), gỡ `BOARD_STATE_PROJECT`, `chdir(<run>)` rồi `build_runtime(...)`. Từ chối chạy khi LLM của runtime là mô phỏng (`simulated_llm`, exit 3), `run_dir` tương đối (exit 4), hoặc snapshot không dựng được runtime (`build_runtime_failed`, exit 5 ⇒ dừng cả lượt, không để thành 12 run lỗi hạ tầng). Adapter không để lọt từ shell các biến `HW_SPECS_DB`, `TEXT_INDEX_*`, `BOARD_STATE_DB`, `BOARD_STATE_PROJECT`, `AGENT_*`, `HWMODEL_DATA_DIR`, `MEMORY_DB`, `AUDIT_LOG`, `SANDBOX_DIR` (một `AGENT_ABLATIONS` lạc sẽ âm thầm biến hệ chính thành ablation). Timeout mỗi lượt = `max(--timeout, 600)` giây. `escalated` được ánh xạ thành lượt `answered` (sản phẩm tốt nhất vẫn được chấm); sự kiện `events` của lượt được nối **phẳng** vào `RunResult.trace`, `RunResult.board_state` là của lượt cuối.

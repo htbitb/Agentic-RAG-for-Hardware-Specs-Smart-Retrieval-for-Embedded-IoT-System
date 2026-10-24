@@ -1,4 +1,4 @@
-"""Chạy runtime v3 từ dòng lệnh với LLM thật (demo D1/D4, chạy thử cờ ablation, interrupt/resume):
+"""Chạy runtime v2 từ dòng lệnh với LLM thật (demo D1/D4, chạy thử cờ ablation, interrupt/resume):
 
     cd agent && .venv/bin/python -m agent.runtime.cli --goal "..." [--goal "..." ...] [--session ID] [--ablate A1,A3] [--out DIR] [--budgets '{"steps": 30}']
         [--answers '[{"decision":"answer","payload":{"answer":"8 MHz crystal"}}, ...]' | --interactive | --stop-on-interrupt]

@@ -2,7 +2,7 @@
 
 **Đề tài:** Agentic RAG for Hardware Specs → Hardware Co-Design Agent cho hệ thống nhúng IoT
 **Môn học:** Advanced Agentic Artificial Intelligence (CO5151)
-**Phiên bản:** 3.0 (kế thừa `SystemDesign.md` v2.1 và mã nguồn `agent/` hiện tại)
+**Phiên bản:** 2.0 (kế thừa `SystemDesign.md` và mã nguồn `agent/` hiện tại)
 **Ngày:** 2026-10-21
 
 ---
@@ -12,7 +12,7 @@
 0. [Tóm tắt](#0-tóm-tắt)
 1. [Chẩn đoán hiện trạng (v1)](#1-chẩn-đoán-hiện-trạng-v1)
 2. [Định nghĩa tính Agentic và nguyên tắc chứng minh](#2-định-nghĩa-tính-agentic-và-nguyên-tắc-chứng-minh)
-3. [Kiến trúc mục tiêu v3](#3-kiến-trúc-mục-tiêu-v3)
+3. [Kiến trúc mục tiêu v2](#3-kiến-trúc-mục-tiêu-v2)
 4. [Các hạng mục nâng cấp chi tiết (W1–W9)](#4-các-hạng-mục-nâng-cấp-chi-tiết-w1w9)
 5. [Ma trận chứng minh tính Agentic](#5-ma-trận-chứng-minh-tính-agentic)
 6. [Kịch bản demo](#6-kịch-bản-demo)
@@ -31,9 +31,9 @@
 
 > **Cho agent một "thế giới" để hành động (bo mạch số hoá + sandbox mô phỏng thanh ghi) và một "tín hiệu" để biết mình sai (simulator, DRC, compiler, con người), rồi để agent tự quyết định khi nào lập kế hoạch, hành động, sửa, hỏi, và dừng.**
 
-**Kết quả mong đợi của v3:**
+**Kết quả mong đợi của v2:**
 
-| Khía cạnh | v1 (hiện tại) | v3 (mục tiêu) |
+| Khía cạnh | v1 (hiện tại) | v2 (mục tiêu) |
 |---|---|---|
 | Đầu vào | Một câu hỏi | Một **mục tiêu thiết kế** (có thể nhiều lượt, thiếu thông tin) |
 | Môi trường | Kho tài liệu chỉ đọc | **Design Workspace có trạng thái**: Board State, clock tree, power budget, file sản phẩm |
@@ -65,7 +65,7 @@
 | F9 | Chưa có bộ đánh giá | Không có thư mục `eval/`; chỉ có các "móc" (`naive_search`, `direct_mode`, `use_verification`, `disabled_servers`, `seed`) | Chưa có số liệu để bảo vệ luận điểm agentic |
 | F10 | Có fallback `SimulatedLLM` là một chính sách regex viết cứng | `agent/llm.py:178-339` | Nếu demo chạy không có API key thì hệ thống đúng là một workflow. Phải tách rõ: chỉ dùng cho unit test |
 
-**Lưu ý: những điểm của v1 cần giữ lại.** Guardrail an toàn phần cứng **xác định (deterministic)**, không phụ thuộc prompt, là lựa chọn thiết kế đúng và đã được nêu trong Threat Model. v3 **không bỏ** guardrail này mà mở rộng nó từ "kiểm tra câu hỏi đầu vào" thành "kiểm tra mọi hành động" (xem W8). Ngoài ra, `route()` hiện chỉ ghi vào trace và không đưa vào prompt, nên không ảnh hưởng tới quyết định của LLM. v3 sẽ bỏ hẳn bước này khỏi đường chạy chính để tránh hiểu lầm.
+**Lưu ý: những điểm của v1 cần giữ lại.** Guardrail an toàn phần cứng **xác định (deterministic)**, không phụ thuộc prompt, là lựa chọn thiết kế đúng và đã được nêu trong Threat Model. v2 **không bỏ** guardrail này mà mở rộng nó từ "kiểm tra câu hỏi đầu vào" thành "kiểm tra mọi hành động" (xem W8). Ngoài ra, `route()` hiện chỉ ghi vào trace và không đưa vào prompt, nên không ảnh hưởng tới quyết định của LLM. v2 sẽ bỏ hẳn bước này khỏi đường chạy chính để tránh hiểu lầm.
 
 ### 1.2. Thang mức độ agentic (dùng để định vị trong báo cáo)
 
@@ -75,8 +75,8 @@
 | L1 | RAG pipeline | Truy hồi cố định rồi sinh câu trả lời | `native-RAG/` |
 | L2 | Tool-calling | LLM chọn tool trong một lượt | — |
 | L3 | ReAct | Lặp: suy nghĩ, hành động, quan sát trên dữ liệu chỉ đọc | **Agent v1** |
-| L4 | Stateful closed-loop agent | Hành động làm thay đổi môi trường, nhận phản hồi, tự sửa, có bộ nhớ trạng thái | **Agent v3 (lõi)** |
-| L5 | Goal-driven collaborative agent | Nhận mục tiêu, tự lập và điều chỉnh kế hoạch, cộng tác với con người qua interrupt/resume, tự kết thúc khi đạt cổng kiểm chứng, học từ lỗi | **Agent v3 (đầy đủ)** |
+| L4 | Stateful closed-loop agent | Hành động làm thay đổi môi trường, nhận phản hồi, tự sửa, có bộ nhớ trạng thái | **Agent v2 (lõi)** |
+| L5 | Goal-driven collaborative agent | Nhận mục tiêu, tự lập và điều chỉnh kế hoạch, cộng tác với con người qua interrupt/resume, tự kết thúc khi đạt cổng kiểm chứng, học từ lỗi | **Agent v2 (đầy đủ)** |
 
 ---
 
@@ -110,7 +110,7 @@ Ma trận đầy đủ ở §5.
 
 ---
 
-## 3. KIẾN TRÚC MỤC TIÊU v3
+## 3. KIẾN TRÚC MỤC TIÊU v2
 
 ### 3.1. Sơ đồ tổng thể
 
@@ -120,12 +120,12 @@ flowchart TB
     UI <--> API["Run API: start / stream / resume"]
     API <--> RT
 
-    subgraph RT["Agent Runtime v3 (state machine có checkpoint)"]
+    subgraph RT["Agent Runtime v2 (state machine có checkpoint)"]
         direction TB
         ST[("AgentState: goal, plan, scratchpad, budgets, interrupts")]
         LLM["LLM Policy: reason, choose tool, write code"]
         POL["Action Policy Engine (deterministic guardrail)"]
-        GATE["Verification Gate v3: provenance + functional + DRC + safety"]
+        GATE["Verification Gate v2: provenance + functional + DRC + safety"]
         LLM --> POL
         GATE --> LLM
         ST <--> LLM
@@ -339,7 +339,7 @@ Mỗi hạng mục được trình bày theo các mục: **Mục tiêu → Thi�
 
 ---
 
-### W4. Agent Runtime v3: kế hoạch tường minh, ngân sách và kết thúc có kiểm chứng
+### W4. Agent Runtime v2: kế hoạch tường minh, ngân sách và kết thúc có kiểm chứng
 
 **Mục tiêu.** Thay vòng `for step in range(MAX_STEPS)` bằng một runtime có trạng thái, có kế hoạch và có điều kiện dừng.
 
@@ -351,7 +351,7 @@ Mỗi hạng mục được trình bày theo các mục: **Mục tiêu → Thi�
 - **Tự lập lại kế hoạch có lý do:** khi Gate hoặc DRC báo lỗi *cấu trúc* (ví dụ không còn chân nào cho I2C3), runtime chèn thông điệp `REPLAN_REQUIRED` cùng lý do; agent phải gọi `update_plan` trước khi hành động tiếp. Sự kiện này đo được (P5).
 - **Ngân sách và leo thang:** nếu cùng một mã lỗi lặp lại quá 3 lần, hoặc hết ngân sách, runtime **không** im lặng bỏ cuộc mà chuyển sang `ESCALATED`. Agent được yêu cầu `ask_human` với tóm tắt những gì đã thử.
 - **Tool `finish(summary, deliverables[], waived_requirements[])`:** chuyển sang `FINISH_GATE` (W5). Nếu gate fail, lý do được trả về agent như một observation.
-- **System prompt v3:** mô tả vai trò "hardware design agent", quy ước code CMSIS, nghĩa vụ ghi requirement trước khi thiết kế, và nghĩa vụ mô phỏng trước khi đưa code. Không mô tả quy trình cứng.
+- **System prompt v2:** mô tả vai trò "hardware design agent", quy ước code CMSIS, nghĩa vụ ghi requirement trước khi thiết kế, và nghĩa vụ mô phỏng trước khi đưa code. Không mô tả quy trình cứng.
 - **Lesson injection:** ở `INTAKE`, truy hồi top-k bài học liên quan từ Lesson memory (W6) và đưa vào context.
 - **Mô hình:** bắt buộc dùng LLM thật cho mọi kết luận về tính agentic. `SimulatedLLM` được đổi tên thành `ScriptedPolicy` và chỉ dùng trong unit test.
 - *(Tuỳ chọn, có ablation)* **Critic sub-agent:** một lượt gọi LLM riêng, chỉ thấy spec và sản phẩm (không thấy suy luận), đóng vai người review. Mẫu evaluator–optimizer; đo xem có cải thiện so với gate xác định hay không.
@@ -362,7 +362,7 @@ Mỗi hạng mục được trình bày theo các mục: **Mục tiêu → Thi�
 
 ---
 
-### W5. Verification Gate v3: từ "đếm số" sang "kiểm chứng chức năng"
+### W5. Verification Gate v2: từ "đếm số" sang "kiểm chứng chức năng"
 
 **Mục tiêu.** Sửa F2: gate phải **phân biệt được đúng và sai**, và **cho phép giá trị suy ra** nếu có nguồn gốc kiểm chứng được.
 
@@ -386,7 +386,7 @@ Mỗi hạng mục được trình bày theo các mục: **Mục tiêu → Thi�
 
 ---
 
-### W6. Bộ nhớ v3: Project memory và Lesson memory
+### W6. Bộ nhớ v2: Project memory và Lesson memory
 
 | Loại | Nội dung | Chính sách ghi | Chính sách đọc |
 |---|---|---|---|
@@ -470,7 +470,7 @@ Giữ nguyên các lớp v1 (lọc injection trực tiếp, sanitize observation
 
 **Ma trận năng lực so với baseline** (để đưa vào báo cáo):
 
-| Năng lực | Direct LLM | Native RAG | Agent v1 | Agent v3 |
+| Năng lực | Direct LLM | Native RAG | Agent v1 | Agent v2 |
 |---|:-:|:-:|:-:|:-:|
 | Truy hồi có trích dẫn | — | ✔ | ✔ | ✔ |
 | Dữ liệu cấu trúc (SVD/AF) | — | — | ✔ (mẫu) | ✔ (đầy đủ) |
@@ -536,7 +536,7 @@ Giữ nguyên các lớp v1 (lọc injection trực tiếp, sanitize observation
 
 | Mã | Giả thuyết | Kiểm định bằng |
 |---|---|---|
-| H1 | Agent v3 vượt Native RAG và Direct LLM về Task Success Rate trên task tính toán, thiết kế và nhiều lượt (C3–C5) | Bảng chính, paired test |
+| H1 | Agent v2 vượt Native RAG và Direct LLM về Task Success Rate trên task tính toán, thiết kế và nhiều lượt (C3–C5) | Bảng chính, paired test |
 | H2 | **Vòng phản hồi kín là nguyên nhân** tăng tính đúng chức năng: tắt sandbox thì Functional Pass@1 (C3) giảm có ý nghĩa | Ablation `-Sandbox`, `-Reflection` |
 | H3 | **Board State là nguyên nhân** phát hiện xung đột: tắt đi thì Proactive Conflict Detection (C4) về gần mức baseline | Ablation `-BoardState` |
 | H4 | Lesson memory giảm số vòng tự sửa trên task lặp mẫu lỗi | Learning curve, `-Lessons` |
@@ -544,7 +544,7 @@ Giữ nguyên các lớp v1 (lọc injection trực tiếp, sanitize observation
 | H6 | Policy Engine giữ ASR ≈ 0 và Unsafe-Action = 0 với Over-refusal ≤ 5% | Suite C6, C7 |
 | H7 | Agent phục hồi khi tool lỗi hoặc dữ liệu sai được tiêm vào | Recovery Rate (fault injection) |
 | H8 | Chi phí tăng nhưng nằm trên đường Pareto (độ chính xác so với chi phí) | Biểu đồ Pareto |
-| H9 | Agent v3 không thua v1 trên task tra cứu thuần (C1, C2), tức không đánh đổi năng lực cũ | Bảng chính |
+| H9 | Agent v2 không thua v1 trên task tra cứu thuần (C1, C2), tức không đánh đổi năng lực cũ | Bảng chính |
 
 ### 7.2. Các hệ được đánh giá (Systems Under Test)
 
@@ -553,7 +553,7 @@ Giữ nguyên các lớp v1 (lọc injection trực tiếp, sanitize observation
 | **S0** | Direct LLM | Cùng model, không tool, không truy hồi | Cùng nhiệt độ và giới hạn token |
 | **S1** | Native RAG | `../native-RAG/`: ChromaDB, chunk cố định 1000/150 ký tự, MiniLM, top-4, cùng LLM qua OpenAI-compat | **Ingest lại trên corpus chung**; giữ nguyên chunking (đây là baseline); đa lượt bằng cách ghép lịch sử hội thoại vào prompt |
 | **S2** | Agent v1 | Snapshot mã hiện tại (đóng băng) | Đo **trước** khi nâng cấp để có điểm xuất phát |
-| **S3** | Agent v3 (full) | Toàn bộ W1–W9 | — |
+| **S3** | Agent v2 (full) | Toàn bộ W1–W9 | — |
 
 **Ablation của S3** (mỗi biến thể tắt đúng một cơ chế qua cờ cấu hình):
 
@@ -757,7 +757,7 @@ project/
 ├── corpus/                     # corpus chung (pdfs/, svd/, manifest.yaml)
 ├── native-RAG/
 │   └── eval_adapter.py         # (mới) cầu nối JSONL cho harness
-├── agent/                      # Agent v3 (xem Phụ lục B)
+├── agent/                      # Agent v2 (xem Phụ lục B)
 └── eval/
     ├── tasks/{C1..C9}/*.yaml
     ├── generators/
@@ -808,10 +808,10 @@ Thứ tự được sắp theo **phụ thuộc kỹ thuật** và theo nguyên t
 | **P1** Dữ liệu thật (W1) | SVD → DB, bảng AF, giới hạn, text index hybrid; nâng cấp `hw-knowledge` và `text-manual` | P0 (corpus) | Báo cáo chất lượng dữ liệu; S2 chạy được trên DB mới |
 | **P2** Hardware model và Sandbox (W3) | `hwmodel/` (regmap, rcc, gpio, tim, clock_tree), solver, `analyze_c_code`, header gen, compile check; golden tests | P1 | Golden tests pass; grader `functional_sim` dùng được; task C3 |
 | **P3** Board State (W2) | Server `board-state`, DRC, event log; task C4 | P1, P2 | Unit test DRC; C4 chấm được |
-| **P4** Runtime v3 và Gate v3 (W4, W5) | AgentState, checkpoint, `update_plan`, REPLAN, ngân sách, `finish` gate, phản hồi có kiểu lỗi | P2, P3 | S3 chạy end-to-end D1; grader `process` |
+| **P4** Runtime v2 và Gate v2 (W4, W5) | AgentState, checkpoint, `update_plan`, REPLAN, ngân sách, `finish` gate, phản hồi có kiểu lỗi | P2, P3 | S3 chạy end-to-end D1; grader `process` |
 | **P5** HITL v2 (W7) | Interrupt/Resume, `ask_human`, Run API, SimulatedHuman; task C5 | P4 | D3, D4 chạy được; Resume Success được đo |
 | **P6** Guardrail v2 (W8) | Policy engine, taint, budgets, sự kiện audit mới | P4 | ASR và Unsafe-Action đo được trên C6, C7 |
-| **P7** Memory v3 (W6) | Project memory, Lesson memory; task chuỗi cho learning curve | P4 | D5 chạy được; learning curve đo được |
+| **P7** Memory v2 (W6) | Project memory, Lesson memory; task chuỗi cho learning curve | P4 | D5 chạy được; learning curve đo được |
 | **P8** UI (W9) | Panel Plan, Board, Interrupt, Lessons, Budget | P4–P7 | Demo D1–D5 trên UI |
 | **P9** Đánh giá đầy đủ | Fault injection, C9, ablation A1–A7, chạy `test`, báo cáo | Tất cả | `report.md` hoàn chỉnh; kiểm định H1–H9 |
 
@@ -840,7 +840,7 @@ Thứ tự được sắp theo **phụ thuộc kỹ thuật** và theo nguyên t
 
 ## 10. PHỤ LỤC
 
-### A. Ánh xạ tool spec v3 (tổng hợp)
+### A. Ánh xạ tool spec v2 (tổng hợp)
 
 | Server | Tool | Quyền |
 |---|---|---|
@@ -851,7 +851,7 @@ Thứ tự được sắp theo **phụ thuộc kỹ thuật** và theo nguyên t
 | local | `update_plan`, `ask_human`, `finish` | control |
 | local | `write_file` | irreversible-write (duyệt) |
 
-### B. Cây thư mục Agent v3 (dự kiến)
+### B. Cây thư mục Agent v2 (dự kiến)
 
 ```text
 agent/
@@ -899,7 +899,7 @@ agent/
 
 ### C. Ánh xạ thay đổi từ file cũ sang file mới
 
-| File v1 | Số phận ở v3 |
+| File v1 | Số phận ở v2 |
 |---|---|
 | `agent/react_agent.py` | Tách thành `runtime/loop.py`; `_hardware_check` giữ lại ở bước INTAKE |
 | `agent/verifier.py` | Thành `gate/provenance.py` (G1), cho phép bằng chứng từ sandbox |

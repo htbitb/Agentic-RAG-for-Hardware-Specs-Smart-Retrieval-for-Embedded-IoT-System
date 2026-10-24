@@ -1,4 +1,4 @@
-"""Gate v3 — cổng kết thúc (P4_interfaces §2): G1 provenance, G2 functional, G3 board DRC, G4 safety, G5 compile.
+"""Gate v2 — cổng kết thúc (P4_interfaces §2): G1 provenance, G2 functional, G3 board DRC, G4 safety, G5 compile.
 
 `Gate(call, flags).run(ctx) -> GateReport`. `call(tool, args) -> dict` là cầu nối tới ToolHub. Gate chỉ gọi tool CHỈ ĐỌC (danh sách READ_ONLY_TOOLS;
 lời gọi khác bị từ chối), không import `config`, không đọc env, không ghi file. Tool lỗi / ném ngoại lệ không bao giờ làm Gate ném: thành finding

@@ -1,4 +1,4 @@
-"""Agent Runtime v3 (W4): state machine có checkpoint thay cho `for step in range(MAX_STEPS)` của v1.
+"""Agent Runtime v2 (W4): state machine có checkpoint thay cho `for step in range(MAX_STEPS)` của v1.
 
     INTAKE -> PLAN -> ACT <-> OBSERVE -> (CHECK) -> FINISH_GATE -> DONE        | REFUSED | ESCALATED
 

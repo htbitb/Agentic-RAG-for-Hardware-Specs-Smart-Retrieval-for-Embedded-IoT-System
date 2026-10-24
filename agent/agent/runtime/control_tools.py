@@ -1,4 +1,4 @@
-"""Tool điều khiển của runtime v3 (quyền `control`, không đi qua MCP): update_plan và finish (§4 W4)."""
+"""Tool điều khiển của runtime v2 (quyền `control`, không đi qua MCP): update_plan và finish (§4 W4)."""
 from __future__ import annotations
 
 import json

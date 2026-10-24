@@ -42,7 +42,7 @@ PERMISSIONS = {
     "set_clock_config": "state-mutating", "add_device": "state-mutating", "connect": "state-mutating", "record_decision": "state-mutating",
     "rollback": "state-mutating",
     "get_board_state": "read-only", "get_power_budget": "read-only", "run_drc": "read-only", "diff": "read-only",
-    # P4: tool điều khiển của runtime v3 (không đi qua MCP; runtime xử lý, hub chỉ ghi quyền để UI/audit/policy tra cứu)
+    # P4: tool điều khiển của runtime v2 (không đi qua MCP; runtime xử lý, hub chỉ ghi quyền để UI/audit/policy tra cứu)
     "update_plan": "control", "finish": "control", "ask_human": "control",
 }
 BASELINE_ONLY = {"naive_search"}  # hidden from the agent

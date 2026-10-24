@@ -1,4 +1,4 @@
-"""Checkpoint SQLite của runtime v3: trạng thái mới nhất của mỗi run + phiên (lịch sử các lượt, kế hoạch) theo project_id.
+"""Checkpoint SQLite của runtime v2: trạng thái mới nhất của mỗi run + phiên (lịch sử các lượt, kế hoạch) theo project_id.
 
 Ghi sau MỖI bước (`save`); `resume` chỉ cần bản mới nhất. Tệp là SQLite thường (đường dẫn qua env AGENT_CHECKPOINT_DB), bền qua kill tiến trình.
 """

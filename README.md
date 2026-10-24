@@ -1,6 +1,6 @@
 # Agentic RAG for Hardware Specs (STM32G474 / ESP32 / nRF52840 / FreeRTOS)
 
-Agent hỗ trợ thiết kế phần cứng nhúng cho môn CO5151 Agentic AI. Dự án đã chuyển từ v1, một vòng ReAct tra cứu trên dữ liệu chỉ đọc, sang **v3**. Bản v3 có:
+Agent hỗ trợ thiết kế phần cứng nhúng cho môn CO5151 Agentic AI. Dự án đã chuyển từ v1, một vòng ReAct tra cứu trên dữ liệu chỉ đọc, sang **v2**. Bản v2 có:
 - dữ liệu thật từ SVD và PDF;
 - Board State và DRC;
 - sandbox mô phỏng thanh ghi;
@@ -11,7 +11,7 @@ Agent hỗ trợ thiết kế phần cứng nhúng cho môn CO5151 Agentic AI. D
 
 | Thư mục | Nội dung |
 |---|---|
-| `agent/` | Agent v3: runtime, Gate, MCP servers, `hwmodel/`, UI (xem `agent/README.md`) |
+| `agent/` | Agent v2: runtime, Gate, MCP servers, `hwmodel/`, UI (xem `agent/README.md`) |
 | `native-RAG/` | Baseline Native RAG (S1) |
 | `eval/` | Harness đánh giá, task C1–C8, grader, kết quả (`eval/results/dev_baseline_v2/report.md`) |
 | `corpus/` | Corpus chung: PDF, SVD, header |
