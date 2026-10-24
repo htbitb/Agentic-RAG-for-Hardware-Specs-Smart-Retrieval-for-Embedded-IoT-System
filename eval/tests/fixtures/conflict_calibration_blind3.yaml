@@ -1,0 +1,1555 @@
+- id: b3-001
+  code: "PIN_CONFLICT:PA8"
+  label: true
+  kind: explicit
+  text: |
+    **PA8 can't carry I2C3_SCL here.** In the first step we gave PA8 to `TIM1_CH1` (AF6) for the 20 kHz PWM, and a GPIO can only be in one alternate-function mode at a time. I2C3_SCL is AF2 on that same pad, so selecting it would silently disable your PWM output.
+
+    Move the clock line to PC8 (I2C3_SCL, AF8) and keep SDA on PC9:
+
+    ```c
+    /* I2C3: SCL = PC8, SDA = PC9, both AF8, open-drain */
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin       = GPIO_PIN_8 | GPIO_PIN_9;
+    gpio.Mode      = GPIO_MODE_AF_OD;
+    gpio.Pull      = GPIO_NOPULL;      /* external 4.7k pull-ups */
+    gpio.Speed     = GPIO_SPEED_FREQ_HIGH;
+    gpio.Alternate = GPIO_AF8_I2C3;
+    HAL_GPIO_Init(GPIOC, &gpio);
+    ```
+
+    PA8 and the TIM1 setup stay exactly as they were.
+- id: b3-002
+  code: "PIN_CONFLICT:PA8"
+  label: true
+  kind: explicit
+  text: |
+    Before adding the BME280, there is a pin clash to resolve:
+
+    - `TIM1_CH1` (PWM, AF6) already owns **PA8**
+    - you asked for `I2C3_SCL` on PA8 (AF2)
+
+    Both can't be active on one pad, so one of them has to move. The cheapest change is the I2C side: use PC8 for SCL (AF8) and PC9 for SDA. If you would rather keep I2C3 on PA8, you would have to relocate the PWM to another TIM1_CH1 pin such as PC0 (AF2) and re-route the board.
+
+    ```c
+    hi2c3.Instance            = I2C3;
+    hi2c3.Init.Timing         = 0x30A0A7FB;  /* 100 kHz @ 170 MHz (CubeMX) */
+    hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    HAL_I2C_Init(&hi2c3);
+    ```
+
+    The BME280 then answers at 0x76 (SDO to GND) or 0x77 (SDO to VDDIO).
+- id: b3-003
+  code: "PIN_CONFLICT:PA8"
+  label: true
+  kind: explicit
+  text: |
+    ### Pin allocation check
+
+    | Signal | Requested pin | Status |
+    |---|---|---|
+    | TIM1_CH1 (PWM) | PA8 | in use since step 1 |
+    | I2C3_SCL | PA8 | **not available**, the pad is taken by the PWM output |
+    | I2C3_SDA | PC9 | free |
+
+    Because PA8 is already committed to the PWM, I'm placing I2C3_SCL on PC8 (AF8) instead. Remember to call `__HAL_RCC_GPIOC_CLK_ENABLE()` before `HAL_GPIO_Init`, and keep the 4.7 kΩ pull-ups on both lines. Reading the chip ID register (0xD0) should return 0x60 for a BME280.
+- id: b3-004
+  code: "PIN_CONFLICT:PA8"
+  label: true
+  kind: explicit
+  text: |
+    Sure, here is the I2C3 bring-up for the BME280 at address 0x76. One thing changed from your request, though: SCL cannot sit on PA8, because TIM1_CH1 is already using that pin for the PWM, so I used PC8 (AF8) and left SDA on PC9. The rest follows the usual HAL flow.
+
+    ```c
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_I2C3_CLK_ENABLE();
+
+    GPIO_InitTypeDef g = {0};
+    g.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+    g.Mode = GPIO_MODE_AF_OD;
+    g.Alternate = GPIO_AF8_I2C3;
+    HAL_GPIO_Init(GPIOC, &g);
+
+    uint8_t id;
+    HAL_I2C_Mem_Read(&hi2c3, 0x76 << 1, 0xD0, I2C_MEMADD_SIZE_8BIT, &id, 1, 100);
+    /* expect id == 0x60 */
+    ```
+- id: b3-005
+  code: "PIN_CONFLICT:PA8"
+  label: true
+  kind: implicit
+  text: |
+    Here is the BME280 bring-up on I2C3, 100 kHz, 7-bit address 0x76.
+
+    ```c
+    /* I2C3_SCL = PC8 (AF8), I2C3_SDA = PC9 (AF8); PA8 remains TIM1_CH1 */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    GPIO_InitTypeDef g = {0};
+    g.Pin       = GPIO_PIN_8 | GPIO_PIN_9;
+    g.Mode      = GPIO_MODE_AF_OD;
+    g.Pull      = GPIO_PULLUP;
+    g.Alternate = GPIO_AF8_I2C3;
+    HAL_GPIO_Init(GPIOC, &g);
+    ```
+
+    After `HAL_I2C_Init(&hi2c3)`, read register 0xD0 with `HAL_I2C_Mem_Read`; a BME280 returns 0x60. Then write `ctrl_meas` (0xF4) = 0x27 for normal mode with x1 oversampling and burst-read 0xF7 to 0xFE for the raw data.
+- id: b3-006
+  code: "PIN_CONFLICT:PA8"
+  label: true
+  kind: implicit
+  text: |
+    Done. Final pin map after adding the sensor:
+
+    - **PA8** - TIM1_CH1, PWM output (unchanged)
+    - **PC8** - I2C3_SCL (AF8)
+    - **PC9** - I2C3_SDA (AF8)
+
+    I put the I2C3 pair on port C so the timer output keeps the pin it already had. The init code below enables the GPIO clocks and the I2C3 kernel clock:
+
+    ```c
+    __HAL_RCC_GPIOA_CLK_ENABLE();   /* PWM */
+    __HAL_RCC_GPIOC_CLK_ENABLE();   /* I2C3 */
+    __HAL_RCC_I2C3_CLK_ENABLE();
+    ```
+
+    Pull-ups of 4.7 kΩ to 3V3 on PC8 and PC9 are enough for 100 kHz.
+- id: b3-007
+  code: "PIN_CONFLICT:PA8"
+  label: false
+  kind: silent
+  text: |
+    Here's the I2C3 setup for the BME280, with SCL on PA8 (AF2) and SDA on PC9 (AF8) at 100 kHz.
+
+    ```c
+    GPIO_InitTypeDef g = {0};
+
+    /* SCL: PA8, AF2 */
+    g.Pin = GPIO_PIN_8;
+    g.Mode = GPIO_MODE_AF_OD;
+    g.Alternate = GPIO_AF2_I2C3;
+    HAL_GPIO_Init(GPIOA, &g);
+
+    /* SDA: PC9, AF8 */
+    g.Pin = GPIO_PIN_9;
+    g.Alternate = GPIO_AF8_I2C3;
+    HAL_GPIO_Init(GPIOC, &g);
+    ```
+
+    Your TIM1 PWM initialisation from earlier does not need to change. Call `HAL_I2C_Init(&hi2c3)` after the pins are configured and then probe the sensor with `HAL_I2C_IsDeviceReady(&hi2c3, 0x76 << 1, 3, 50)`.
+- id: b3-008
+  code: "PIN_CONFLICT:PA8"
+  label: false
+  kind: silent
+  text: |
+    Great, adding the BME280 is straightforward:
+
+    1. Enable clocks for GPIOA, GPIOC and I2C3.
+    2. Configure PA8 as `I2C3_SCL` (AF2, open-drain) and PC9 as `I2C3_SDA` (AF8, open-drain).
+    3. Initialise `hi2c3` in standard mode.
+    4. Read the calibration block starting at 0x88 (26 bytes), then 0xE1 (7 bytes).
+    5. Trigger a forced measurement by writing 0x25 to `ctrl_meas` (0xF4).
+
+    Keep the I2C transactions short (use 10-20 ms timeouts) so they don't disturb the control loop that updates the PWM duty cycle. Compensation of the raw readings uses the integer formulas from the Bosch datasheet.
+- id: b3-009
+  code: "PIN_CONFLICT:PA8"
+  label: false
+  kind: negated
+  text: |
+    I checked the new request against every pin you have configured so far (the PWM, the UART and the LED) and there are no overlaps, so I2C3 can go on PA8 (SCL) and PC9 (SDA) as requested. No pin has to be remapped.
+
+    ```c
+    hi2c3.Instance            = I2C3;
+    hi2c3.Init.Timing         = 0x30A0A7FB; /* 100 kHz @ 170 MHz */
+    hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    if (HAL_I2C_Init(&hi2c3) != HAL_OK) { Error_Handler(); }
+    ```
+
+    Enable the analog filter with `HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE)` for better noise immunity.
+
+    Keep the I2C clock at 100 kHz for the first bring-up and raise it to 400 kHz later, once the wiring and pull-ups are proven.
+- id: b3-010
+  code: "PIN_CONFLICT:PA8"
+  label: false
+  kind: mention
+  text: |
+    Each STM32 pin has up to 16 alternate-function slots (AF0 to AF15), and the slot is chosen per pin in the `GPIOx_AFRL` / `GPIOx_AFRH` registers; HAL hides this behind the `Alternate` field. To find the right number, look up the pin in the "Alternate function" table of the datasheet. For example, PA8 lists MCO, I2C3_SCL and TIM1_CH1 on different AF numbers.
+
+    ```c
+    /* Generic helper: put a pin of a GPIO port into alternate-function mode */
+    static void pin_af(GPIO_TypeDef *port, uint32_t pin, uint32_t af, uint32_t mode)
+    {
+        GPIO_InitTypeDef g = {0};
+        g.Pin = pin;
+        g.Mode = mode;          /* GPIO_MODE_AF_PP or GPIO_MODE_AF_OD */
+        g.Alternate = af;
+        HAL_GPIO_Init(port, &g);
+    }
+    ```
+
+    Use `GPIO_MODE_AF_OD` for I2C and `GPIO_MODE_AF_PP` for PWM, UART TX and SPI.
+- id: b3-011
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: true
+  kind: explicit
+  text: |
+    One important hardware issue before the code: your BME280 module runs at **1.8 V**, while the STM32G474's I/O is at **3.3 V**. SDA/SCL pulled up to 3.3 V would exceed the sensor's absolute maximum input level (VDDIO + 0.3 V), so the two sides must not share a bus directly. Use a bidirectional I2C level translator such as a PCA9306 or TXS0102, with 4.7 kΩ pull-ups on each side to its own rail (1.8 V on the sensor side, 3V3 on the MCU side).
+
+    ```c
+    /* I2C1: SCL = PB8, SDA = PB9 (AF4, open-drain) on the 3V3 side of the translator */
+    hi2c1.Instance = I2C1;
+    hi2c1.Init.Timing = 0x30A0A7FB; /* 100 kHz @ 170 MHz */
+    HAL_I2C_Init(&hi2c1);
+    ```
+- id: b3-012
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: true
+  kind: explicit
+  text: |
+    **Voltage mismatch on the I2C bus.**
+
+    - BME280 board supply / logic: 1.8 V
+    - STM32G474 GPIO: 3.3 V
+
+    The sensor's SDA/SCL inputs are only rated up to VDDIO + 0.3 V, so a 3.3 V bus can over-stress them (and a 1.8 V "high" is marginal for the MCU, whose VIH is about 0.7 x VDD, roughly 2.3 V). You have two safe options:
+
+    1. Add a level shifter (a PCA9306, or two BSS138 MOSFETs with pull-ups on both sides).
+    2. Power the sensor from 3V3 instead; the BME280 accepts 1.71 V to 3.6 V.
+
+    Once the levels agree, the driver is the same as for any I2C part: read the chip ID at 0xD0 (expect 0x60), then configure `ctrl_hum` before `ctrl_meas`.
+- id: b3-013
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: true
+  kind: explicit
+  text: |
+    I'd hold off on wiring this up until the logic levels are sorted out. The BME280 in your design is a 1.8 V device and your STM32 talks at 3.3 V, which means the I2C lines need level translation in between; connecting them directly risks damaging the sensor and, at best, gives unreliable reads because a 1.8 V high barely registers on the MCU.
+
+    A tiny PCA9306 breakout solves it: sensor side to the 1.8 V rail, MCU side to 3V3, pull-ups on both sides. Software is unaffected:
+
+    ```c
+    uint8_t id = 0;
+    HAL_I2C_Mem_Read(&hi2c1, 0x76 << 1, 0xD0, I2C_MEMADD_SIZE_8BIT, &id, 1, 100);
+    ```
+- id: b3-014
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: true
+  kind: explicit
+  text: |
+    Here's a minimal BME280 driver skeleton for I2C1. Note that the sensor is powered at 1.8 V but the STM32G474 I/O is 3.3 V, so SDA and SCL need a level shifter between them (a PCA9306 is the simplest choice). With that in place the code is standard:
+
+    ```c
+    #define BME280_ADDR (0x76 << 1)
+
+    static HAL_StatusTypeDef bme280_read(uint8_t reg, uint8_t *buf, uint16_t n)
+    {
+        return HAL_I2C_Mem_Read(&hi2c1, BME280_ADDR, reg,
+                                I2C_MEMADD_SIZE_8BIT, buf, n, 100);
+    }
+
+    /* burst-read raw data: press[3], temp[3], hum[2] starting at 0xF7 */
+    ```
+- id: b3-015
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: true
+  kind: implicit
+  text: |
+    Wiring for the BME280 on I2C1 (PB8 = SCL, PB9 = SDA):
+
+    ```
+     STM32G474 (3V3)        PCA9306          BME280 (1V8)
+     PB8 / SCL  ----------- SCL2 | SCL1 ----- SCL
+     PB9 / SDA  ----------- SDA2 | SDA1 ----- SDA
+     3V3 --[4.7k]-- SCL/SDA     VREF2 = 3V3, VREF1 = 1V8, EN = 3V3 (via 200k)
+                                  1V8 --[4.7k]-- SCL/SDA
+    ```
+
+    Fit 4.7 kΩ pull-ups on each side and share a common ground. Firmware needs nothing special: `HAL_I2C_Init(&hi2c1)` at 100 kHz, then read 0xD0 to confirm the 0x60 chip ID.
+- id: b3-016
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: true
+  kind: implicit
+  text: |
+    For the BME280 I've set up the supply so everything on the bus sits at the same level: VDD and VDDIO of the sensor go to the board's 3V3 rail (the part accepts 1.71 V to 3.6 V), not to the 1.8 V LDO you mentioned. Decoupling is 100 nF plus 1 µF at the pins, and SDA/SCL get 4.7 kΩ pull-ups to 3V3.
+
+    ```c
+    /* I2C1 @ 100 kHz, PB8 = SCL, PB9 = SDA */
+    hi2c1.Init.Timing = 0x30A0A7FB;
+    HAL_I2C_Init(&hi2c1);
+    ```
+
+    The sensor draws only a few µA in sleep, so loading the 3V3 rail is no issue.
+- id: b3-017
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: false
+  kind: silent
+  text: |
+    Here's a BME280 reader over I2C1 (PB8 = SCL, PB9 = SDA). The sensor is supplied at 1.8 V from the LDO, and its address is 0x76 with SDO grounded.
+
+    ```c
+    uint8_t hum = 0x01, meas = 0x27;
+    HAL_I2C_Mem_Write(&hi2c1, 0x76 << 1, 0xF2, I2C_MEMADD_SIZE_8BIT, &hum, 1, 100);  /* ctrl_hum: x1 */
+    HAL_I2C_Mem_Write(&hi2c1, 0x76 << 1, 0xF4, I2C_MEMADD_SIZE_8BIT, &meas, 1, 100); /* ctrl_meas: x1/x1, normal */
+    HAL_Delay(10);
+    uint8_t raw[8];
+    HAL_I2C_Mem_Read(&hi2c1, 0x76 << 1, 0xF7, I2C_MEMADD_SIZE_8BIT, raw, 8, 100);
+    ```
+
+    Use the compensation formulas from the datasheet (section 4.2.3) to convert `raw` to °C, hPa and %RH. Add 4.7 kΩ pull-ups on SDA and SCL.
+- id: b3-018
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: false
+  kind: silent
+  text: |
+    Steps to read the BME280 over I2C1:
+
+    1. Configure PB8 (SCL) and PB9 (SDA) as AF4 open-drain and enable the I2C1 clock.
+    2. Initialise `hi2c1` at 100 kHz and enable the analog filter.
+    3. Verify the chip ID (register 0xD0 should read 0x60).
+    4. Read the 26 calibration bytes at 0x88 and the 7 bytes at 0xE1.
+    5. Put the sensor in forced mode by writing 0x25 to register 0xF4, wait about 10 ms, then burst-read 8 bytes from 0xF7.
+
+    Store the calibration values (`dig_T1`, `dig_P1`, `dig_H1`, ...) in a struct once at startup, because they never change. Fixed-point compensation code is provided in Bosch's reference driver.
+- id: b3-019
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: false
+  kind: negated
+  text: |
+    No voltage translation is needed on this bus. Most BME280 breakout boards carry their own regulator and level shifting on SDA/SCL, so the module's lines are compatible with the STM32's 3.3 V logic and there is no voltage mismatch to worry about. Just wire VCC, GND, SDA and SCL.
+
+    ```c
+    HAL_I2C_Init(&hi2c1);
+    if (HAL_I2C_IsDeviceReady(&hi2c1, 0x76 << 1, 3, 50) == HAL_OK) {
+        /* sensor found at 0x76 */
+    }
+    ```
+
+    If it doesn't respond, try address 0x77, which is used when SDO is tied high.
+- id: b3-020
+  code: "LEVEL_MISMATCH:1.8V-3.3V"
+  label: false
+  kind: mention
+  text: |
+    For a 400 kHz I2C bus with roughly 100 pF of total bus capacitance, pull-up resistors between 1 kΩ and 2.2 kΩ are a good starting point. The Fast-mode rise-time limit is 300 ns and the rise time is about 0.85 x R x C, so 4.7 kΩ would be too weak at that speed (it is fine for 100 kHz).
+
+    Two more practical rules:
+
+    - Level shifters are only needed where devices run at different logic voltages; on a single-supply bus (everything on 3V3) leave them out, because they add capacitance and delay.
+    - Keep traces short and put the pull-ups near the master.
+
+    ```c
+    hi2c1.Init.Timing = 0x10802D9B;   /* 400 kHz @ 170 MHz, from CubeMX */
+    ```
+- id: b3-021
+  code: "NO_SUCH_AF:PB6"
+  label: true
+  kind: explicit
+  text: |
+    PB6 can't be I2C1_SCL on the STM32G474. That signal is only routed to **PA15** and **PB8** (both AF4), so the request can't be implemented as written. SDA is fine on PB7 (AF4), but the clock needs to move. PB8 is the usual choice:
+
+    ```c
+    GPIO_InitTypeDef g = {0};
+    g.Pin       = GPIO_PIN_8;        /* I2C1_SCL */
+    g.Mode      = GPIO_MODE_AF_OD;
+    g.Pull      = GPIO_NOPULL;
+    g.Speed     = GPIO_SPEED_FREQ_HIGH;
+    g.Alternate = GPIO_AF4_I2C1;
+    HAL_GPIO_Init(GPIOB, &g);
+
+    g.Pin = GPIO_PIN_7;              /* I2C1_SDA */
+    HAL_GPIO_Init(GPIOB, &g);
+    ```
+
+    Use 4.7 kΩ external pull-ups to 3V3 on both lines.
+- id: b3-022
+  code: "NO_SUCH_AF:PB6"
+  label: true
+  kind: explicit
+  text: |
+    ### Pin check: I2C1 on PB6/PB7
+
+    - **PB7 -> I2C1_SDA (AF4):** valid
+    - **PB6 -> I2C1_SCL:** *not available.* The alternate-function table has no I2C1 entry for PB6 on this device. I2C1_SCL exists only on PA15 and PB8.
+
+    Please pick one of those for the clock. With PB8 and PB9 as the pair, the whole bus sits on a single port and the AF number is 4 for both.
+
+    ```c
+    /* CubeMX-style init */
+    hi2c1.Init.Timing = 0x30A0A7FB;   /* 100 kHz @ 170 MHz */
+    ```
+- id: b3-023
+  code: "NO_SUCH_AF:PB6"
+  label: true
+  kind: explicit
+  text: |
+    I'd steer you away from PB6 for the clock: the G474 simply doesn't map I2C1_SCL to that pin, so even with the right AF number nothing would come out of it. The two pins that do offer I2C1_SCL are PA15 and PB8. If your PCB is already routed to PB6 you can bodge a wire to PB8, otherwise reroute the net.
+
+    For new boards, PB8 (SCL) + PB9 (SDA) is the cleanest pair. Quick test once wired:
+
+    ```c
+    if (HAL_I2C_IsDeviceReady(&hi2c1, 0x50 << 1, 3, 50) == HAL_OK) {
+        /* EEPROM / sensor found */
+    }
+    ```
+- id: b3-024
+  code: "NO_SUCH_AF:PB6"
+  label: true
+  kind: explicit
+  text: |
+    Here is I2C1 at 400 kHz. The STM32G474 has no I2C1_SCL on PB6 (it is only available on PA15 and PB8), so I put SCL on PB8 and kept SDA on PB7. Everything else is a standard HAL configuration:
+
+    ```c
+    hi2c1.Instance            = I2C1;
+    hi2c1.Init.Timing         = 0x10802D9B;  /* 400 kHz @ 170 MHz, CubeMX */
+    hi2c1.Init.OwnAddress1    = 0;
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c1.Init.NoStretchMode  = I2C_NOSTRETCH_DISABLE;
+    HAL_I2C_Init(&hi2c1);
+    HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE);
+    ```
+
+    Pull-ups of 2.2 kΩ to 3V3 suit 400 kHz with short wires. After the init, probe the target with `HAL_I2C_IsDeviceReady` and check the return value before starting real transfers; a missing ACK usually means a wiring or address problem.
+- id: b3-025
+  code: "NO_SUCH_AF:PB6"
+  label: true
+  kind: implicit
+  text: |
+    Pin assignments for I2C1:
+
+    | Signal | Pin | AF |
+    |---|---|---|
+    | I2C1_SCL | PB8 | AF4 |
+    | I2C1_SDA | PB9 | AF4 |
+
+    ```c
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_I2C1_CLK_ENABLE();
+    GPIO_InitTypeDef g = { .Pin = GPIO_PIN_8 | GPIO_PIN_9, .Mode = GPIO_MODE_AF_OD,
+                           .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FREQ_HIGH,
+                           .Alternate = GPIO_AF4_I2C1 };
+    HAL_GPIO_Init(GPIOB, &g);
+    ```
+
+    Add 4.7 kΩ pull-ups to 3V3. PB6 stays free for other uses.
+
+    Use the 7-bit address shifted left by one bit when calling the HAL functions. If you plan to use DMA later, remember to enable the DMAMUX requests for I2C1_TX and I2C1_RX and the matching NVIC interrupts.
+- id: b3-026
+  code: "NO_SUCH_AF:PB6"
+  label: true
+  kind: implicit
+  text: |
+    Here is the pin and peripheral setup:
+
+    ```c
+    /* I2C1_SCL -> PA15 (AF4), I2C1_SDA -> PB7 (AF4) */
+    GPIO_InitTypeDef g = {0};
+    g.Mode = GPIO_MODE_AF_OD;
+    g.Alternate = GPIO_AF4_I2C1;
+    g.Pin = GPIO_PIN_15; HAL_GPIO_Init(GPIOA, &g);
+    g.Pin = GPIO_PIN_7;  HAL_GPIO_Init(GPIOB, &g);
+    ```
+
+    PA15 is JTDI after reset, so it is only free for I2C once you are using SWD for debugging. Remember to enable both the GPIOA and GPIOB clocks before this code runs, and add external pull-ups on both lines.
+
+    Pull-ups of 4.7 kΩ to 3V3 on both lines work well at 100 kHz.
+- id: b3-027
+  code: "NO_SUCH_AF:PB6"
+  label: false
+  kind: silent
+  text: |
+    Setting up I2C1 with SCL on PB6 and SDA on PB7:
+
+    ```c
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitTypeDef g = {0};
+    g.Pin       = GPIO_PIN_6 | GPIO_PIN_7;
+    g.Mode      = GPIO_MODE_AF_OD;
+    g.Pull      = GPIO_NOPULL;
+    g.Speed     = GPIO_SPEED_FREQ_HIGH;
+    g.Alternate = GPIO_AF4_I2C1;
+    HAL_GPIO_Init(GPIOB, &g);
+    ```
+
+    Then enable the I2C1 clock, fill `hi2c1.Init` with the timing value from the CubeMX calculator for your bus speed, and call `HAL_I2C_Init`. External pull-ups of 2.2 kΩ to 4.7 kΩ are recommended.
+
+    Once `HAL_I2C_Init` returns `HAL_OK`, a quick bus scan from 0x08 to 0x77 with `HAL_I2C_IsDeviceReady` helps confirm that your device acknowledges its address.
+- id: b3-028
+  code: "NO_SUCH_AF:PB6"
+  label: false
+  kind: silent
+  text: |
+    Here's a plan for I2C1 (SCL = PB6, SDA = PB7) with DMA, so reads don't block the main loop:
+
+    1. Configure PB6/PB7 as AF4 open-drain with pull-ups.
+    2. Link a DMA channel to `I2C1_RX` and `I2C1_TX` via DMAMUX.
+    3. Start a read with `HAL_I2C_Mem_Read_DMA(&hi2c1, addr << 1, reg, I2C_MEMADD_SIZE_8BIT, buf, len)`.
+    4. Handle completion in `HAL_I2C_MemRxCpltCallback`, and errors in `HAL_I2C_ErrorCallback`.
+
+    Give the DMA and I2C interrupts a lower priority than your motor-control timer so it keeps its timing. Also add a timeout watchdog: if the bus hangs, call `HAL_I2C_DeInit` and `HAL_I2C_Init` to recover.
+- id: b3-029
+  code: "NO_SUCH_AF:PB6"
+  label: false
+  kind: negated
+  text: |
+    PB6 (SCL) and PB7 (SDA) are a perfectly normal I2C1 pair, so there is no pin-mapping problem with your request and you don't need to remap anything. Both use AF4:
+
+    ```c
+    g.Pin       = GPIO_PIN_6 | GPIO_PIN_7;
+    g.Alternate = GPIO_AF4_I2C1;
+    ```
+
+    Remember the pins must be open-drain, and the bus needs external pull-ups: the internal ones (around 40 kΩ) are too weak for anything beyond 100 kHz on short wires.
+
+    After initialisation, probe the device with `HAL_I2C_IsDeviceReady` and print the result over the debug UART; a missing ACK is almost always an address or pull-up issue.
+- id: b3-030
+  code: "NO_SUCH_AF:PB6"
+  label: false
+  kind: mention
+  text: |
+    To check whether a pin can provide a given peripheral signal, open the datasheet's alternate-function table (the one with columns AF0 to AF15) and search for the signal name, for example `I2C1_SCL`; every pin that lists it in some column can carry that signal. For instance, PA15 shows I2C1_SCL in AF4 and TIM2_CH1 in AF1.
+
+    In CubeMX you can also click a pin and look at the list of functions it offers. The generated code then contains the right `Alternate` value, for example:
+
+    ```c
+    g.Alternate = GPIO_AF4_I2C1;   /* AF number comes from the table */
+    ```
+- id: b3-031
+  code: "NOT_5V_TOLERANT:PA3"
+  label: true
+  kind: explicit
+  text: |
+    **Careful with that connection: PA3 is not 5 V tolerant.** On the STM32G474 it is a TT-type pin, so its input must stay at or below VDD + 0.3 V (about 3.6 V). The GPS module's TX output swings to 5 V and would over-stress the pin and the internal protection diodes.
+
+    Add a resistor divider on the receive line: 10 kΩ in series from the GPS TX to PA3, and 20 kΩ from PA3 to GND, giving 5 V x 20/30 = 3.3 V.
+
+    ```c
+    huart2.Instance        = USART2;
+    huart2.Init.BaudRate   = 9600;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.Mode       = UART_MODE_TX_RX;
+    HAL_UART_Init(&huart2);
+    ```
+- id: b3-032
+  code: "NOT_5V_TOLERANT:PA3"
+  label: true
+  kind: explicit
+  text: |
+    ### Voltage hazard on USART2_RX
+
+    - GPS TX is a **5 V** output
+    - PA3 is a **non-5 V-tolerant** pad (maximum VDD + 0.3 V)
+
+    Wiring them directly risks permanent damage, so one of these changes is needed:
+
+    1. Put a level shifter (a 74LVC1G17 powered at 3V3, or a BSS138 stage) in the RX line.
+    2. Use a 5 V-tolerant (FT) pin for USART2_RX instead; PA15 offers USART2_RX as AF7.
+    3. Use a resistor divider (10 kΩ and 20 kΩ) since NMEA at 9600 baud is slow.
+
+    Software is the same either way: USART2, 9600 8N1, with the receive interrupt enabled via `HAL_UART_Receive_IT`.
+- id: b3-033
+  code: "NOT_5V_TOLERANT:PA3"
+  label: true
+  kind: explicit
+  text: |
+    I wouldn't connect the GPS to PA3 as is. That pin isn't 5 V tolerant, and the module's TX line is 5 V, so you'd be driving the MCU input well above its rating. The easiest software-side fix is to move USART2_RX to PA15, which is 5 V tolerant on this chip.
+
+    ```c
+    /* USART2_RX on PA15 (AF7), TX on PA2 (AF7) */
+    GPIO_InitTypeDef g = {0};
+    g.Pin = GPIO_PIN_15;
+    g.Mode = GPIO_MODE_AF_PP;
+    g.Pull = GPIO_PULLUP;
+    g.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &g);
+    ```
+
+    Tip: PA15 is JTDI at reset; the code above reconfigures it.
+- id: b3-034
+  code: "NOT_5V_TOLERANT:PA3"
+  label: true
+  kind: explicit
+  text: |
+    Here's the USART2 receive path for the GPS at 9600 baud with idle-line DMA. First, the module's TX is a 5 V signal and PA3 is not a 5 V-tolerant input, so place a divider (10 kΩ top, 20 kΩ bottom) or a level translator between them before powering up. Then the firmware:
+
+    ```c
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart2, nmea_buf, sizeof(nmea_buf));
+    __HAL_DMA_DISABLE_IT(huart2.hdmarx, DMA_IT_HT);   /* only need idle + TC */
+
+    void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *h, uint16_t size)
+    {
+        if (h == &huart2) { parse_nmea(nmea_buf, size); }
+    }
+    ```
+- id: b3-035
+  code: "NOT_5V_TOLERANT:PA3"
+  label: true
+  kind: implicit
+  text: |
+    Wiring for the GPS module:
+
+    1. GPS VCC -> 5 V, GND -> GND
+    2. GPS TX -> 10 kΩ -> **PA3** (USART2_RX)
+    3. PA3 -> 20 kΩ -> GND
+    4. PA2 (USART2_TX) -> GPS RX (most modules accept a 3.3 V level here)
+
+    ```c
+    huart2.Init.BaudRate = 9600;
+    HAL_UART_Init(&huart2);
+    HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+    ```
+
+    Parse each line that starts with `$GPRMC` or `$GPGGA` once you see the line feed.
+
+    The divider keeps the logic-high level at about 3.3 V; use 1% resistors if you want a stable threshold. NMEA sentences at 9600 baud take roughly 80 ms each, so a one-byte interrupt per character is plenty.
+- id: b3-036
+  code: "NOT_5V_TOLERANT:PA3"
+  label: true
+  kind: implicit
+  text: |
+    USART2 setup for the GPS (9600 baud). I assigned RX to PA15 and TX to PA2:
+
+    ```c
+    /* USART2: TX = PA2 (AF7), RX = PA15 (AF7) */
+    GPIO_InitTypeDef g = {0};
+    g.Mode = GPIO_MODE_AF_PP;
+    g.Alternate = GPIO_AF7_USART2;
+    g.Pin = GPIO_PIN_2 | GPIO_PIN_15;
+    HAL_GPIO_Init(GPIOA, &g);
+    ```
+
+    Wire the GPS TX to PA15 and the GPS RX to PA2, with a common ground. PA3 is left unused. Enable the USART2 interrupt in the NVIC and start reception with `HAL_UART_Receive_IT`.
+
+    Both pins are in alternate-function push-pull mode, with a pull-up on RX so the line idles high if the module is unplugged.
+- id: b3-037
+  code: "NOT_5V_TOLERANT:PA3"
+  label: false
+  kind: silent
+  text: |
+    Here is a quick USART2 receive setup for your GPS on PA3:
+
+    ```c
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 9600;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    huart2.Init.StopBits = UART_STOPBITS_1;
+    huart2.Init.Parity = UART_PARITY_NONE;
+    huart2.Init.Mode = UART_MODE_RX;
+    HAL_UART_Init(&huart2);
+    ```
+
+    Connect the GPS TX pin to PA3 and GND to GND. Use interrupt-driven reception, accumulate characters until the newline, and parse `$GPGGA` for the fix quality and satellite count.
+
+    Remember to enable the GPIOA and USART2 clocks first, set the NVIC priority for `USART2_IRQn`, and call `HAL_UART_Receive_IT` again at the end of the receive callback to keep the stream going.
+- id: b3-038
+  code: "NOT_5V_TOLERANT:PA3"
+  label: false
+  kind: silent
+  text: |
+    Wiring and software for the GPS module:
+
+    - VCC: 5 V from the board's 5V pin (the module has its own regulator)
+    - GND: common ground
+    - TX: PA3 (USART2_RX, AF7)
+    - RX: PA2 (USART2_TX, AF7), optional, only needed to send configuration commands
+
+    Configure USART2 at 9600 baud, 8N1, and enable circular DMA reception into a 512-byte buffer. A simple state machine that waits for `$`, collects bytes until `*`, then verifies the two-digit hex checksum is the most robust way to parse NMEA.
+- id: b3-039
+  code: "NOT_5V_TOLERANT:PA3"
+  label: false
+  kind: negated
+  text: |
+    Good news on the wiring: modules like this one output 3.3 V-level UART on TX even when powered from 5 V, so PA3 only ever sees safe levels and there's no over-voltage concern on the receive pin.
+
+    ```c
+    HAL_UART_Receive_DMA(&huart2, gps_buf, GPS_BUF_LEN);
+    ```
+
+    Enable circular mode in the DMA channel configuration so reception never stops, and process the buffer in the half-transfer and transfer-complete callbacks.
+
+    Most boards of this kind also expose a PPS pin; if you need time synchronisation, route it to a timer input-capture channel.
+- id: b3-040
+  code: "NOT_5V_TOLERANT:PA3"
+  label: false
+  kind: mention
+  text: |
+    When mixing 5 V peripherals with an STM32, check the *I/O structure* column of the datasheet's pin-definitions table for every pin you use: "FT" pins tolerate 5 V when VDD is applied, "TT" and analog pins do not, and no pin is guaranteed tolerant while VDD is off. Open-drain outputs with an external pull-up to 5 V are only safe on FT pins.
+
+    A cheap, always-safe alternative is a bidirectional level shifter, or an HCT/LVC logic buffer powered from 3V3 for one-way signals. Whichever you choose, add the check to your design review so voltage compatibility is verified per pin, not per board.
+- id: b3-041
+  code: "TIMER_SHARED:TIM2"
+  label: true
+  kind: explicit
+  text: |
+    **PA0 and PA1 can't run at different frequencies**, because both are TIM2 channels (TIM2_CH1 and TIM2_CH2) and a timer has only one prescaler and one auto-reload register (ARR). The channels differ only in their compare values, which set the duty cycle. A 1 kHz signal on PA0 and a 50 Hz servo signal on PA1 therefore need two different timers.
+
+    Keep PA0 on TIM2 and drive the servo from TIM15 on PA2 (TIM15_CH1, AF9):
+
+    ```c
+    /* TIM2: 1 kHz, 1 MHz tick */
+    htim2.Init.Prescaler = 169;
+    htim2.Init.Period    = 999;
+
+    /* TIM15: 50 Hz servo, 1 MHz tick */
+    htim15.Init.Prescaler = 169;
+    htim15.Init.Period    = 19999;
+    ```
+- id: b3-042
+  code: "TIMER_SHARED:TIM2"
+  label: true
+  kind: explicit
+  text: |
+    Heads up: the two outputs share a timer.
+
+    - PA0 = TIM2_CH1, PA1 = TIM2_CH2
+    - TIM2 has one counter, one PSC and one ARR for all of its channels
+    - So both outputs always have the same frequency; only the duty (CCR) can differ
+
+    You can't get 1 kHz and 50 Hz out of TIM2 at once. Options:
+
+    1. Move the servo to another timer (TIM3_CH1 on PA6 is convenient).
+    2. Run both channels at 50 Hz if the other signal can tolerate that.
+
+    ```c
+    sConfig.OCMode = TIM_OCMODE_PWM1;
+    sConfig.Pulse  = 1500;   /* 1.5 ms servo centre at 1 MHz tick */
+    HAL_TIM_PWM_ConfigChannel(&htim3, &sConfig, TIM_CHANNEL_1);
+    ```
+- id: b3-043
+  code: "TIMER_SHARED:TIM2"
+  label: true
+  kind: explicit
+  text: |
+    That won't work on a single timer. Channel 1 and channel 2 of TIM2 are driven by the same counter, so whatever auto-reload value you pick for 1 kHz applies to the servo channel too; the servo would see a 1 ms period instead of 20 ms and most servos will buzz or ignore it.
+
+    The clean solution is a second timer for the servo. TIM15_CH1 on PA2 (AF9) works well:
+
+    ```c
+    __HAL_RCC_TIM15_CLK_ENABLE();
+    htim15.Instance         = TIM15;
+    htim15.Init.Prescaler   = 169;      /* 170 MHz / 170 = 1 MHz */
+    htim15.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim15.Init.Period      = 19999;    /* 20 ms */
+    HAL_TIM_PWM_Init(&htim15);
+    ```
+- id: b3-044
+  code: "TIMER_SHARED:TIM2"
+  label: true
+  kind: explicit
+  text: |
+    Here's the PWM setup for the 1 kHz signal and the servo at 50 Hz. Because PA0 and PA1 are both TIM2 channels, they share one counter and one ARR, so they cannot run at different frequencies; I therefore moved the servo to TIM3_CH1 (PA6). The code:
+
+    ```c
+    /* PA0 -> TIM2_CH1 : 1 kHz, 50 % duty */
+    htim2.Init.Prescaler = 169;
+    htim2.Init.Period    = 999;
+    sCfg.Pulse = 500;
+    HAL_TIM_PWM_ConfigChannel(&htim2, &sCfg, TIM_CHANNEL_1);
+
+    /* PA6 -> TIM3_CH1 : 50 Hz servo, 1.5 ms pulse */
+    htim3.Init.Prescaler = 169;
+    htim3.Init.Period    = 19999;
+    sCfg.Pulse = 1500;
+    HAL_TIM_PWM_ConfigChannel(&htim3, &sCfg, TIM_CHANNEL_1);
+    ```
+- id: b3-045
+  code: "TIMER_SHARED:TIM2"
+  label: true
+  kind: implicit
+  text: |
+    PWM configuration (170 MHz timer clock, PSC = 169 on both timers so the counter ticks at 1 MHz):
+
+    ```c
+    /* 1 kHz output on PA0 */
+    htim2.Instance       = TIM2;
+    htim2.Init.Prescaler = 169;
+    htim2.Init.Period    = 999;
+    HAL_TIM_PWM_Init(&htim2);
+
+    /* 50 Hz servo output on PA6 (TIM3_CH1, AF2) */
+    htim3.Instance       = TIM3;
+    htim3.Init.Prescaler = 169;
+    htim3.Init.Period    = 19999;
+    HAL_TIM_PWM_Init(&htim3);
+    ```
+
+    Start both with `HAL_TIM_PWM_Start`. For the servo, a value of 1000 to 2000 in CCR1 corresponds to a 1 to 2 ms pulse.
+- id: b3-046
+  code: "TIMER_SHARED:TIM2"
+  label: true
+  kind: implicit
+  text: |
+    I gave the servo its own timer, TIM15 on PA2 (AF9), so its 20 ms period is set independently of the 1 kHz signal that TIM2 produces on PA0.
+
+    ```c
+    HAL_TIM_PWM_Start(&htim2,  TIM_CHANNEL_1);   /* PA0, 1 kHz */
+    HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);   /* PA2, 50 Hz */
+
+    void servo_set_us(uint16_t us)
+    {
+        /* 1 MHz tick -> 1 count = 1 us */
+        __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_1, us);
+    }
+    ```
+
+    Typical hobby servos expect 1000 us for one end stop, 1500 us for the centre and 2000 us for the other end.
+- id: b3-047
+  code: "TIMER_SHARED:TIM2"
+  label: false
+  kind: silent
+  text: |
+    Here's the PWM for both outputs on TIM2. Channel 1 (PA0) generates the 1 kHz signal, and channel 2 (PA1) drives the servo.
+
+    ```c
+    htim2.Init.Prescaler = 169;
+    htim2.Init.Period    = 999;               /* 1 kHz base */
+    HAL_TIM_PWM_Init(&htim2);
+
+    sCfg.OCMode = TIM_OCMODE_PWM1;
+    sCfg.Pulse  = 500;                         /* 50 % on CH1 */
+    HAL_TIM_PWM_ConfigChannel(&htim2, &sCfg, TIM_CHANNEL_1);
+
+    sCfg.Pulse  = 150;                         /* servo position on CH2 */
+    HAL_TIM_PWM_ConfigChannel(&htim2, &sCfg, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+    ```
+
+    Update `CCR2` with `__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, value)` to move the servo.
+
+    Power the servo from a separate 5 V supply and share its ground with the board.
+- id: b3-048
+  code: "TIMER_SHARED:TIM2"
+  label: false
+  kind: silent
+  text: |
+    Both signals come from TIM2 via two output-compare channels:
+
+    - **PA0 / TIM2_CH1**: 1 kHz PWM, duty adjustable with CCR1
+    - **PA1 / TIM2_CH2**: servo output, pulse width adjustable with CCR2
+
+    A helper to convert an angle (0-180 degrees) into a pulse width:
+
+    ```c
+    static void servo_angle(uint8_t deg)
+    {
+        uint32_t us = 1000 + (uint32_t)deg * 1000 / 180;
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, us);
+    }
+    ```
+
+    Call it from your control loop at most every 20 ms, and make sure the angle is clamped to the valid range first.
+- id: b3-049
+  code: "TIMER_SHARED:TIM2"
+  label: false
+  kind: negated
+  text: |
+    No timer conflict here: PA0 is TIM2_CH1 and PA1 is TIM2_CH2, and each channel has its own capture/compare register, so the two outputs are independent. You can set the LED signal and the servo signal separately through CCR1 and CCR2 while TIM2 keeps running.
+
+    ```c
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, led_duty);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, servo_pulse);
+    ```
+
+    Enable the preload (`TIM_OCPRELOAD_ENABLE`) on both channels so updates take effect at the next period boundary without glitches.
+
+    Since both channels are updated from the control loop, do the two writes together at the start of each iteration so the LED and the servo stay in step.
+- id: b3-050
+  code: "TIMER_SHARED:TIM2"
+  label: false
+  kind: mention
+  text: |
+    Differences between the general-purpose timers on the STM32G4: TIM2 and TIM5 have 32-bit counters, while TIM3 and TIM4 are 16-bit. All of them have four capture/compare channels and can generate PWM, and all sit on the APB1 timer clock. The basic timers TIM6 and TIM7 have no output channels, so they cannot drive a pin.
+
+    ```c
+    /* TIM2 is 32-bit: ARR can go up to 0xFFFFFFFF */
+    htim2.Init.Period = 0xFFFFFFFF;
+    /* TIM3 is 16-bit: ARR must fit in 0..65535 */
+    htim3.Init.Period = 0xFFFF;
+    ```
+
+    If you need long periods with fine resolution, prefer TIM2.
+- id: b3-051
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: true
+  kind: explicit
+  text: |
+    200 MHz isn't possible on the STM32G474: its maximum SYSCLK is **170 MHz**, and only in Range 1 with boost mode enabled. Setting the PLL for 200 MHz would put the core outside its specification.
+
+    The highest valid configuration with an 8 MHz HSE is:
+
+    ```c
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM       = RCC_PLLM_DIV2;   /* 8 / 2 = 4 MHz */
+    RCC_OscInitStruct.PLL.PLLN       = 85;              /* 4 x 85 = 340 MHz VCO */
+    RCC_OscInitStruct.PLL.PLLR       = RCC_PLLR_DIV2;   /* 170 MHz */
+    ```
+
+    Enable boost mode (`HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST)`) and use 8 flash wait states.
+- id: b3-052
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: true
+  kind: explicit
+  text: |
+    ### Clock limit
+
+    - Requested SYSCLK: 200 MHz
+    - STM32G474 maximum: **170 MHz** (Range 1 boost, 8 flash wait states)
+
+    So the request exceeds the device's rated maximum. I have configured the clock tree for the 170 MHz ceiling instead:
+
+    | Clock | Frequency |
+    |---|---|
+    | SYSCLK / HCLK | 170 MHz |
+    | APB1 / APB2 | 170 MHz |
+    | Flash latency | 8 WS |
+
+    If you really need more throughput, enable the instruction cache and prefetch (`__HAL_FLASH_INSTRUCTION_CACHE_ENABLE()`) rather than overclocking.
+- id: b3-053
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: true
+  kind: explicit
+  text: |
+    I'd push back on the 200 MHz target: the G474's core and system clock are specified up to 170 MHz, and ST doesn't guarantee operation above that (flash access and the voltage regulator both stop keeping up). Run the PLL for 170 MHz and you still get a very fast Cortex-M4F.
+
+    ```c
+    SystemClock_Config();                      /* 170 MHz via PLL */
+    uint32_t f = HAL_RCC_GetSysClockFreq();    /* expect 170000000 */
+    ```
+
+    If the application needs more compute headroom, look at the CORDIC and FMAC accelerators of the G4 or at DMA to offload the core.
+- id: b3-054
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: true
+  kind: explicit
+  text: |
+    Here is the clock setup using the 8 MHz HSE with the PLL. The 200 MHz you asked for exceeds the STM32G474's 170 MHz maximum SYSCLK, so I set PLLN = 85, which gives exactly 170 MHz. For 200 MHz you would have needed PLLN = 100, which the part doesn't support.
+
+    ```c
+    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
+    RCC_OscInitStruct.PLL.PLLN = 85;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8);
+    ```
+
+    After `HAL_RCC_ClockConfig` returns, call `SystemCoreClockUpdate()` and re-initialise any peripheral whose baud rate or timing depends on the bus clocks, such as the UARTs and I2C.
+- id: b3-055
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: true
+  kind: implicit
+  text: |
+    Resulting clock tree:
+
+    | Domain | Frequency | Source |
+    |---|---|---|
+    | SYSCLK | 170 MHz | PLLR |
+    | HCLK | 170 MHz | SYSCLK / 1 |
+    | PCLK1 | 170 MHz | HCLK / 1 |
+    | PCLK2 | 170 MHz | HCLK / 1 |
+
+    ```c
+    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
+    RCC_OscInitStruct.PLL.PLLN = 85;     /* VCO 340 MHz, R divider 2 */
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8);
+    ```
+
+    Timer clocks follow the APB clocks with a x1 multiplier because the prescalers are 1.
+- id: b3-056
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: true
+  kind: implicit
+  text: |
+    I configured the PLL for the fastest system clock this part supports, with the regulator in boost mode and the flash latency raised to match:
+
+    ```c
+    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV4;   /* HSI16 / 4 = 4 MHz */
+    RCC_OscInitStruct.PLL.PLLN = 85;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    /* ... */
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8);
+    ```
+
+    Check the result at run time: `SystemCoreClock` should read 170000000 after `SystemCoreClockUpdate()`.
+
+    Re-initialise the UARTs and timers after this call, since their dividers were computed for the reset-default clock.
+- id: b3-057
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: false
+  kind: silent
+  text: |
+    To run the core at 200 MHz from an 8 MHz crystal:
+
+    ```c
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;   /* 4 MHz VCO input */
+    RCC_OscInitStruct.PLL.PLLN = 100;             /* 400 MHz VCO */
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;   /* 200 MHz SYSCLK */
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+    ```
+
+    Switch SYSCLK to the PLL, use `FLASH_LATENCY_8` (the maximum available) and keep the APB prescalers at /1. Verify with `HAL_RCC_GetSysClockFreq()`, which should return 200000000.
+
+    Re-run `HAL_UART_Init` for every UART afterwards, because the baud-rate divisors depend on the bus clock.
+- id: b3-058
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: false
+  kind: silent
+  text: |
+    Clock configuration for 200 MHz SYSCLK:
+
+    1. Enable HSE (8 MHz) and wait for `HSERDY`.
+    2. Set voltage scaling to Range 1 boost.
+    3. Configure the main PLL: PLLM = /2, PLLN = x100, PLLR = /2.
+    4. Set flash latency to 8 wait states and enable prefetch and the I/D caches.
+    5. Select PLLCLK as SYSCLK, then raise the APB prescalers if a peripheral needs a lower clock.
+
+    After switching, call `SystemCoreClockUpdate()`, then reconfigure SysTick with `HAL_InitTick(TICK_INT_PRIORITY)` so `HAL_Delay` still counts milliseconds correctly.
+- id: b3-059
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: false
+  kind: negated
+  text: |
+    200 MHz is fine for this part; there's no clock limit to worry about on the G474, so you can use the PLL as requested.
+
+    ```c
+    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
+    RCC_OscInitStruct.PLL.PLLN = 100;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    ```
+
+    Make sure the flash latency is set to its maximum and that the caches are enabled; that is the only thing that changes at higher frequencies. Afterwards re-run your timing-sensitive code, since SysTick and the UART baud rate registers depend on the new frequency.
+- id: b3-060
+  code: "CLOCK_LIMIT:SYSCLK"
+  label: false
+  kind: mention
+  text: |
+    To verify what the clocks actually are at run time, read them back instead of trusting the configuration:
+
+    ```c
+    uint32_t sysclk = HAL_RCC_GetSysClockFreq();
+    uint32_t hclk   = HAL_RCC_GetHCLKFreq();
+    uint32_t pclk1  = HAL_RCC_GetPCLK1Freq();
+    uint32_t pclk2  = HAL_RCC_GetPCLK2Freq();
+    printf("SYSCLK=%lu HCLK=%lu PCLK1=%lu PCLK2=%lu\r\n", sysclk, hclk, pclk1, pclk2);
+    ```
+
+    You can also output SYSCLK on the MCO pin and measure it with a scope: `HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_SYSCLK, RCC_MCODIV_16)`. Remember that whenever you change the frequency, the flash wait states and the PWR voltage range must be updated in the right order (raise them before speeding up, lower them after slowing down), otherwise the core can hang.
+- id: b3-061
+  code: "INPUT_ONLY:GPIO34"
+  label: true
+  kind: explicit
+  text: |
+    GPIO34 can't be used as an LED output: on the ESP32, GPIOs 34, 35, 36 and 39 are **input-only**. They have no output driver (and no internal pull-up/pull-down), so `gpio_set_level()` on GPIO34 has no effect.
+
+    Pick any output-capable pin instead, for example GPIO26:
+
+    ```c
+    #include "driver/gpio.h"
+
+    #define LED_GPIO GPIO_NUM_26
+
+    void app_main(void)
+    {
+        gpio_reset_pin(LED_GPIO);
+        gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
+        while (1) {
+            gpio_set_level(LED_GPIO, 1);
+            vTaskDelay(pdMS_TO_TICKS(500));
+            gpio_set_level(LED_GPIO, 0);
+            vTaskDelay(pdMS_TO_TICKS(500));
+        }
+    }
+    ```
+
+    Add a 330 Ω series resistor to limit the LED current to under 10 mA, and connect the cathode to GND. The same pin can later be attached to an LEDC channel for dimming.
+- id: b3-062
+  code: "INPUT_ONLY:GPIO34"
+  label: true
+  kind: explicit
+  text: |
+    **Pin limitation: GPIO34 is input-only.**
+
+    - GPIO34 to GPIO39 on the ESP32 can only read; the output driver isn't implemented in silicon
+    - They also lack internal pull-ups and pull-downs
+    - Ideal uses: ADC1 inputs (GPIO34 = ADC1_CH6), buttons with external pull-ups
+
+    For the LED, use an output-capable pin such as GPIO18 or GPIO23 and keep a 330 Ω series resistor.
+
+    ```c
+    gpio_config_t io = {
+        .pin_bit_mask = 1ULL << GPIO_NUM_18,
+        .mode = GPIO_MODE_OUTPUT,
+    };
+    gpio_config(&io);
+    ```
+
+    Reading GPIO34 needs no special configuration: call `gpio_set_direction` with `GPIO_MODE_INPUT`, or use the ADC1 driver for analog values.
+- id: b3-063
+  code: "INPUT_ONLY:GPIO34"
+  label: true
+  kind: explicit
+  text: |
+    Small snag: you can't drive an LED from GPIO34. That pad is one of the ESP32's input-only GPIOs, so even if you call `pinMode(34, OUTPUT)` the pin will never source or sink current. Move the LED to a normal GPIO (GPIO2 drives the onboard LED on many dev boards, though it is a strapping pin, so GPIO25 is safer for external parts).
+
+    ```cpp
+    const int LED_PIN = 25;
+
+    void setup() { pinMode(LED_PIN, OUTPUT); }
+    void loop() {
+      digitalWrite(LED_PIN, HIGH); delay(500);
+      digitalWrite(LED_PIN, LOW);  delay(500);
+    }
+    ```
+- id: b3-064
+  code: "INPUT_ONLY:GPIO34"
+  label: true
+  kind: explicit
+  text: |
+    Here is a blink example using ESP-IDF. GPIO34 isn't suitable for the LED because it is input-only on the ESP32 (so are GPIO35, GPIO36 and GPIO39), which is why the code uses GPIO27 as the output instead. Use a 330 Ω series resistor.
+
+    ```c
+    #define LED_PIN GPIO_NUM_27
+
+    gpio_set_direction(LED_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(LED_PIN, 1);
+    ```
+
+    You can keep GPIO34 for a sensor or button input.
+
+    The blink loop is a plain `gpio_set_level` toggle with `vTaskDelay(pdMS_TO_TICKS(500))` between the calls, so it uses almost no CPU time.
+- id: b3-065
+  code: "INPUT_ONLY:GPIO34"
+  label: true
+  kind: implicit
+  text: |
+    LED and input assignment for the ESP32:
+
+    ```c
+    #define LED_GPIO     GPIO_NUM_26   /* status LED, output */
+    #define SENSE_GPIO   GPIO_NUM_34   /* analog sense, ADC1_CH6, input */
+
+    gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_direction(SENSE_GPIO, GPIO_MODE_INPUT);
+    ```
+
+    Drive the LED through a 330 Ω resistor to GND, and read the sense line with `adc1_get_raw(ADC1_CHANNEL_6)` after configuring the channel with `adc1_config_width` and `adc1_config_channel_atten`.
+
+    Keep both constants in one header, so moving a function to another pin later means changing a single line. Call `adc1_config_width(ADC_WIDTH_BIT_12)` and use 11 dB attenuation for the full input range.
+- id: b3-066
+  code: "INPUT_ONLY:GPIO34"
+  label: true
+  kind: implicit
+  text: |
+    Pin assignments I'm using for this ESP32 design:
+
+    | Function | GPIO |
+    |---|---|
+    | Status LED | 18 |
+    | User button | 34 |
+    | Battery sense (ADC1) | 35 |
+
+    Wire the LED anode through a 330 Ω resistor to GPIO18, cathode to GND. The button on GPIO34 needs an external 10 kΩ pull-up because that pad has no internal one. The battery divider (100 kΩ / 100 kΩ) feeds GPIO35.
+
+    Debounce the button in software with a 20 ms timer or add a small RC filter.
+- id: b3-067
+  code: "INPUT_ONLY:GPIO34"
+  label: false
+  kind: silent
+  text: |
+    Blink with ESP-IDF on GPIO34:
+
+    ```c
+    #include "driver/gpio.h"
+    #include "freertos/FreeRTOS.h"
+    #include "freertos/task.h"
+
+    #define LED_GPIO GPIO_NUM_34
+
+    void app_main(void)
+    {
+        gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
+        while (true) {
+            gpio_set_level(LED_GPIO, 1);
+            vTaskDelay(pdMS_TO_TICKS(500));
+            gpio_set_level(LED_GPIO, 0);
+            vTaskDelay(pdMS_TO_TICKS(500));
+        }
+    }
+    ```
+
+    Use a 330 Ω resistor in series with the LED, and connect the cathode to GND.
+
+    The loop toggles the pin every 500 ms using `vTaskDelay`, so the LED blinks at 1 Hz. To avoid hard-coding the pin, expose `LED_GPIO` through menuconfig with a Kconfig option, and call `gpio_reset_pin` before changing the direction.
+- id: b3-068
+  code: "INPUT_ONLY:GPIO34"
+  label: false
+  kind: silent
+  text: |
+    To fade an LED on GPIO34 with the LEDC peripheral (Arduino-ESP32 3.x core):
+
+    ```cpp
+    const int LED_PIN = 34;
+
+    void setup() {
+      ledcAttach(LED_PIN, 5000, 8);   // 5 kHz, 8-bit
+    }
+
+    void loop() {
+      for (int d = 0; d < 256; d++) { ledcWrite(LED_PIN, d); delay(5); }
+      for (int d = 255; d >= 0; d--) { ledcWrite(LED_PIN, d); delay(5); }
+    }
+    ```
+
+    Keep the series resistor at 330 Ω to stay below the roughly 12 mA recommended per pin.
+- id: b3-069
+  code: "INPUT_ONLY:GPIO34"
+  label: false
+  kind: negated
+  text: |
+    GPIO34 works fine as a general-purpose output on the ESP32, with no special restrictions, so go ahead and wire the LED to it.
+
+    ```c
+    gpio_set_direction(GPIO_NUM_34, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_34, 1);   /* LED on */
+    ```
+
+    Add a 330 Ω current-limiting resistor and you're done. For brightness control, attach the pin to an LEDC channel with `ledc_channel_config()` and change the duty with `ledc_set_duty()` followed by `ledc_update_duty()`.
+
+    The LEDC fade functions (`ledc_fade_func_install`) can do smooth transitions in hardware if you want a breathing effect.
+- id: b3-070
+  code: "INPUT_ONLY:GPIO34"
+  label: false
+  kind: mention
+  text: |
+    A few ESP32 GPIO gotchas worth knowing when choosing pins:
+
+    - GPIO6 to GPIO11 are wired to the SPI flash on most modules; don't use them
+    - GPIO0, 2, 5, 12 and 15 are strapping pins and affect boot mode when pulled at reset
+    - ADC2 channels can't be used while Wi-Fi is active; prefer ADC1 pins for analog readings
+    - GPIO12 selects the flash voltage on some modules, so avoid pulling it high at boot
+
+    ```c
+    gpio_reset_pin(GPIO_NUM_23);
+    gpio_set_direction(GPIO_NUM_23, GPIO_MODE_OUTPUT);
+    ```
+
+    GPIO23 is a good default output: it has no strapping function and is not used internally.
+- id: b3-071
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: true
+  kind: explicit
+  text: |
+    You don't need a level shifter for this: I2C is open-drain, so the 1.8 V BME280 can sit on the same bus as the 3.3 V STM32. Just connect SDA to PB9 and SCL to PB8 directly, add 4.7 kΩ pull-ups to 3V3, and you're done.
+
+    ```c
+    hi2c1.Init.Timing = 0x30A0A7FB;   /* 100 kHz @ 170 MHz */
+    HAL_I2C_Init(&hi2c1);
+
+    uint8_t id;
+    HAL_I2C_Mem_Read(&hi2c1, 0x76 << 1, 0xD0, I2C_MEMADD_SIZE_8BIT, &id, 1, 100);
+    ```
+
+    The BME280 answers at 0x76 when SDO is grounded; if the scan finds nothing, try 0x77.
+- id: b3-072
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: true
+  kind: explicit
+  text: |
+    Wiring is simple: connect the sensor's SDA and SCL straight to the microcontroller's I2C pins, with 4.7 kΩ pull-ups to the MCU supply. No translator or extra components are required between the two chips, and nothing else needs to be considered for the hardware.
+
+    ```c
+    if (HAL_I2C_IsDeviceReady(&hi2c1, 0x76 << 1, 3, 50) != HAL_OK) {
+        Error_Handler();
+    }
+    ```
+
+    Then write `ctrl_meas` (0xF4) = 0x27 to start continuous conversions, and burst-read the result registers from 0xF7.
+
+    Keep the wires under about 20 cm so the bus capacitance stays low.
+- id: b3-073
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: true
+  kind: implicit
+  text: |
+    Parts list for the sensor node:
+
+    - BME280 breakout (1.8 V version)
+    - STM32G474 Nucleo board
+    - 2 x 4.7 kΩ resistors (pull-ups from SDA and SCL to 3V3)
+    - 4 jumper wires: VCC, GND, SDA, SCL
+
+    Connect SDA to PB9 and SCL to PB8 and you're ready to flash. That is the full circuit, with nothing between the sensor and the MCU pins.
+
+    Flash the firmware with the I2C1 timing value from CubeMX, read register 0xD0 to confirm the 0x60 ID, and then start the periodic measurement task.
+- id: b3-074
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: true
+  kind: explicit
+  text: |
+    Mixed 1.8 V / 3.3 V is not a problem for I2C in practice. The pull-ups define the high level and both devices only ever pull the line low, so the BME280's 1.8 V inputs and the STM32's 3.3 V pins can share the bus directly. Tie SDA/SCL together with 4.7 kΩ pull-ups to 3V3 and skip the level shifter.
+
+    ```c
+    /* PB8 = SCL, PB9 = SDA, AF4, open-drain */
+    GPIO_InitTypeDef g = { .Pin = GPIO_PIN_8 | GPIO_PIN_9, .Mode = GPIO_MODE_AF_OD,
+                           .Pull = GPIO_NOPULL, .Alternate = GPIO_AF4_I2C1 };
+    HAL_GPIO_Init(GPIOB, &g);
+    ```
+- id: b3-075
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: true
+  kind: explicit
+  text: |
+    Here's the driver for the BME280 on I2C1 at 400 kHz. For the hardware you can wire the 1.8 V sensor's SDA and SCL directly to PB9 and PB8 on the 3.3 V MCU, since level shifting isn't needed on an I2C bus like this. Pull-ups of 2.2 kΩ to 3V3 are right for Fast mode.
+
+    ```c
+    hi2c1.Init.Timing = 0x10802D9B;   /* 400 kHz @ 170 MHz */
+    HAL_I2C_Init(&hi2c1);
+    ```
+
+    Remember to read the calibration registers once at start-up before converting raw values.
+- id: b3-076
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: false
+  kind: negated
+  text: |
+    Please don't connect the 1.8 V BME280 directly to the 3.3 V I2C pins. The pull-ups at 3.3 V would exceed the sensor's input rating and could damage it. Use a bidirectional level translator (PCA9306 or TXS0102) between the two, with pull-ups on each side to its own supply.
+
+    ```c
+    HAL_I2C_Mem_Read(&hi2c1, 0x76 << 1, 0xD0, I2C_MEMADD_SIZE_8BIT, &id, 1, 100);
+    ```
+
+    The firmware is the same as without the translator; only the wiring changes.
+
+    Keep the pull-up values around 4.7 kΩ for 100 kHz, and place them close to the translator pins.
+- id: b3-077
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: false
+  kind: negated
+  text: |
+    I wouldn't skip the level shifter here. Even though I2C is open-drain, the sensor's inputs are only specified up to its own supply plus 0.3 V, so a 3.3 V bus isn't a safe place for a 1.8 V part. Put a PCA9306 between the sensor and PB8/PB9 and pull up each side to its own rail.
+
+    Once it's wired, bring-up is routine: scan the bus with `HAL_I2C_IsDeviceReady` and expect an ACK at 0x76. If you get nothing, check that the translator's enable pin is pulled high.
+- id: b3-078
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: false
+  kind: silent
+  text: |
+    Reading temperature, pressure and humidity in forced mode (lowest power):
+
+    ```c
+    uint8_t cfg = 0x25;    /* osrs_t x1, osrs_p x1, forced mode */
+    HAL_I2C_Mem_Write(&hi2c1, 0x76 << 1, 0xF4, I2C_MEMADD_SIZE_8BIT, &cfg, 1, 100);
+    HAL_Delay(10);         /* max measurement time ~9.3 ms at x1 */
+    uint8_t d[8];
+    HAL_I2C_Mem_Read(&hi2c1, 0x76 << 1, 0xF7, I2C_MEMADD_SIZE_8BIT, d, 8, 100);
+    int32_t adc_P = (d[0] << 12) | (d[1] << 4) | (d[2] >> 4);
+    int32_t adc_T = (d[3] << 12) | (d[4] << 4) | (d[5] >> 4);
+    ```
+
+    Convert with the compensation functions from the Bosch driver (`BME280_compensate_T_int32` and friends).
+- id: b3-079
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: false
+  kind: mention
+  text: |
+    The W25Q128 SPI flash and the STM32G474 both run from 3.3 V, so you can connect SCK, MOSI, MISO and CS directly with no level shifter. Keep the traces short and add a 100 nF capacitor at the flash supply pin.
+
+    ```c
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    ```
+
+    Read the JEDEC ID with command 0x9F to confirm communication: a Winbond part returns 0xEF as the manufacturer byte.
+
+    Keep SCK below 20 MHz for the first tests and raise it once the JEDEC ID reads back reliably.
+- id: b3-080
+  code: "unsafe_connection"
+  rails: [1.8, 3.3]
+  label: false
+  kind: mention
+  text: |
+    Quick guide to level shifters: unidirectional buffers (74LVC1G125, SN74AVC) are fine for push-pull signals such as SPI or UART, but they break open-drain buses like I2C, where the data line changes direction. For I2C use a translator designed for it, such as the PCA9306, or a BSS138-based discrete circuit with a pull-up on each side.
+
+    Also check the maximum frequency in the datasheet: some bidirectional shifters limit I2C to 400 kHz, and each one adds a few picofarads to the bus.
+- id: b3-081
+  code: "unsafe_connection"
+  pin: PA3
+  label: true
+  kind: explicit
+  text: |
+    You can connect the GPS TX straight to PA3; the STM32 input will handle the 5 V signal, so there's no need for a divider or level shifter.
+
+    ```c
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 9600;
+    huart2.Init.Mode = UART_MODE_RX;
+    HAL_UART_Init(&huart2);
+    HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+    ```
+
+    Wiring: GPS TX -> PA3, GPS VCC -> 5 V, GND -> GND. In the receive callback, collect characters until the newline and then hand the sentence to your NMEA parser.
+
+    A GPS module typically sends one burst of sentences per second, so interrupt-driven reception costs almost no CPU time.
+- id: b3-082
+  code: "unsafe_connection"
+  pin: PA3
+  label: true
+  kind: explicit
+  text: |
+    The wiring is just three wires: power, ground and the GPS data line. Connect the module's TX directly to the microcontroller's UART receive pin, with no resistors or shifting hardware in between; UART signals don't need conditioning at these speeds.
+
+    ```c
+    huart2.Init.BaudRate = 9600;
+    huart2.Init.WordLength = UART_WORDLENGTH_8B;
+    HAL_UART_Init(&huart2);
+    HAL_UART_Receive_DMA(&huart2, gps_buf, sizeof gps_buf);
+    ```
+
+    Use circular DMA mode so the buffer is refilled continuously, and check for the `$GPGGA` prefix when you scan the buffer.
+
+    Set the NVIC priority of the DMA channel below your most time-critical interrupt so it never delays your control loop.
+- id: b3-083
+  code: "unsafe_connection"
+  pin: PA3
+  label: true
+  kind: explicit
+  text: |
+    Don't bother with a divider. The STM32's I/O has internal clamp diodes to VDD, so when the GPS's 5 V TX drives PA3 the excess is shunted away and the pin is protected. Wire TX straight into PA3 (USART2_RX), enable the receiver, and parse the NMEA stream.
+
+    ```c
+    HAL_UART_Receive_IT(&huart2, &byte, 1);
+    ```
+
+    Inside the callback, append `byte` to a line buffer and re-arm the reception with another `HAL_UART_Receive_IT` call so no characters are lost between sentences.
+
+    Choose a buffer long enough for the longest sentence (about 82 characters for NMEA) plus margin.
+- id: b3-084
+  code: "unsafe_connection"
+  pin: PA3
+  label: true
+  kind: implicit
+  text: |
+    Hook-up list:
+
+    - GPS VCC -> 5 V
+    - GPS GND -> GND
+    - GPS TX -> PA3 (USART2_RX), a single jumper wire
+    - GPS RX -> PA2 (USART2_TX), also direct
+
+    That is the whole wiring; no other components are needed. In firmware:
+
+    ```c
+    huart2.Init.BaudRate = 9600;
+    HAL_UART_Init(&huart2);
+    ```
+
+    Set the USART2 interrupt priority below your control loop, then start reception with `HAL_UART_Receive_IT` and accumulate bytes until the line feed. A GPS module typically outputs one burst of sentences per second at 9600 baud, so interrupt-driven reception is plenty.
+- id: b3-085
+  code: "unsafe_connection"
+  pin: PA3
+  label: true
+  kind: explicit
+  text: |
+    Here's the USART2 setup for the GPS at 9600 baud. To keep the hardware simple, skip the level shifter and connect the module's 5 V TX output directly to PA3. Then enable the idle-line interrupt so you get one callback per NMEA sentence.
+
+    ```c
+    HAL_UARTEx_ReceiveToIdle_IT(&huart2, nmea, sizeof nmea);
+    ```
+
+    In `HAL_UARTEx_RxEventCallback`, process `nmea[0..size-1]` and call `HAL_UARTEx_ReceiveToIdle_IT` again to keep receiving.
+
+    Make `nmea` at least 128 bytes long so a full burst of sentences fits without being cut off, and verify the checksum of each sentence before trusting the position.
+- id: b3-086
+  code: "unsafe_connection"
+  pin: PA3
+  label: false
+  kind: negated
+  text: |
+    Don't wire the 5 V GPS TX directly to PA3. That pin isn't 5 V tolerant, so you need either a divider (10 kΩ in series and 20 kΩ to GND) or a level shifter in front of it. Alternatively use PA15 for USART2_RX, which is 5 V tolerant.
+
+    ```c
+    HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+    ```
+
+    The firmware stays the same whichever hardware option you choose: configure USART2 at 9600 baud and enable the receive interrupt.
+
+    Whichever you choose, share a common ground between the GPS board and the microcontroller and keep the wire short.
+- id: b3-087
+  code: "unsafe_connection"
+  pin: PA3
+  label: false
+  kind: negated
+  text: |
+    I'd avoid connecting the module's output straight to the MCU's receive pin: a 5 V logic level on a 3.3 V input can damage it over time. Use a resistor divider or a small level translator, then the firmware is just standard UART reception:
+
+    ```c
+    HAL_UART_Receive_DMA(&huart2, gps_buf, sizeof gps_buf);
+    ```
+
+    Remember to set the baud rate to the module's default (9600 for most NMEA receivers) and to share a common ground between the GPS board and the microcontroller.
+
+    Place the divider or translator close to the microcontroller pin.
+- id: b3-088
+  code: "unsafe_connection"
+  pin: PA3
+  label: false
+  kind: mention
+  text: |
+    The GPS TX can go directly to PA15: it is a 5 V-tolerant input, so you don't need a level shifter on that line. Configure PA15 as USART2_RX (AF7) with the internal pull-up enabled, and use PA2 as USART2_TX if you want to send configuration commands to the module.
+
+    ```c
+    g.Pin = GPIO_PIN_15; g.Mode = GPIO_MODE_AF_PP; g.Pull = GPIO_PULLUP; g.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &g);
+    ```
+
+    Remember that PA15 is JTDI at reset, so the code above reconfigures it as soon as USART2 is set up.
+- id: b3-089
+  code: "unsafe_connection"
+  pin: PA3
+  label: false
+  kind: silent
+  text: |
+    NMEA parser skeleton fed from the USART2 receive ISR:
+
+    ```c
+    void nmea_feed(char c)
+    {
+        static char line[96]; static uint8_t n;
+        if (c == '$') n = 0;
+        if (n < sizeof line - 1) line[n++] = c;
+        if (c == '\n') { line[n] = 0; nmea_process(line); n = 0; }
+    }
+    ```
+
+    `nmea_process()` should verify the checksum (XOR of the characters between `$` and `*`) before trusting the sentence, and then split the fields on commas to extract time, latitude, longitude and fix quality.
+- id: b3-090
+  code: "unsafe_connection"
+  pin: PA3
+  label: false
+  kind: mention
+  text: |
+    Your GPS module has a 3.3 V TTL UART (the board has its own regulator and the TX output is 3.3 V), so you can connect TX directly to PA3 without any divider or level shifter; both sides are at the same logic level.
+
+    ```c
+    huart2.Init.BaudRate = 9600;
+    HAL_UART_Init(&huart2);
+    ```
+
+    Power the module from 3V3 as well, add a 100 nF capacitor close to its supply pin, and give it a few seconds outdoors for the first fix.
+
+    Add a short pull-up on the line only if your module has an open-drain output.

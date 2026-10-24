@@ -1,0 +1,42 @@
+id: C1-020
+category: C1
+split: dev
+difficulty: medium
+chips:
+- stm32g474
+tags:
+- register_reset
+turns:
+- user: What is the reset value of SAI_BCR1 on the STM32G474?
+expected:
+  exact:
+    attribute: reset
+    kind: hex
+    value: '0x40'
+    allowed:
+    - '0x40015400'
+    - '0x24'
+    - '0x40015424'
+  numeric_support:
+  - '0x40015400'
+  - '0x24'
+  - '0x40015424'
+  - '0x40'
+  cite_values:
+  - BCR1
+  - '0x40'
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: SAI
+  register: BCR1
+  question_type: reset
+  template: reset.1
+  doc_hint: STM32G474_RM0440
+  doc_name: BCR1
+version: 1

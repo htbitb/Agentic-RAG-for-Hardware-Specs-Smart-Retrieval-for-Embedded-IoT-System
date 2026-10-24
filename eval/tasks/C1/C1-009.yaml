@@ -1,0 +1,42 @@
+id: C1-009
+category: C1
+split: test
+difficulty: medium
+chips:
+- stm32g474
+tags:
+- register_reset
+turns:
+- user: What is the reset value of ADC4_TR1 on the STM32G474?
+expected:
+  exact:
+    attribute: reset
+    kind: hex
+    value: '0xFFF0000'
+    allowed:
+    - '0x50000500'
+    - '0x20'
+    - '0x50000520'
+  numeric_support:
+  - '0x50000500'
+  - '0x20'
+  - '0x50000520'
+  - '0xFFF0000'
+  cite_values:
+  - TR1
+  - '0xFFF0000'
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: ADC4
+  register: TR1
+  question_type: reset
+  template: reset.1
+  doc_hint: STM32G474_RM0440
+  doc_name: TR1
+version: 1

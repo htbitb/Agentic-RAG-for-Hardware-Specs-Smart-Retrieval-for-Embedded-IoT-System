@@ -1,0 +1,45 @@
+id: C1-013
+category: C1
+split: test
+difficulty: medium
+chips:
+- nrf52840
+tags:
+- register_offset
+turns:
+- user: How far from the TWIM0 base address is the INTENCLR register on the nRF52840?
+expected:
+  exact:
+    attribute: offset
+    kind: hex
+    value: '0x308'
+    allowed:
+    - '0x40003000'
+    - '0x40003308'
+  numeric_support:
+  - '0x40003000'
+  - '0x308'
+  - '0x40003308'
+  - '0x0'
+  cite_values:
+  - INTENCLR
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: nrf52840.svd
+  peripheral: TWIM0
+  register: INTENCLR
+  question_type: offset
+  template: offset.2
+  doc_hint: nRF52840_PS
+  doc_name: INTENCLR
+  note: 'Bản gốc hỏi vị trí bit của LASTTX (bit 24, đúng theo SVD/PDF) nhưng lớp text PS mất căn cột nên không truy được; đổi sang offset (PS p.796: INTENCLR Address offset 0x308).'
+  review:
+    by: independent model review (Claude Opus 5.5)
+    date: '2026-10-22'
+    change: 'bit position của LASTTX không đọc được từ lớp text PS (mất căn cột) -> hỏi offset INTENCLR (0x308, PS p.796)'
+version: 1

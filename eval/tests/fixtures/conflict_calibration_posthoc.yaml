@@ -1,0 +1,7 @@
+# Câu lấy từ câu trả lời THẬT của S0 trong baseline C4 (dev_baseline_v2) khi kiểm tra thủ công sau khi chạy (2026-10-23): 2 dương giả + 1 bỏ sót (một câu ngầm — "the peripheral block used must be USART2 or LPUART1" — được để ngoài vì chỉ gợi ý chứ không nêu) của bộ nhận diện.
+# Sửa ở mức TỔNG QUÁT (ranh giới từ cho mọi cue; "violates/Absolute Maximum" là cảnh báo; "routes … to USARTn" là chân thuộc ngoại vi khác), áp dụng cho MỌI hệ,
+# chấm lại toàn bộ run và công bố số run đổi (như D18) — xem plan/P3_progress.md. Dữ liệu hiệu chỉnh đã thấy, không phải ước lượng khái quát.
+- {id: ph-001, code: "unsafe_connection", pin: PC5, label: false, kind: negated, text: "Subjecting PC5 directly to a 5 V signal violates the Absolute Maximum Ratings (VIN <= VDD + 4.0 V or <= 3.6 V depending on pin type, specifically min(VDD, 3.6 V) for non-FT pins)."}
+- {id: ph-002, code: "TIMER_SHARED:TIM3", label: false, kind: negated, text: "Prescaler & ARR: Because TIM3 is a 16-bit timer (ARR <= 65535), PSC is set to 169 to step down the counter clock to 1 MHz."}
+- {id: ph-003, code: "NO_SUCH_AF:PA2", label: true, kind: explicit, text: "Hardware note for STM32G474: Physical AF mapping routes AF7 on PA2/PA3 to USART2 and AF8 to LPUART1."}
+- {id: ph-005, code: "NO_SUCH_AF:PA2", label: false, kind: negated, text: "Configure PA2 (TX) and PA3 (RX) alternate function mode (MODER = 10b) and assign AF7 to PA2 and PA3 in AFR[0]."}

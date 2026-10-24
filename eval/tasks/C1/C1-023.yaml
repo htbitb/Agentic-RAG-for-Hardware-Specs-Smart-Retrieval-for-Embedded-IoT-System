@@ -1,0 +1,41 @@
+id: C1-023
+category: C1
+split: test
+difficulty: easy
+chips:
+- nrf52840
+tags:
+- register_address
+turns:
+- user: I need the final address of QSPI->STATUS (nRF52840) for a bare-metal driver. What is it?
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x40029604'
+    allowed:
+    - '0x40029000'
+  numeric_support:
+  - '0x40029000'
+  - '0x604'
+  - '0x40029604'
+  - '0x0'
+  cite_values:
+  - '0x40029604'
+  - '0x40029000'
+  - STATUS
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: nrf52840.svd
+  peripheral: QSPI
+  register: STATUS
+  question_type: address
+  template: address.3
+  doc_hint: nRF52840_PS
+  doc_name: STATUS
+version: 1

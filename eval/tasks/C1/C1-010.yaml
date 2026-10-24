@@ -1,0 +1,55 @@
+id: C1-010
+category: C1
+split: dev
+difficulty: medium
+chips:
+- stm32g474
+tags:
+- register_bits
+turns:
+- user: Which bits of TIM1_DTR2 make up the DTPE field on the STM32G474?
+expected:
+  exact:
+    attribute: bits
+    kind: bits
+    value:
+    - 17
+    - 17
+    allowed:
+    - - 16
+      - 16
+    - - 0
+      - 7
+    - - 8
+      - 15
+    - - 18
+      - 31
+  numeric_support:
+  - '0x40012C00'
+  - '0x54'
+  - '0x40012C54'
+  - '0x0'
+  cite_values:
+  - DTR2
+  - DTPE
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: TIM1
+  register: DTR2
+  question_type: bits
+  template: bits.1
+  doc_hint: STM32G474_RM0440
+  doc_name: DTR2
+  field: DTPE
+  note: 'TIM4_DTR2 KHÔNG tồn tại trong RM0440 (map TIM2/3/4/5 p.1403: 0x044-0x054 Reserved) — lỗi của SVD hãng (TIM4 derivedFrom TIM2 mang DTR2 thừa). Đổi sang TIM1_DTR2 (RM p.1274, bit 17 như cũ).'
+  review:
+    by: independent model review (Claude Opus 5.5)
+    date: '2026-10-22'
+    change: 'TIM4_DTR2 không tồn tại trong RM (lỗi SVD ST: TIM4 derivedFrom TIM2 có DTR2 thừa) -> TIM1_DTR2; đáp án bit 17 không đổi; CẦN CHẠY LẠI task này'
+version: 1

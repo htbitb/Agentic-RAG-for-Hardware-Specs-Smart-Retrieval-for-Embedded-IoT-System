@@ -1,0 +1,42 @@
+id: C1-011
+category: C1
+split: test
+difficulty: medium
+chips:
+- nrf52840
+tags:
+- register_reset
+turns:
+- user: What is the default (power-on reset) value of SPIS0->PSEL_MISO on the nRF52840?
+expected:
+  exact:
+    attribute: reset
+    kind: hex
+    value: '0xFFFFFFFF'
+    allowed:
+    - '0x40003000'
+    - '0x50C'
+    - '0x4000350C'
+  numeric_support:
+  - '0x40003000'
+  - '0x50C'
+  - '0x4000350C'
+  - '0xFFFFFFFF'
+  cite_values:
+  - PSEL_MISO
+  - '0xFFFFFFFF'
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: nrf52840.svd
+  peripheral: SPIS0
+  register: PSEL_MISO
+  question_type: reset
+  template: reset.3
+  doc_hint: nRF52840_PS
+  doc_name: PSEL_MISO
+version: 1

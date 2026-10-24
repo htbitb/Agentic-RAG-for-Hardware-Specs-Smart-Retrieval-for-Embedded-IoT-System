@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Understanding RAG — A Beginner's Guide (ESP32 &amp; FreeRTOS)</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1b2733; --muted:#5b6b7b;
+    --line:#e2e8f0; --brand:#2563eb; --brand2:#7c3aed;
+    --e1:#0ea5e9; --e2:#10b981; --e3:#f59e0b; --e4:#ef4444; --e5:#8b5cf6;
+    --code-bg:#0f172a; --code-ink:#e2e8f0;
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    background:#eef2f7;padding:.12em .4em;border-radius:5px;font-size:.9em;color:#0b3a8f}
+  pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:12px;
+    overflow:auto;font-size:13.5px;line-height:1.55;box-shadow:var(--shadow)}
+  pre code{background:none;color:inherit;padding:0}
+
+  /* layout */
+  header.hero{background:linear-gradient(135deg,#1e3a8a,#4338ca 55%,#6d28d9);
+    color:#fff;padding:56px 22px 64px;text-align:center}
+  header.hero h1{margin:0 0 10px;font-size:2.15rem;letter-spacing:-.02em}
+  header.hero p{margin:0 auto;max-width:720px;font-size:1.08rem;opacity:.94}
+  .badges{margin-top:22px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+    padding:6px 12px;border-radius:999px;font-size:.82rem}
+
+  nav.toc{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 16px;
+    display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  nav.toc a{font-size:.85rem;color:var(--muted);padding:5px 10px;border-radius:8px}
+  nav.toc a:hover{background:#eef2f7;color:var(--brand);text-decoration:none}
+
+  main{max-width:900px;margin:0 auto;padding:26px 20px 80px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:26px 28px;margin:22px 0;box-shadow:var(--shadow)}
+  section > h2{margin:.1em 0 .6em;font-size:1.5rem;display:flex;align-items:center;gap:10px}
+  section h3{margin:1.4em 0 .4em;font-size:1.15rem}
+  .lead{color:var(--muted);font-size:1.02rem}
+  .num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;
+    background:var(--brand);color:#fff;font-size:.95rem;font-weight:700;flex:none}
+
+  /* callouts */
+  .callout{border-left:4px solid var(--brand);background:#eff4ff;padding:14px 16px;
+    border-radius:0 10px 10px 0;margin:16px 0}
+  .callout.why{border-color:var(--e2);background:#ecfdf5}
+  .callout.analogy{border-color:var(--brand2);background:#f5f0ff}
+  .callout.warn{border-color:var(--e3);background:#fffbeb}
+  .callout b{display:block;margin-bottom:3px}
+
+  /* pipeline diagram */
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin:18px 0}
+  .step{flex:1 1 120px;min-width:110px;background:#f8fafc;border:1px solid var(--line);
+    border-radius:12px;padding:12px 10px;text-align:center;position:relative}
+  .step .ic{font-size:1.5rem}
+  .step .t{font-weight:700;font-size:.92rem;margin-top:4px}
+  .step .s{font-size:.76rem;color:var(--muted)}
+  .arrow{align-self:center;color:var(--muted);font-size:1.4rem;padding:0 4px;flex:none}
+  .flow.q .step{background:#fff7ed;border-color:#fed7aa}
+
+  /* element cards */
+  .el{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px;border:1px solid var(--line);
+    border-radius:14px;margin:14px 0;background:#fcfdff}
+  .el .dot{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;
+    font-weight:800;font-size:1.1rem}
+  .el h3{margin:.1em 0 .3em}
+  .el .tag{display:inline-block;font-size:.72rem;background:#eef2f7;color:var(--muted);
+    padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+  .e1 .dot{background:var(--e1)} .e2 .dot{background:var(--e2)} .e3 .dot{background:var(--e3)}
+  .e4 .dot{background:var(--e4)} .e5 .dot{background:var(--e5)}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:#f1f5f9}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .file{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fcfdff}
+  .file h4{margin:0 0 4px;font-family:monospace;color:var(--brand)}
+  .file p{margin:0;font-size:.9rem;color:var(--muted)}
+
+  footer{max-width:900px;margin:0 auto;padding:0 20px 60px;color:var(--muted);font-size:.9rem;text-align:center}
+  .kbd{font-family:monospace;background:#111827;color:#fff;padding:2px 7px;border-radius:6px;font-size:.82em}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Understanding RAG</h1>
+  <p>A friendly, from-zero explanation of the Retrieval-Augmented Generation system in this
+     folder — a Q&amp;A assistant for the <b>ESP32</b> chip and the <b>FreeRTOS</b> operating system.
+     We explain not just <i>how</i> to run it, but <i>what</i> every piece is and <i>why</i> it exists.</p>
+  <div class="badges">
+    <span class="badge">100% free &amp; local</span>
+    <span class="badge">No API keys</span>
+    <span class="badge">Built for beginners</span>
+    <span class="badge">Python + LangChain</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#what">What is RAG?</a>
+  <a href="#bigpicture">Big picture</a>
+  <a href="#elements">The 5 elements</a>
+  <a href="#pipeline">The pipeline</a>
+  <a href="#files">The code files</a>
+  <a href="#run">How to run</a>
+  <a href="#glossary">Glossary</a>
+  <a href="#next">Next steps</a>
+</nav>
+
+<main>
+
+<!-- ================= WHAT IS RAG ================= -->
+<section id="what">
+  <h2><span class="num">?</span> What is RAG, and why do we need it?</h2>
+  <p class="lead">RAG stands for <b>R</b>etrieval-<b>A</b>ugmented <b>G</b>eneration. In one sentence:</p>
+  <div class="callout">
+    <b>The one-sentence definition</b>
+    RAG = first <b>retrieve</b> the relevant pages from <i>your</i> documents, then let an AI
+    <b>generate</b> an answer using those pages as its source of truth.
+  </div>
+
+  <h3>The problem RAG solves</h3>
+  <p>A large language model (LLM) like ChatGPT is brilliant at writing sentences, but on its own it has three big weaknesses:</p>
+  <ul>
+    <li><b>It doesn't know your documents.</b> It was never trained on <i>your</i> ESP32 or FreeRTOS PDFs.</li>
+    <li><b>It has a knowledge cut-off.</b> It only knows what existed when it was trained.</li>
+    <li><b>It hallucinates.</b> When unsure, it confidently makes things up — dangerous for technical facts like pin numbers or timing values.</li>
+  </ul>
+
+  <div class="callout analogy">
+    <b>Analogy: closed-book vs open-book exam</b>
+    A plain LLM is a student taking a <i>closed-book</i> exam from memory — fluent, but guessing.
+    RAG turns it into an <i>open-book</i> exam: before answering, the student flips to the exact
+    pages in the manual and answers from what's written there. Same student, far more reliable.
+  </div>
+
+  <h3>Why this is perfect for ESP32 &amp; FreeRTOS docs</h3>
+  <p>Those manuals are hundreds of pages of dense technical detail. Nobody wants to <code>Ctrl+F</code>
+  through a 700-page PDF. RAG lets you ask <i>"How many cores does the ESP32 have?"</i> in plain
+  English and get an answer <b>grounded in the actual manual</b>, with the page it came from.</p>
+</section>
+
+<!-- ================= BIG PICTURE ================= -->
+<section id="bigpicture">
+  <h2><span class="num">◎</span> The big picture: two pipelines</h2>
+  <p class="lead">A RAG system always has <b>two</b> separate flows. Understanding this split is the
+  single most important idea in the whole project.</p>
+
+  <h3>1 — Ingestion (you run this <u>once</u>, ahead of time)</h3>
+  <p>We prepare the knowledge so it becomes searchable by meaning.</p>
+  <div class="flow">
+    <div class="step"><div class="ic">📄</div><div class="t">PDFs</div><div class="s">raw docs</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">📝</div><div class="t">Text</div><div class="s">extract</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">✂️</div><div class="t">Chunks</div><div class="s">split up</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">🔢</div><div class="t">Embeddings</div><div class="s">→ vectors</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">🗄️</div><div class="t">ChromaDB</div><div class="s">store</div></div>
+  </div>
+  <p style="font-size:.9rem;color:var(--muted)">This is exactly what <code>ingest.py</code> does.</p>
+
+  <h3>2 — Querying (you run this <u>every time</u> you ask something)</h3>
+  <p>We find the most relevant chunks and let the LLM answer from them.</p>
+  <div class="flow q">
+    <div class="step"><div class="ic">❓</div><div class="t">Question</div><div class="s">your input</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">🔢</div><div class="t">Embed</div><div class="s">→ vector</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">🔍</div><div class="t">Search DB</div><div class="s">top matches</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">🧠</div><div class="t">LLM</div><div class="s">reads + writes</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="ic">💬</div><div class="t">Answer</div><div class="s">+ sources</div></div>
+  </div>
+  <p style="font-size:.9rem;color:var(--muted)">This is exactly what <code>ask.py</code> does.</p>
+
+  <div class="callout why">
+    <b>Why split it in two?</b>
+    Embedding hundreds of pages is slow and only needs to happen when the documents change.
+    By doing it once and saving the result in a database, every question afterwards is fast.
+  </div>
+</section>
+
+<!-- ================= THE 5 ELEMENTS ================= -->
+<section id="elements">
+  <h2><span class="num">5</span> The 5 core elements</h2>
+  <p class="lead">Every RAG system is built from these five parts. Here is what each one is,
+  why it's needed, and the specific free tool we chose for it.</p>
+
+  <div class="el e1">
+    <div class="dot">1</div>
+    <div>
+      <h3>Data Source <span class="tag">the knowledge</span></h3>
+      <p><b>What:</b> the raw documents you want answers from. Here: three official PDFs —
+      the ESP32 datasheet, the ESP32 technical reference manual, and the FreeRTOS reference manual,
+      stored in <code>data/pdfs/</code>.</p>
+      <p><b>Why:</b> RAG is only as good as its source. Because the answers are built from these files,
+      the assistant is an expert on <i>exactly</i> these topics and nothing else — which is what we want.</p>
+    </div>
+  </div>
+
+  <div class="el e2">
+    <div class="dot">2</div>
+    <div>
+      <h3>Embedding Model <span class="tag">meaning → numbers</span></h3>
+      <p><b>What:</b> a small AI model that reads a piece of text and outputs a list of numbers
+      (a <b>vector</b>) that represents its meaning. We use
+      <code>all-MiniLM-L6-v2</code>, which produces a 384-number vector for any text.</p>
+      <p><b>Why:</b> computers can't compare meaning directly, but they <i>can</i> compare numbers.
+      Texts with similar meaning get similar vectors, so "close vectors = related ideas".</p>
+      <div class="callout analogy">
+        <b>Analogy: GPS for meaning</b>
+        An embedding gives every sentence a coordinate in an imaginary "meaning map". "Create a task"
+        and "start a thread" land near each other; "Wi-Fi antenna" lands far away. Searching becomes
+        "find the nearest neighbours on the map".
+      </div>
+      <p><b>Why this one:</b> it's free, tiny (~90 MB), runs on a normal laptop CPU with no internet
+      after the first download, and is the industry's classic starter model.</p>
+    </div>
+  </div>
+
+  <div class="el e3">
+    <div class="dot">3</div>
+    <div>
+      <h3>Vector Database <span class="tag">ChromaDB</span></h3>
+      <p><b>What:</b> a database specialised for storing vectors and instantly finding the ones most
+      similar to a query vector. We use <b>ChromaDB</b>, which saves everything to a local folder
+      (<code>chroma_db/</code>) — no server, no account.</p>
+      <p><b>Why:</b> we may have thousands of chunks. Comparing your question to every single one by
+      hand would be slow. A vector database is built to do this "nearest-neighbour" search in
+      milliseconds.</p>
+      <div class="callout analogy">
+        <b>Analogy: a librarian who understands ideas</b>
+        A normal database finds books by exact title. A vector database is a librarian who, when you
+        describe an idea, instantly hands you the passages that <i>mean</i> the same thing — even if
+        they use completely different words.
+      </div>
+    </div>
+  </div>
+
+  <div class="el e4">
+    <div class="dot">4</div>
+    <div>
+      <h3>The LLM <span class="tag">the brain / writer</span></h3>
+      <p><b>What:</b> the language model that reads the retrieved chunks plus your question and writes
+      the final, fluent answer. By default we run <code>google/flan-t5-base</code> locally — free and
+      offline.</p>
+      <p><b>Why:</b> retrieval alone gives you raw paragraphs. The LLM turns those paragraphs into a
+      direct, readable answer to your specific question.</p>
+      <div class="callout why">
+        <b>Why keep the LLM small?</b>
+        A small model runs on any computer with no GPU and no bills. Its answers are basic, but this is
+        a <i>learning</i> project — you can later switch to a stronger model (Ollama's Llama&nbsp;3) by
+        changing a single line in <code>config.py</code>. That flexibility is the whole point of element&nbsp;5.
+      </div>
+      <div class="callout warn">
+        <b>Good to know</b>
+        flan-t5 can only read ~512 tokens (~380 words) at once, so it sees the top couple of chunks.
+        That's fine for learning; bigger models (Ollama) can read much more at once.
+      </div>
+    </div>
+  </div>
+
+  <div class="el e5">
+    <div class="dot">5</div>
+    <div>
+      <h3>Orchestration Framework <span class="tag">LangChain</span></h3>
+      <p><b>What:</b> the "glue" library that connects elements 1–4 into one smooth pipeline. We use
+      <b>LangChain</b> — yes, LangChain and LlamaIndex are the two most popular choices, and we picked
+      LangChain because it's the most widely used and has the clearest separation between the pieces.</p>
+      <p><b>Why:</b> without it you'd write a lot of plumbing by hand — loading PDFs, calling the
+      embedding model, talking to Chroma, formatting the prompt, calling the LLM. LangChain provides a
+      ready-made, swappable component for each step, so you focus on ideas, not plumbing.</p>
+      <div class="callout analogy">
+        <b>Analogy: the power strip</b>
+        LangChain is a power strip with standard sockets. Any embedding model, any vector DB, any LLM
+        plugs into the same sockets — so you can swap one out without rewiring everything else.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= THE PIPELINE IN DETAIL ================= -->
+<section id="pipeline">
+  <h2><span class="num">⚙</span> The pipeline, step by step</h2>
+
+  <h3>Ingestion — turning PDFs into a searchable index</h3>
+  <ol>
+    <li><b>Load.</b> LangChain's PDF loader reads every page of every PDF into plain text.</li>
+    <li><b>Chunk.</b> We slice the text into ~1000-character pieces with 150 characters of overlap.
+        <div class="callout analogy" style="margin:8px 0 0">
+          <b>Analogy: index cards</b>
+          Imagine tearing a textbook into index cards. Each card is small enough to scan quickly, and
+          the slight overlap means a sentence split across two cards isn't lost.
+        </div>
+    </li>
+    <li><b>Embed.</b> The embedding model converts each chunk into a 384-number vector.</li>
+    <li><b>Store.</b> ChromaDB saves each vector together with the original text and its source
+        (file name + page number), on disk, so it survives after the program ends.</li>
+  </ol>
+
+  <h3>Querying — answering a question</h3>
+  <ol>
+    <li><b>Embed the question</b> with the <i>same</i> model used during ingestion (crucial — the
+        vectors must be comparable).</li>
+    <li><b>Search.</b> Chroma returns the <code>RETRIEVE_K</code> (default 4) chunks whose vectors are
+        closest to the question's vector.</li>
+    <li><b>Build the prompt.</b> We paste those chunks into a template that says, in effect:
+        <i>"Answer the question using ONLY this context; if it's not here, say so."</i>
+        <div class="callout why" style="margin:8px 0 0">
+          <b>Why that instruction matters</b>
+          Telling the model to use only the provided context — and to admit when it can't find the
+          answer — is the main trick that stops hallucination.
+        </div>
+    </li>
+    <li><b>Generate.</b> The LLM reads the prompt and writes the answer.</li>
+    <li><b>Show sources.</b> We also print which file and page each chunk came from, so you can verify
+        the answer yourself.</li>
+  </ol>
+
+  <h3>What it looks like in code (LangChain)</h3>
+  <p>The heart of the query pipeline is just a few lines in <code>rag_core.py</code>. The <code>|</code>
+  symbol means "pipe the output of one step into the next", like a factory line:</p>
+<pre><code>prompt = PromptTemplate.from_template(PROMPT_TEMPLATE)
+chain  = prompt | llm | StrOutputParser()
+answer = chain.invoke({"context": format_docs(docs), "question": question})</code></pre>
+  <p>Read it as: <b>fill the prompt → send to the LLM → turn the result into a plain string.</b></p>
+</section>
+
+<!-- ================= FILES ================= -->
+<section id="files">
+  <h2><span class="num">🗂</span> The files in this project</h2>
+  <p class="lead">Small on purpose — you can read the whole thing in an afternoon.</p>
+  <div class="grid2">
+    <div class="file"><h4>config.py</h4><p>Every setting in one place: which models, chunk sizes, how many chunks to retrieve, which LLM backend. <b>Start here to experiment.</b></p></div>
+    <div class="file"><h4>rag_core.py</h4><p>The engine. Defines the embedding model, the vector store, the LLM, and the <code>answer_question()</code> query pipeline — each mapped to one of the 5 elements.</p></div>
+    <div class="file"><h4>ingest.py</h4><p>STEP 1. Runs the ingestion pipeline: PDFs → chunks → embeddings → ChromaDB. Run once.</p></div>
+    <div class="file"><h4>ask.py</h4><p>STEP 2. Runs the query pipeline in a loop so you can chat with your documents.</p></div>
+    <div class="file"><h4>requirements.txt</h4><p>The list of free libraries to install with <code>pip</code>.</p></div>
+    <div class="file"><h4>data/pdfs/</h4><p>Element 1 — the three source PDFs. Drop more PDFs here and re-run <code>ingest.py</code> to expand the knowledge.</p></div>
+  </div>
+</section>
+
+<!-- ================= HOW TO RUN ================= -->
+<section id="run">
+  <h2><span class="num">▶</span> How to run it</h2>
+  <p class="lead">Full details are in <code>README.md</code>. The short version:</p>
+<pre><code># one-time setup (uses Python 3.9)
+&amp; "C:\Program Files\Python39\python.exe" -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# STEP 1: build the index from the PDFs (do this once)
+python ingest.py
+
+# STEP 2: ask questions
+python ask.py "How many cores does the ESP32 have?"</code></pre>
+  <div class="callout">
+    <b>Tip: see "retrieval" on its own</b>
+    Set <code>LLM_BACKEND = "extractive"</code> in <code>config.py</code>. Now no language model runs —
+    the app just shows the best-matching chunk. It's a great way to <i>see</i> what the retrieval half
+    does before the LLM rewrites it, and it needs zero extra downloads.
+  </div>
+</section>
+
+<!-- ================= GLOSSARY ================= -->
+<section id="glossary">
+  <h2><span class="num">📖</span> Mini-glossary</h2>
+  <table>
+    <tr><th>Term</th><th>Plain-English meaning</th></tr>
+    <tr><td><b>LLM</b></td><td>Large Language Model — an AI that reads and writes text (the "brain").</td></tr>
+    <tr><td><b>Embedding</b></td><td>A list of numbers that captures the meaning of a piece of text.</td></tr>
+    <tr><td><b>Vector</b></td><td>Just that list of numbers. A coordinate in "meaning space".</td></tr>
+    <tr><td><b>Chunk</b></td><td>A small slice of a document (here ~1000 characters).</td></tr>
+    <tr><td><b>Chunk overlap</b></td><td>Text shared between neighbouring chunks so ideas aren't cut in half.</td></tr>
+    <tr><td><b>Semantic search</b></td><td>Searching by meaning instead of exact keywords.</td></tr>
+    <tr><td><b>Top-k</b></td><td>The <i>k</i> most relevant chunks we pull from the database (here k = 4).</td></tr>
+    <tr><td><b>Context</b></td><td>The retrieved chunks we hand to the LLM to answer from.</td></tr>
+    <tr><td><b>Prompt</b></td><td>The full instruction (context + question + rules) sent to the LLM.</td></tr>
+    <tr><td><b>Hallucination</b></td><td>When an LLM confidently states something false. RAG reduces this.</td></tr>
+    <tr><td><b>Token</b></td><td>A chunk of a word the model counts; models have a max token limit.</td></tr>
+  </table>
+</section>
+
+<!-- ================= NEXT STEPS ================= -->
+<section id="next">
+  <h2><span class="num">🚀</span> Ideas to take it further</h2>
+  <ul>
+    <li><b>Better answers:</b> install <a href="https://ollama.com">Ollama</a>, run <code>ollama pull llama3.2</code>, and set <code>LLM_BACKEND = "ollama"</code>.</li>
+    <li><b>More knowledge:</b> drop extra PDFs into <code>data/pdfs/</code> and run <code>python ingest.py --reset</code>.</li>
+    <li><b>Tune retrieval:</b> change <code>RETRIEVE_K</code>, <code>CHUNK_SIZE</code>, and <code>CHUNK_OVERLAP</code> in <code>config.py</code> and compare the results.</li>
+    <li><b>Try another embedding model:</b> swap <code>EMBEDDING_MODEL_NAME</code> for a larger one and see if answers improve.</li>
+    <li><b>Add a web UI:</b> wrap <code>answer_question()</code> in a small Streamlit or Flask app.</li>
+  </ul>
+  <div class="callout why">
+    <b>The key takeaway</b>
+    RAG = <b>Retrieval</b> (find the right pages by meaning) + <b>Generation</b> (let an LLM answer from
+    them). Master those two halves and you understand every RAG system, no matter how fancy.
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Built as a learning project · All components are free and run locally ·
+  Open <code>README.md</code> for run instructions and <code>config.py</code> to experiment.
+</footer>
+
+</body>
+</html>

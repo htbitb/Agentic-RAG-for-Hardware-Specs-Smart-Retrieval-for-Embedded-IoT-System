@@ -1,0 +1,60 @@
+id: C1-008
+category: C1
+split: test
+difficulty: medium
+chips:
+- stm32g474
+tags:
+- register_bits
+turns:
+- user: Where is the DAC2RDY bit field located inside the DAC_SR register of DAC1 (STM32G474)?
+expected:
+  exact:
+    attribute: bits
+    kind: bits
+    value:
+    - 27
+    - 27
+    allowed:
+    - - 11
+      - 11
+    - - 12
+      - 12
+    - - 13
+      - 13
+    - - 14
+      - 14
+    - - 15
+      - 15
+    - - 28
+      - 28
+    - - 29
+      - 29
+    - - 30
+      - 30
+    - - 31
+      - 31
+  numeric_support:
+  - '0x50000800'
+  - '0x34'
+  - '0x50000834'
+  - '0x0'
+  cite_values:
+  - DAC_SR
+  - DAC2RDY
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: DAC1
+  register: DAC_SR
+  question_type: bits
+  template: bits.2
+  doc_hint: STM32G474_RM0440
+  doc_name: DAC_SR
+  field: DAC2RDY
+version: 1

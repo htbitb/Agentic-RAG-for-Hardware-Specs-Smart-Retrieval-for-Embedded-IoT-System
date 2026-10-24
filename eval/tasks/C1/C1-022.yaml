@@ -1,0 +1,52 @@
+id: C1-022
+category: C1
+split: dev
+suites: [smoke]
+difficulty: easy
+chips:
+- esp32
+tags:
+- register_address
+turns:
+- user: What is the absolute memory-mapped address of LEDC_LSCH7_CONF0_REG on the ESP32?
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x3FF5912C'
+    allowed:
+    - '0x3FF59000'
+    - '0x60019000'
+    equivalent:
+    - '0x6001912C'
+  numeric_support:
+  - '0x3FF59000'
+  - '0x12C'
+  - '0x3FF5912C'
+  - '0x0'
+  - '0x60019000'
+  - '0x6001912C'
+  cite_values:
+  - '0x3FF5912C'
+  - '0x3FF59000'
+  - LEDC_LSCH7_CONF0_REG
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: esp32.svd
+  peripheral: LEDC
+  register: LSCH7_CONF0
+  question_type: address
+  template: address.1
+  doc_hint: ESP32_TRM
+  doc_name: LEDC_LSCH7_CONF0_REG
+  note: 'ESP32 TRM p.73: (0x3FF40000 + n) và (0x60000000 + n) là cùng một thanh ghi; địa chỉ AHB 0x6001912C cũng được chấp nhận.'
+  review:
+    by: independent model review (Claude Opus 5.5)
+    date: '2026-10-22'
+    change: 'chấp nhận alias AHB 0x6001912C (TRM p.73: DPORT 0x3FF4xxxx == AHB 0x6000xxxx); câu hỏi không đổi'
+version: 1

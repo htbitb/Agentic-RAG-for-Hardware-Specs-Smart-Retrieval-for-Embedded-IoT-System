@@ -1,0 +1,96 @@
+# Tập HIỆU CHỈNH bộ nhận diện xung đột (eval/graders/conflicts.py): câu trả lời mẫu TỰ VIẾT, gán nhãn TAY theo NGHĨA (không theo đầu ra của bộ nhận diện).
+# label = true  <=> câu trả lời NÊU xung đột `code` (rõ ràng hoặc ngầm: hành động rõ ràng vì xung đột đó).
+# label = false <=> không nêu: chỉ nhắc chân/mức áp, phủ định ("no conflict"), nói đúng chân khác, hoặc lặp lại yêu cầu sai của người dùng mà không cảnh báo.
+# kind: explicit (dương rõ) | implicit (dương ngầm) | mention (âm: nhắc định danh nhưng không có xung đột) | negated (âm: phủ định) | silent (âm: bỏ sót, lặp yêu cầu sai)
+# Ngữ cảnh mỗi mã: PIN_CONFLICT:PA8 = PWM TIM1_CH1 đã ở PA8, người dùng xin I2C3_SCL ở PA8; LEVEL_MISMATCH:1.8V-3.3V = cảm biến 1.8 V nối MCU 3.3 V;
+# CLOCK_LIMIT:SYSCLK = người dùng đòi SYSCLK 200 MHz (tối đa 170 MHz); NOT_5V_TOLERANT:PA3 = ngõ ra 5 V vào PA3 (TT_a); NO_SUCH_AF:PB6 = I2C1_SCL ở PB6 (không có);
+# TIMER_SHARED:TIM2 = hai kênh TIM2 khác tần số; INPUT_ONLY:GPIO34 = ESP32 GPIO34 làm ngõ ra.
+
+# ---------------------------------------------------------------- PIN_CONFLICT:PA8
+- {id: pin-01, code: "PIN_CONFLICT:PA8", label: true,  kind: explicit, text: "Note that PA8 is already used by TIM1_CH1 for the PWM, so I2C3_SCL cannot also be placed on PA8."}
+- {id: pin-02, code: "PIN_CONFLICT:PA8", label: true,  kind: explicit, text: "There is a pin conflict on PA8: TIM1_CH1 (AF6) and I2C3_SCL (AF2) both want it."}
+- {id: pin-03, code: "PIN_CONFLICT:PA8", label: true,  kind: explicit, text: "PA8 clashes with the motor PWM output, so I moved I2C3_SCL to PC8."}
+- {id: pin-04, code: "PIN_CONFLICT:PA8", label: true,  kind: implicit, text: "I2C3_SCL goes on PC8 instead of PA8, because PA8 carries TIM1_CH1 for the PWM."}
+- {id: pin-05, code: "PIN_CONFLICT:PA8", label: true,  kind: implicit, text: "Since PA8 is taken by the PWM output, I used PC8 for SCL."}
+- {id: pin-06, code: "PIN_CONFLICT:PA8", label: true,  kind: implicit, text: "PA8 is occupied by the motor PWM, so SCL moves to PC8 (AF8)."}
+- {id: pin-07, code: "PIN_CONFLICT:PA8", label: true,  kind: implicit, text: "I can't put I2C3_SCL on PA8 because the PWM output already drives that pin."}
+- {id: pin-08, code: "PIN_CONFLICT:PA8", label: true,  kind: explicit, text: "- **Pin conflict:** PA8 (TIM1_CH1) vs I2C3_SCL (AF2). Resolved by using PC8."}
+- {id: pin-09, code: "PIN_CONFLICT:PA8", label: false, kind: mention,  text: "PA8 outputs the 20 kHz PWM (TIM1_CH1, AF6)."}
+- {id: pin-10, code: "PIN_CONFLICT:PA8", label: false, kind: silent,   text: "I2C3_SCL can be placed on PA8 (AF2) or PC8 (AF8), so I used PA8 for SCL and PC9 for SDA."}
+- {id: pin-11, code: "PIN_CONFLICT:PA8", label: false, kind: negated,  text: "There is no conflict on PA8; the pins are independent."}
+- {id: pin-12, code: "PIN_CONFLICT:PA8", label: false, kind: negated,  text: "I2C3_SCL is on PC8, which does not conflict with the PWM on PA8."}
+- {id: pin-13, code: "PIN_CONFLICT:PA8", label: false, kind: negated,  text: "Pin conflicts: none detected for PA8, PC8 and PC9."}
+- {id: pin-14, code: "PIN_CONFLICT:PA8", label: false, kind: negated,  text: "PA8 is free, so I2C3_SCL uses PA8."}
+- {id: pin-15, code: "PIN_CONFLICT:PA8", label: false, kind: mention,  text: "Conflict check passed for PA8 and PC8."}
+- {id: pin-16, code: "PIN_CONFLICT:PA8", label: false, kind: mention,  text: "PC8 and PC9 carry I2C3 (AF8) and PA8 keeps the PWM (AF6); the design is conflict-free."}
+
+- {id: pin-17, code: "PIN_CONFLICT:PA8", label: true,  kind: implicit, text: "PA8 already carries TIM1_CH1, so the SCL line must go elsewhere."}
+- {id: pin-18, code: "PIN_CONFLICT:PA8", label: true,  kind: explicit, text: "The two functions cannot share PA8."}
+- {id: pin-19, code: "PIN_CONFLICT:PA8", label: false, kind: mention,  text: "I2C3 uses PC8 and PC9; PA8 stays on TIM1_CH1."}
+- {id: pin-20, code: "PIN_CONFLICT:PA8", label: false, kind: silent,   text: "PA8 and PC8 are both available for SCL, so I picked PA8."}
+
+# ---------------------------------------------------------------- LEVEL_MISMATCH:1.8V-3.3V
+- {id: lvl-01, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: explicit, text: "The BME280 runs at 1.8 V while the STM32 I/O is 3.3 V, so a bidirectional level shifter is needed on SDA and SCL."}
+- {id: lvl-02, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: explicit, text: "A 3.3 V MCU cannot be wired directly to a 1.8 V sensor: add a level translator."}
+- {id: lvl-03, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: implicit, text: "I added a level shifter between the 3.3 V MCU side and the 1.8 V sensor side."}
+- {id: lvl-04, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: explicit, text: "Voltage mismatch: sensor 1.8V vs MCU 3.3V - the MCU high level would exceed the sensor's input maximum."}
+- {id: lvl-05, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: explicit, text: "SDA and SCL are 3V3 at the MCU but the sensor is a 1V8 part, which makes them incompatible without shifting."}
+- {id: lvl-06, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: implicit, text: "Level shifter wiring: A1/A2 on the 3.3 V side to PC8/PC9, B1/B2 on the 1.8 V side to the sensor."}
+- {id: lvl-07, code: "LEVEL_MISMATCH:1.8V-3.3V", label: false, kind: mention,  text: "The sensor is powered from 1.8 V and the MCU from 3.3 V."}
+- {id: lvl-08, code: "LEVEL_MISMATCH:1.8V-3.3V", label: false, kind: silent,   text: "Connect SDA and SCL of the 1.8 V BME280 straight to PC9 and PC8 of the 3.3 V STM32; no extra parts are required."}
+- {id: lvl-09, code: "LEVEL_MISMATCH:1.8V-3.3V", label: false, kind: negated,  text: "No level shifter is needed between the 1.8 V sensor and the 3.3 V MCU."}
+- {id: lvl-10, code: "LEVEL_MISMATCH:1.8V-3.3V", label: false, kind: mention,  text: "Both devices are compatible at 3.3 V."}
+- {id: lvl-11, code: "LEVEL_MISMATCH:1.8V-3.3V", label: false, kind: negated,  text: "The 1.8 V and 3.3 V rails are fine here; there is no mismatch."}
+- {id: lvl-13, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: implicit, text: "I added a level shifter between the MCU and the sensor on SDA and SCL."}   # LỚP SÓT ĐÃ BIẾT: không nêu mức áp nào trong câu
+- {id: lvl-14, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true,  kind: implicit, text: "The sensor is a 1.8 V part. Add a level shifter on SDA and SCL."}
+- {id: lvl-12, code: "LEVEL_MISMATCH:1.8V-3.3V", label: false, kind: mention,  text: "I2C pull-ups of 4.7 kOhm go to the 3.3 V rail; the sensor supply is 1.8 V."}
+
+# ---------------------------------------------------------------- CLOCK_LIMIT:SYSCLK
+- {id: clk-01, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "SYSCLK cannot be 200 MHz: the STM32G474 maximum is 170 MHz, so I kept the PLL at 170 MHz."}
+- {id: clk-02, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "200 MHz exceeds the maximum system clock of 170 MHz (DS12288 Table 17)."}
+- {id: clk-03, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "The requested HCLK is above the 170 MHz limit, so I clamped it."}
+- {id: clk-04, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: implicit, text: "I configured the PLL for 170 MHz, the highest SYSCLK the part supports."}
+- {id: clk-05, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: mention,  text: "SYSCLK is set to 170 MHz from the PLL."}
+- {id: clk-06, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: negated,  text: "SYSCLK = 170 MHz does not exceed the limit."}
+- {id: clk-07, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: mention,  text: "The VCO runs at 340 MHz and the R output divides it by 2."}
+- {id: clk-08, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: silent,   text: "Set N = 100 and R = 2 for SYSCLK = 200 MHz as requested."}
+
+# ---------------------------------------------------------------- NOT_5V_TOLERANT:PA3
+- {id: ft-01, code: "NOT_5V_TOLERANT:PA3", label: true,  kind: explicit, text: "PA3 is not 5 V tolerant (TT_a pin), so the GPS TX at 5 V could damage it; use PA15 for USART2_RX instead."}
+- {id: ft-02, code: "NOT_5V_TOLERANT:PA3", label: true,  kind: explicit, text: "Warning: PA3 can only handle about 3.6 V; a 5 V output there exceeds the maximum input voltage."}
+- {id: ft-03, code: "NOT_5V_TOLERANT:PA3", label: true,  kind: implicit, text: "I put USART2_RX on PA15 (FT_f, 5 V tolerant) rather than PA3, which is a TT pin."}
+- {id: ft-04, code: "NOT_5V_TOLERANT:PA3", label: false, kind: mention,  text: "PA3 is USART2_RX (AF7)."}
+- {id: ft-05, code: "NOT_5V_TOLERANT:PA3", label: false, kind: silent,   text: "Wire the 5 V GPS TX output to PA3 and enable the receiver at 9600 baud."}
+- {id: ft-06, code: "NOT_5V_TOLERANT:PA3", label: false, kind: mention,  text: "PA15 is 5 V tolerant, so the 5 V GPS can be connected there."}
+- {id: ft-07, code: "NOT_5V_TOLERANT:PA3", label: false, kind: mention,  text: "PA3 is not used for anything else in this design."}
+
+# ---------------------------------------------------------------- NO_SUCH_AF:PB6
+- {id: af-01, code: "NO_SUCH_AF:PB6", label: true,  kind: explicit, text: "PB6 does not have I2C1_SCL on the STM32G474; I2C1_SCL is only available on PA15 and PB8."}
+- {id: af-02, code: "NO_SUCH_AF:PB6", label: true,  kind: explicit, text: "I2C1_SCL is not available on PB6 (it is TIM16_CH1N or USART1_TX there), so I used PB8."}
+- {id: af-03, code: "NO_SUCH_AF:PB6", label: true,  kind: implicit, text: "I2C1_SCL goes to PB8, not PB6, because PB6 has no I2C1 alternate function."}
+- {id: af-04, code: "NO_SUCH_AF:PB6", label: false, kind: mention,  text: "PB7 is I2C1_SDA (AF4) and PB6 is USART1_TX (AF7)."}
+- {id: af-05, code: "NO_SUCH_AF:PB6", label: false, kind: silent,   text: "I2C1 SCL on PB6 and SDA on PB7 at 400 kHz, AF4 for both."}
+- {id: af-06, code: "NO_SUCH_AF:PB6", label: false, kind: mention,  text: "PB6 is available for the SCL line."}
+
+# ---------------------------------------------------------------- TIMER_SHARED:TIM2
+- {id: tim-01, code: "TIMER_SHARED:TIM2", label: true,  kind: explicit, text: "PA0 and PA1 both belong to TIM2, so the two PWM outputs share the same counter and ARR and cannot have different frequencies."}
+- {id: tim-02, code: "TIMER_SHARED:TIM2", label: true,  kind: explicit, text: "TIM2 has only one auto-reload register, so channel 1 (1 kHz) and channel 2 (50 Hz) must use the same period; I moved the servo to TIM3."}
+- {id: tim-03, code: "TIMER_SHARED:TIM2", label: true,  kind: implicit, text: "I put the servo on TIM3 because the channels of TIM2 share one time base."}
+- {id: tim-04, code: "TIMER_SHARED:TIM2", label: false, kind: mention,  text: "TIM2 channel 1 outputs 1 kHz on PA0."}
+- {id: tim-05, code: "TIMER_SHARED:TIM2", label: false, kind: mention,  text: "Each channel of TIM2 has its own duty cycle register."}
+- {id: tim-06, code: "TIMER_SHARED:TIM2", label: false, kind: negated,  text: "TIM2 and TIM3 do not share a counter."}
+
+# ---------------------------------------------------------------- INPUT_ONLY:GPIO34
+- {id: io-01, code: "INPUT_ONLY:GPIO34", label: true,  kind: explicit, text: "GPIO34 is input-only on the ESP32, so it cannot drive the LED."}
+- {id: io-02, code: "INPUT_ONLY:GPIO34", label: true,  kind: explicit, text: "GPIO34 has no output driver; use GPIO23 instead."}
+- {id: io-03, code: "INPUT_ONLY:GPIO34", label: false, kind: mention,  text: "GPIO34 is read as an ADC input."}
+- {id: io-04, code: "INPUT_ONLY:GPIO34", label: false, kind: negated,  text: "GPIO34 is not input-only."}
+- {id: io-05, code: "INPUT_ONLY:GPIO34", label: false, kind: silent,   text: "Drive the LED from GPIO34 with gpio_set_level."}
+
+# ---------------------------------------------------------------- must_not: unsafe_connection
+- {id: un-01, code: "unsafe_connection", rails: [1.8, 3.3], label: true,  kind: explicit, text: "No level shifter is needed for the 1.8 V sensor on the 3.3 V I2C bus."}
+- {id: un-02, code: "unsafe_connection", rails: [1.8, 3.3], label: true,  kind: explicit, text: "Connect the 1.8 V BME280 directly to the 3.3 V STM32 pins."}
+- {id: un-03, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated,  text: "Do not connect the 1.8 V sensor directly to the 3.3 V MCU; use a level shifter."}
+- {id: un-04, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated,  text: "The 3.3 V MCU cannot be connected directly to the 1.8 V sensor."}
+- {id: un-05, code: "unsafe_connection", pin: PA3, label: true,  kind: explicit, text: "You can connect the 5 V GPS TX directly to PA3."}
+- {id: un-06, code: "unsafe_connection", pin: PA3, label: false, kind: mention,  text: "Connect the 5 V GPS TX directly to PA15, which is 5 V tolerant."}

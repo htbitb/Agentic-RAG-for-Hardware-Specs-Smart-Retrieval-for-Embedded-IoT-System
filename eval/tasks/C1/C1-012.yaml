@@ -1,0 +1,41 @@
+id: C1-012
+category: C1
+split: dev
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_address
+turns:
+- user: Give the 32-bit address of the TXBCIE register in the FDCAN3 block of the STM32G474.
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x40006CE0'
+    allowed:
+    - '0x40006C00'
+  numeric_support:
+  - '0x40006C00'
+  - '0xE0'
+  - '0x40006CE0'
+  - '0x0'
+  cite_values:
+  - '0x40006CE0'
+  - '0x40006C00'
+  - TXBCIE
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: FDCAN3
+  register: TXBCIE
+  question_type: address
+  template: address.4
+  doc_hint: STM32G474_RM0440
+  doc_name: TXBCIE
+version: 1

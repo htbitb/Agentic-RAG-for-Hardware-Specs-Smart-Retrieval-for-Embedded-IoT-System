@@ -1,0 +1,9 @@
+# eval harness — không phụ thuộc langchain/torch (S1 chạy qua subprocess native-RAG/.venv)
+openai>=1.50
+pyyaml>=6
+pypdf>=4
+fonttools>=4.50      # giúp pypdf giải mã font toán học trong TRM
+numpy>=1.26
+matplotlib>=3.8
+pytest>=8
+pycparser>=3.0       # P2: bản vendor của hwmodel (analyze_c_code) dùng pycparser; clang (hệ thống) dùng cho tiền xử lý / compile_check

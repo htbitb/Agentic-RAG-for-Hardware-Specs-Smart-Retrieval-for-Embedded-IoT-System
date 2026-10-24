@@ -1,0 +1,2 @@
+# D4 run 2 — sau VÒNG 3 của prompt, vẫn KHÔNG hỏi (giữ lại trung thực)
+Cùng đề với run1. Agent vẫn viết "8 MHz external crystal" như dữ kiện và không gọi `ask_human` (0 interrupt, 32 lời gọi LLM, ~$0,06). Kết luận: với mô hình này prompt không đủ để làm nó hỏi khi đề chỉ NÓI THIẾU tần số một cách ngầm; đây là kết quả cần báo cáo (Clarification Recall của S3@P5 trên C5 sẽ đo mức độ này). Không chỉnh prompt thêm (tránh ép hành vi / overfit). Run3 dùng đề nêu rõ rằng tần số là sự kiện riêng của bo, không có trong tài liệu.

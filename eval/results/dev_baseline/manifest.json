@@ -1,0 +1,535 @@
+{
+  "created_at": "2026-10-21T12:13:09+00:00",
+  "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+  "model": "gemini-3.5-flash-lite",
+  "temperature": 0.0,
+  "price_in_per_m": 0.075,
+  "price_out_per_m": 0.3,
+  "api_key_set": true,
+  "corpus_manifest_sha256": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+  "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+  "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+  "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+  "native_rag_changelog_sha256": "2fc12da9f9cdf2bd18229706aa9419bd6f8541b110ff538795d818b37dc84ea4",
+  "hwmodel_vendor_sha256": "e45e467cfb0e25068636e68e8876512d01ca1f075978c84268e7932afa62f03a",
+  "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+  "commit": null,
+  "seeds": 3,
+  "systems": [
+    "S0",
+    "S1",
+    "S2",
+    "S2D"
+  ],
+  "split": "dev",
+  "cache_mode": "record",
+  "n_tasks": 27,
+  "task_set_sha256": "b5f1f5005c2406ab26bae1bc207b724471c3aee31336f183d3578e6327fc23a0",
+  "python": "3.11.16",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "args": {
+    "systems": "S1",
+    "split": "dev",
+    "categories": null,
+    "suite": null,
+    "limit": null,
+    "seeds": 3,
+    "workers": 1,
+    "cache": "record",
+    "timeout": 600.0,
+    "rps": 4.0,
+    "llm_rpm": 12.0,
+    "out": null,
+    "resume": "eval/results/dev_baseline",
+    "yes": true,
+    "retry_infra": false,
+    "no_report": false,
+    "dry_run": false
+  },
+  "known_issues": [
+    "Agent v1 trích dẫn 'FreeRTOS v10.5.0' trong khi PDF corpus là FreeRTOS V8.2.1 (không sửa trong P0).",
+    "Dữ liệu Agent v1 là hằng số mô phỏng (3 chân, 11 thanh ghi, 8 đoạn văn); điểm thấp trên task sinh từ SVD là baseline hợp lệ.",
+    "Gemini bỏ qua `seed` và API có thể không xác định ngay cả ở temperature 0; mỗi seed được ghi nhận độc lập trong cache.",
+    "Task C1 review_status=auto; C2/C6/C7/C8 chưa có người duyệt độc lập.",
+    "Manifest của dev_baseline được ghi trước khi sửa merge_manifest: args, wall_seconds, finished_at và các hash (corpus/snapshot/changelog/task_set) chỉ phản ánh lần --resume CUỐI (S1, 2026-10-21T17:34Z); created_at là của lần chạy đầu. Giá trị lúc bắt đầu của các lần chạy trước đã mất và KHÔNG được dựng lại; tổng thời gian thật lớn hơn wall_seconds. Từ bản sửa, các lần resume được ghi vào resumes[]."
+  ],
+  "suite": null,
+  "estimate": {
+    "runs": 3,
+    "llm_calls": 3,
+    "tokens_in": 5100,
+    "tokens_out": 450,
+    "usd": 0.0005,
+    "per_system": {
+      "S1": {
+        "runs": 3,
+        "llm_calls": 3,
+        "tokens_in": 5100,
+        "tokens_out": 450,
+        "usd": 0.0005
+      }
+    },
+    "assumptions": {
+      "S0": {
+        "calls": 1,
+        "in": 350,
+        "out": 120
+      },
+      "S1": {
+        "calls": 1,
+        "in": 1700,
+        "out": 150
+      },
+      "S2": {
+        "calls": 4,
+        "in": 2800,
+        "out": 200
+      }
+    }
+  },
+  "resumed_at": [
+    "2026-10-21T14:59:03+00:00",
+    "2026-10-21T17:12:14+00:00",
+    "2026-10-21T17:34:29+00:00",
+    "2026-10-21T18:59:13+00:00",
+    "2026-10-22T07:22:30+00:00",
+    "2026-10-22T09:56:37+00:00",
+    "2026-10-22T10:06:02+00:00",
+    "2026-10-22T16:26:44+00:00"
+  ],
+  "finished_at": "2026-10-21T17:35:28+00:00",
+  "wall_seconds": 56.5,
+  "corpus_manifest_sha256_at_end": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+  "post_run_changes": [
+    "Sau khi lượt chạy bắt đầu, đã sửa grader (exact/safety/attack/citation/abstain/common), alias trong corpus/manifest.yaml và cite_values của C1 theo review độc lập; runs.jsonl giữ nguyên, scores.jsonl/report.md được chấm lại bằng eval.score/eval.report (không tốn LLM).",
+    "Task C2-008 được viết lại câu hỏi sau review; mọi run C2-008 cũ bị xoá và chạy lại (3 hệ x 3 seed).",
+    "26 run S2 lỗi hạ tầng (hết hạn mức ngày của key miễn phí) được chuyển sang runs_infra_failed.jsonl và chạy lại thành công bằng key khác (cùng model gemini-3.5-flash-lite); không run nào còn nhãn infra trong runs.jsonl.",
+    "Phần chạy lại dùng --workers 2 --timeout 600 (lượt đầu: --workers 4 --timeout 180); chỉ ảnh hưởng thời gian chạy, không ảnh hưởng prompt/logic.",
+    "Lượt chạy chia thành nhiều đợt --resume nên args trong manifest là của đợt cuối; created_at là của đợt đầu.",
+    "Replay đầy đủ tập dev phát hiện retrieval của S1 không xác định giữa các tiến trình (HNSW, câu hỏi xa corpus): 2 run S1 C7-004 (seed 0 và 2) bị cache_miss. Đã thêm record/replay cho retrieval vào native-RAG/eval_adapter.py (khoá = câu hỏi, k, seed), xoá 2 run đó và chạy lại (kết quả vẫn 'I could not find this in the documents.'), rồi ghi retrieval cho mọi run S1 dev để replay sau này tất định.",
+    "Sau review (2026-10-22): native-RAG/eval_adapter.py nay replay KHÔNG truy hồi trực tiếp (thiếu bản ghi -> infra:cache_miss), gắn dấu vân tay chỉ mục (11.251 chunk, 1000/150, MiniLM, esp32_rtos) vào bảng meta của cache truy hồi (backfill thủ công sau khi kiểm chỉ mục không đổi), và dùng chung bộ phân loại lỗi với S0/S2. Replay S1 dev (81 run) vẫn trùng 81/81 câu trả lời, nguồn và TSR; runs.jsonl không đổi.",
+    "2026-10-22: sau review độc lập (plan/reviews/, DECISIONS D11–D15) sửa alias/grader (chấm lại, 0/243 tsr_pass đổi); C1-010 (TIM4_DTR2 không tồn tại trong RM0440 → TIM1_DTR2) và C8-006 (câu ngoài chủ đề → bẫy ngoại suy LEDC_LSCH8) được viết lại câu hỏi: xoá 18 dòng cũ (bản sao ở scratchpad) và chạy lại 3 hệ × 3 seed.",
+    "2026-10-22 (sau P1, D18): grader exact nhận ký hiệu bit trong markdown ('bit **[17]**', 'Bit: `[17]`'), 'bit offset N, bit width W', và dòng liệt kê ngay sau mệnh đề kết thúc bằng ':'. Chấm lại: đúng 2/324 run đổi (S2D C1-010 seed 1, 2: sai -> đúng); không run nào của S0/S1/S2 đổi.",
+    "2026-10-23 (P3, D24): header_gen sinh header CMSIS theo header chính thức của ST (STMicroelectronics/cmsis-device-g4 tag v1.2.6, commit 25664ddc3a7624ae9627ae8c4c672073dc5b2539; sha256 từng file trong corpus/manifest.yaml, mục STM32G4_CMSIS_Device_Headers): đổi tên trường/thanh ghi/instance về tên ST, bỏ tên SVD mà ST không có, thêm macro/thanh ghi ST có, sửa giá trị (FLASH_BASE, FMC_BASE, độ rộng trường), tách DMA_Channel/COMP/OPAMP/DMAMUX/SAI_Block/FDCAN_CONFIG như ST; chỉ sửa agent/hwmodel/header_gen.py (kèm test). Đóng băng lại vendor: hwmodel_vendor_sha256 lúc chạy e45e467c… -> lúc chấm trước D24 1e76416e… -> lúc chấm sau D24 7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27 (hwmodel_data_sha256 không đổi 3c293c60…); corpus/manifest.yaml sha256 a4b316e2… -> bc3e304c… (chỉ thêm mục header ST; cờ --resume không cần khớp trường này). Chấm lại 394 run (không gọi LLM): 0/394 run đổi tsr_pass, fail_codes hay kết quả compile; TSR C3 không đổi (S0 10/18, S1 0/18, S2 2/18, S2D 4/16 run đạt). Cô lập tác động: cùng bộ chấm hiện tại, vendor cũ và mới cho kết quả GIỐNG HỆT ở cả 394 dòng. Lưu ý: lần chấm lại này cũng nạp bản sửa eval/graders/functional_sim.py (session chính, 23/10 00:15; định dạng details.matched của spec clock) nên 4 dòng C3-020 (S0 seed 1 và 2, S2 seed 0, S2D seed 0) khác ở graders.functional_sim.details.matched, KHÔNG đổi pass/fail. Chi tiết: plan/P3_D24_notes.md, báo cáo đối chiếu: corpus/headers/parity/{before,after}/."
+  ],
+  "final_run_count": {
+    "runs": 243,
+    "infra": 0,
+    "recorded_usd_final_runs": 0.0957,
+    "recorded_llm_calls_final_runs": 585
+  },
+  "resumes": [
+    {
+      "args": {
+        "systems": "S0,S1,S2",
+        "split": "dev",
+        "categories": null,
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 600.0,
+        "rps": 4.0,
+        "llm_rpm": 12.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false
+      },
+      "started_at": "2026-10-21T18:59:13+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "449a83b97281376afcadfaa989201d2dedb1158bd7b090755e2aca6021f4f4cf",
+      "corpus_manifest_sha256": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "estimate": {
+        "runs": 18,
+        "llm_calls": 36,
+        "tokens_in": 79500,
+        "tokens_out": 6420,
+        "usd": 0.0079,
+        "per_system": {
+          "S0": {
+            "runs": 6,
+            "llm_calls": 6,
+            "tokens_in": 2100,
+            "tokens_out": 720,
+            "usd": 0.0004
+          },
+          "S1": {
+            "runs": 6,
+            "llm_calls": 6,
+            "tokens_in": 10200,
+            "tokens_out": 900,
+            "usd": 0.001
+          },
+          "S2": {
+            "runs": 6,
+            "llm_calls": 24,
+            "tokens_in": 67200,
+            "tokens_out": 4800,
+            "usd": 0.0065
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1,
+            "in": 350,
+            "out": 120
+          },
+          "S1": {
+            "calls": 1,
+            "in": 1700,
+            "out": 150
+          },
+          "S2": {
+            "calls": 4,
+            "in": 2800,
+            "out": 200
+          }
+        }
+      },
+      "finished_at": "2026-10-21T19:03:40+00:00",
+      "wall_seconds": 267.4
+    },
+    {
+      "args": {
+        "systems": "S2D",
+        "split": "dev",
+        "categories": null,
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 12.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T07:22:30+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "449a83b97281376afcadfaa989201d2dedb1158bd7b090755e2aca6021f4f4cf",
+      "corpus_manifest_sha256": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "estimate": {
+        "runs": 81,
+        "llm_calls": 405,
+        "tokens_in": 1822500,
+        "tokens_out": 101250,
+        "usd": 0.1671,
+        "per_system": {
+          "S2D": {
+            "runs": 81,
+            "llm_calls": 405,
+            "tokens_in": 1822500,
+            "tokens_out": 101250,
+            "usd": 0.1671
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1,
+            "in": 350,
+            "out": 120
+          },
+          "S1": {
+            "calls": 1,
+            "in": 1700,
+            "out": 150
+          },
+          "S2": {
+            "calls": 4,
+            "in": 2800,
+            "out": 200
+          },
+          "S2D": {
+            "calls": 5,
+            "in": 4500,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-10-22T07:37:23+00:00",
+      "wall_seconds": 892.7
+    },
+    {
+      "args": {
+        "systems": "S0,S1,S2,S2D",
+        "split": "dev",
+        "categories": "C3",
+        "suite": null,
+        "limit": 2,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 12.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T09:56:37+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "bc135ca9e275b4854d425514c8a8636ec795e7e5fe45fc518392c4988e965c26",
+      "corpus_manifest_sha256": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "e45e467cfb0e25068636e68e8876512d01ca1f075978c84268e7932afa62f03a",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 24,
+        "llm_calls": 66,
+        "tokens_in": 214500,
+        "tokens_out": 13920,
+        "usd": 0.0203,
+        "per_system": {
+          "S0": {
+            "runs": 6,
+            "llm_calls": 6,
+            "tokens_in": 2100,
+            "tokens_out": 720,
+            "usd": 0.0004
+          },
+          "S1": {
+            "runs": 6,
+            "llm_calls": 6,
+            "tokens_in": 10200,
+            "tokens_out": 900,
+            "usd": 0.001
+          },
+          "S2": {
+            "runs": 6,
+            "llm_calls": 24,
+            "tokens_in": 67200,
+            "tokens_out": 4800,
+            "usd": 0.0065
+          },
+          "S2D": {
+            "runs": 6,
+            "llm_calls": 30,
+            "tokens_in": 135000,
+            "tokens_out": 7500,
+            "usd": 0.0124
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1,
+            "in": 350,
+            "out": 120
+          },
+          "S1": {
+            "calls": 1,
+            "in": 1700,
+            "out": 150
+          },
+          "S2": {
+            "calls": 4,
+            "in": 2800,
+            "out": 200
+          },
+          "S2D": {
+            "calls": 5,
+            "in": 4500,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-10-22T10:04:47+00:00",
+      "wall_seconds": 489.0
+    },
+    {
+      "args": {
+        "systems": "S0,S1,S2,S2D",
+        "split": "dev",
+        "categories": "C3",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 12.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T10:06:02+00:00",
+      "status": "stopped_fatal",
+      "cache_mode": "record",
+      "task_set_sha256": "9c153f64a07526c6e44e24b789d7dd03bbecd9568e1d5b10bdf3ef5b42f04766",
+      "corpus_manifest_sha256": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "e45e467cfb0e25068636e68e8876512d01ca1f075978c84268e7932afa62f03a",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 48,
+        "llm_calls": 132,
+        "tokens_in": 429000,
+        "tokens_out": 27840,
+        "usd": 0.0405,
+        "per_system": {
+          "S0": {
+            "runs": 12,
+            "llm_calls": 12,
+            "tokens_in": 4200,
+            "tokens_out": 1440,
+            "usd": 0.0007
+          },
+          "S1": {
+            "runs": 12,
+            "llm_calls": 12,
+            "tokens_in": 20400,
+            "tokens_out": 1800,
+            "usd": 0.0021
+          },
+          "S2": {
+            "runs": 12,
+            "llm_calls": 48,
+            "tokens_in": 134400,
+            "tokens_out": 9600,
+            "usd": 0.013
+          },
+          "S2D": {
+            "runs": 12,
+            "llm_calls": 60,
+            "tokens_in": 270000,
+            "tokens_out": 15000,
+            "usd": 0.0248
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1,
+            "in": 350,
+            "out": 120
+          },
+          "S1": {
+            "calls": 1,
+            "in": 1700,
+            "out": 150
+          },
+          "S2": {
+            "calls": 4,
+            "in": 2800,
+            "out": 200
+          },
+          "S2D": {
+            "calls": 5,
+            "in": 4500,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-10-22T10:23:20+00:00",
+      "wall_seconds": 1036.7,
+      "stop_reason": "S2: quota exhausted (server asks to wait 74200s) RateLimitError status=429: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this"
+    },
+    {
+      "args": {
+        "systems": "S2D",
+        "split": "dev",
+        "categories": "C3",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 1,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 12.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T16:26:44+00:00",
+      "status": "stopped_fatal",
+      "cache_mode": "record",
+      "task_set_sha256": "9c153f64a07526c6e44e24b789d7dd03bbecd9568e1d5b10bdf3ef5b42f04766",
+      "corpus_manifest_sha256": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "1e76416e9557770fce3d8ab47021f66c015516a39651c5ce09324a89d4a44394",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 3,
+        "llm_calls": 15,
+        "tokens_in": 67500,
+        "tokens_out": 3750,
+        "usd": 0.0062,
+        "per_system": {
+          "S2D": {
+            "runs": 3,
+            "llm_calls": 15,
+            "tokens_in": 67500,
+            "tokens_out": 3750,
+            "usd": 0.0062
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1,
+            "in": 350,
+            "out": 120
+          },
+          "S1": {
+            "calls": 1,
+            "in": 1700,
+            "out": 150
+          },
+          "S2": {
+            "calls": 4,
+            "in": 2800,
+            "out": 200
+          },
+          "S2D": {
+            "calls": 5,
+            "in": 4500,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-10-22T16:27:27+00:00",
+      "wall_seconds": 42.5,
+      "stop_reason": "S2: quota exhausted (server asks to wait 52358s) RateLimitError status=429: Error code: 429 - [{'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this"
+    }
+  ],
+  "scoring": {
+    "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+    "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+    "scored_at": "2026-10-22T17:24:04+00:00"
+  }
+}

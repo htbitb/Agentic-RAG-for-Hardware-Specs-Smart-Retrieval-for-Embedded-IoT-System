@@ -1,0 +1,40 @@
+id: C1-025
+category: C1
+split: test
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_offset
+turns:
+- user: For the STM32G474, what offset do I add to the DMA2 base address to reach CMAR3?
+expected:
+  exact:
+    attribute: offset
+    kind: hex
+    value: '0x3C'
+    allowed:
+    - '0x40020400'
+    - '0x4002043C'
+  numeric_support:
+  - '0x40020400'
+  - '0x3C'
+  - '0x4002043C'
+  - '0x0'
+  cite_values:
+  - CMAR3
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: DMA2
+  register: CMAR3
+  question_type: offset
+  template: offset.3
+  doc_hint: STM32G474_RM0440
+  doc_name: CMAR3
+version: 1

@@ -1,7 +1,18 @@
+# môi trường ảo
 .venv/
+.venv*/
+venv/
+node_modules/
+
+# bí mật — KHÔNG commit (dùng agent/.env.example.txt làm mẫu)
 .env
+.env.*
+!.env.example*
+
+# rác build/test/OS
 __pycache__/
-data/processed/
-logs/
-workspace_out/
-eval/results/run_*/
+*.pyc
+.pytest_cache/
+.DS_Store
+*.sqlite-wal
+*.sqlite-shm

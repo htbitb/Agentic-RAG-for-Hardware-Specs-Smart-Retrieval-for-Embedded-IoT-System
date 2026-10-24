@@ -1,0 +1,37 @@
+id: C1-003
+category: C1
+split: dev
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_access
+turns:
+- user: What is the access type of the WUTR register of RTC on the STM32G474 (read-write, read-only or write-only)?
+expected:
+  exact:
+    attribute: access
+    kind: access
+    value: rw
+  numeric_support:
+  - '0x40002800'
+  - '0x14'
+  - '0x40002814'
+  - '0xFFFF'
+  cite_values:
+  - WUTR
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: RTC
+  register: WUTR
+  question_type: access
+  template: access.1
+  doc_hint: STM32G474_RM0440
+  doc_name: WUTR
+version: 1

@@ -1,0 +1,5 @@
+# Optional dependencies for real LLM API calls and stdio MCP transport
+# (The project runs out-of-the-box with Python 3.10+ stdlib in SimulatedLLM + inproc mode)
+openai>=1.40.0
+mcp>=1.2.0
+python-dotenv>=1.0.0

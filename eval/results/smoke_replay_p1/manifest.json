@@ -1,0 +1,119 @@
+{
+  "created_at": "2026-10-22T07:39:19+00:00",
+  "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+  "model": "gemini-3.5-flash-lite",
+  "temperature": 0.0,
+  "price_in_per_m": 0.075,
+  "price_out_per_m": 0.3,
+  "api_key_set": true,
+  "corpus_manifest_sha256": "a4b316e2240fad8b9dd396628e6a9c7d8ef47431209c2c98ddc0c5878016bcf3",
+  "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+  "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+  "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+  "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+  "commit": null,
+  "seeds": 1,
+  "systems": [
+    "S0",
+    "S1",
+    "S2",
+    "S2D"
+  ],
+  "split": null,
+  "cache_mode": "replay",
+  "n_tasks": 8,
+  "task_set_sha256": "32e5fd7830f4cea6301f06e006eb52bc5faeca8c62c948b1fe04d19eefa6d4d9",
+  "python": "3.11.16",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "args": {
+    "systems": "S0,S1,S2,S2D",
+    "split": "dev",
+    "categories": null,
+    "suite": "smoke",
+    "limit": null,
+    "seeds": null,
+    "workers": 4,
+    "cache": "replay",
+    "timeout": 180,
+    "rps": 4.0,
+    "llm_rpm": 12.0,
+    "out": "eval/results/smoke_replay_p1",
+    "resume": null,
+    "yes": false,
+    "retry_infra": false,
+    "no_report": false,
+    "dry_run": false
+  },
+  "known_issues": [
+    "Agent v1 trích dẫn 'FreeRTOS v10.5.0' trong khi PDF corpus là FreeRTOS V8.2.1 (không sửa trong P0).",
+    "Dữ liệu Agent v1 là hằng số mô phỏng (3 chân, 11 thanh ghi, 8 đoạn văn); điểm thấp trên task sinh từ SVD là baseline hợp lệ.",
+    "Gemini bỏ qua `seed` và API có thể không xác định ngay cả ở temperature 0; mỗi seed được ghi nhận độc lập trong cache.",
+    "Task C1 review_status=auto; C2/C6/C7/C8 chưa có người duyệt độc lập.",
+    "S2D = vòng lặp/verifier/guardrail của Agent v1 (byte-identical) + dữ liệu thật của P1 (snapshots/agent_p1); S2→S2D đo đóng góp của DỮ LIỆU.",
+    "S2D: guardrail.evaluate_hw (không đổi, D10) lấy MIN trên mọi hàng input_voltage nên 5 V vào chân STM32 FT cũng bị từ chối; không chặn 'VDDH' của nRF.",
+    "S2D: 779 thanh ghi chỉ có trong SVD (page=null; ESP32 661, STM32 101, nRF 17) không thể qua verifier V3 ⇒ trả lời 'Insufficient evidence'."
+  ],
+  "suite": "smoke",
+  "estimate": {
+    "runs": 32,
+    "llm_calls": 88,
+    "tokens_in": 286000,
+    "tokens_out": 18560,
+    "usd": 0.027,
+    "per_system": {
+      "S0": {
+        "runs": 8,
+        "llm_calls": 8,
+        "tokens_in": 2800,
+        "tokens_out": 960,
+        "usd": 0.0005
+      },
+      "S1": {
+        "runs": 8,
+        "llm_calls": 8,
+        "tokens_in": 13600,
+        "tokens_out": 1200,
+        "usd": 0.0014
+      },
+      "S2": {
+        "runs": 8,
+        "llm_calls": 32,
+        "tokens_in": 89600,
+        "tokens_out": 6400,
+        "usd": 0.0086
+      },
+      "S2D": {
+        "runs": 8,
+        "llm_calls": 40,
+        "tokens_in": 180000,
+        "tokens_out": 10000,
+        "usd": 0.0165
+      }
+    },
+    "assumptions": {
+      "S0": {
+        "calls": 1,
+        "in": 350,
+        "out": 120
+      },
+      "S1": {
+        "calls": 1,
+        "in": 1700,
+        "out": 150
+      },
+      "S2": {
+        "calls": 4,
+        "in": 2800,
+        "out": 200
+      },
+      "S2D": {
+        "calls": 5,
+        "in": 4500,
+        "out": 250
+      }
+    }
+  },
+  "status": "completed",
+  "finished_at": "2026-10-22T07:39:32+00:00",
+  "wall_seconds": 13.4
+}

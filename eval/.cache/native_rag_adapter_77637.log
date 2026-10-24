@@ -1,0 +1,29 @@
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+[eval_adapter] loading vector store (cache=replay, device=cpu) ...
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+[eval_adapter] loading vector store (cache=replay, device=cpu) ...
+[eval_adapter] ready
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+[eval_adapter] ready
+[eval_adapter] loading vector store (cache=replay, device=cpu) ...
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+[eval_adapter] loading vector store (cache=replay, device=cpu) ...
+[eval_adapter] loading vector store (cache=replay, device=cpu) ...
+/Users/loc4atnt/Master-Course/Ky3/AgenticAI/project/native-RAG/eval_adapter.py:222: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+  from langchain_community.cache import SQLAlchemyCache, SQLiteCache
+[eval_adapter] loading vector store (cache=replay, device=cpu) ...
+[eval_adapter] ready
+[eval_adapter] ready
+[eval_adapter] loading vector store (cache=replay, device=cpu) ...
+[eval_adapter] ready
+[eval_adapter] ready

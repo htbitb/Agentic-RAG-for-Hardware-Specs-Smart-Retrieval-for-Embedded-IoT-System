@@ -1,0 +1,41 @@
+id: C1-015
+category: C1
+split: test
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_address
+turns:
+- user: Give the 32-bit address of the COMP_C7CSR register in the COMP block of the STM32G474.
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x40010218'
+    allowed:
+    - '0x40010200'
+  numeric_support:
+  - '0x40010200'
+  - '0x18'
+  - '0x40010218'
+  - '0x0'
+  cite_values:
+  - '0x40010218'
+  - '0x40010200'
+  - COMP_C7CSR
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: COMP
+  register: COMP_C7CSR
+  question_type: address
+  template: address.4
+  doc_hint: STM32G474_RM0440
+  doc_name: COMP_C7CSR
+version: 1

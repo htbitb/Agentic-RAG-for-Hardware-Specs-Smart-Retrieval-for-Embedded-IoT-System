@@ -1,9 +1,0 @@
-# Python 3.12+ (tested on 3.14.6, Windows 11)
-mcp[cli]==1.30.0        # MCP SDK 1.x (FastMCP API, same as the reference repo); 2.x renamed FastMCP -> MCPServer
-chromadb==1.5.9         # local vector DB + all-MiniLM-L6-v2 ONNX embeddings (downloaded once, ~80 MB)
-onnxruntime==1.30.0
-tokenizers==0.23.2
-pypdf==6.19.0           # PDF text extraction
-numpy==2.5.3
-python-dotenv==1.2.3
-google-genai==2.30.1

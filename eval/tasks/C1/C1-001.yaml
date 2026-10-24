@@ -1,0 +1,40 @@
+id: C1-001
+category: C1
+split: test
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_offset
+turns:
+- user: How far from the ADC1 base address is the CFGR2 register on the STM32G474?
+expected:
+  exact:
+    attribute: offset
+    kind: hex
+    value: '0x10'
+    allowed:
+    - '0x50000000'
+    - '0x50000010'
+  numeric_support:
+  - '0x50000000'
+  - '0x10'
+  - '0x50000010'
+  - '0x0'
+  cite_values:
+  - CFGR2
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: ADC1
+  register: CFGR2
+  question_type: offset
+  template: offset.2
+  doc_hint: STM32G474_RM0440
+  doc_name: CFGR2
+version: 1
