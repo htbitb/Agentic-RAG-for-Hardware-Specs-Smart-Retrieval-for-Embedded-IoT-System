@@ -1,0 +1,2 @@
+# Demo `approval` — kill -9 giữa interrupt rồi resume trong tiến trình mới → Approve (LLM thật)
+Pha 1: `cli --goal ... --interactive` (stdin treo) chạy đến interrupt `approval` cho `pwm_pa8.c` (tại ~95 s, checkpoint `status=INTERRUPTED`), sau đó **`kill -9`** tiến trình. Pha 2 (tiến trình MỚI): `cli --resume <run_id> --interrupt i_d217474c --decision approve` ⇒ file `workspace_out/pwm_pa8.c` được ghi, agent chạy tiếp (cập nhật plan, Gate G1–G5 pass), `finish`. 16 + phần pha 1 lời gọi LLM, ~$0,03. Reject + góp ý: `../run2_reject/`.

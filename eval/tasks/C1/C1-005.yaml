@@ -1,0 +1,51 @@
+id: C1-005
+category: C1
+split: test
+difficulty: easy
+chips:
+- esp32
+tags:
+- register_address
+turns:
+- user: I need the final address of LEDC_LSCH4_DUTY_R_REG (ESP32) for a bare-metal driver. What is it?
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x3FF59100'
+    allowed:
+    - '0x3FF59000'
+    - '0x60019000'
+    equivalent:
+    - '0x60019100'
+  numeric_support:
+  - '0x3FF59000'
+  - '0x100'
+  - '0x3FF59100'
+  - '0x0'
+  - '0x60019000'
+  - '0x60019100'
+  cite_values:
+  - '0x3FF59100'
+  - '0x3FF59000'
+  - LEDC_LSCH4_DUTY_R_REG
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: esp32.svd
+  peripheral: LEDC
+  register: LSCH4_DUTY_R
+  question_type: address
+  template: address.3
+  doc_hint: ESP32_TRM
+  doc_name: LEDC_LSCH4_DUTY_R_REG
+  note: 'ESP32 TRM p.73: (0x3FF40000 + n) và (0x60000000 + n) là cùng một thanh ghi; địa chỉ AHB 0x60019100 cũng được chấp nhận.'
+  review:
+    by: independent model review (Claude Opus 5.5)
+    date: '2026-10-22'
+    change: 'chấp nhận alias AHB 0x60019100 (TRM p.73: DPORT 0x3FF4xxxx == AHB 0x6000xxxx); câu hỏi không đổi'
+version: 1

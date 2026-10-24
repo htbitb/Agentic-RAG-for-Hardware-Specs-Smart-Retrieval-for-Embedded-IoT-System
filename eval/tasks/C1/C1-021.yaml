@@ -1,0 +1,42 @@
+id: C1-021
+category: C1
+split: test
+difficulty: medium
+chips:
+- stm32g474
+tags:
+- register_reset
+turns:
+- user: After a reset, what value does the DBTP register of FDCAN2 hold on the STM32G474?
+expected:
+  exact:
+    attribute: reset
+    kind: hex
+    value: '0xA33'
+    allowed:
+    - '0x40006800'
+    - '0xC'
+    - '0x4000680C'
+  numeric_support:
+  - '0x40006800'
+  - '0xC'
+  - '0x4000680C'
+  - '0xA33'
+  cite_values:
+  - DBTP
+  - '0xA33'
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: FDCAN2
+  register: DBTP
+  question_type: reset
+  template: reset.2
+  doc_hint: STM32G474_RM0440
+  doc_name: DBTP
+version: 1

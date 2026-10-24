@@ -1,0 +1,34 @@
+# ============================================================================
+#  Dependencies for the RAG system.  Install with:
+#      pip install -r requirements.txt
+#
+#  Versions are left open on purpose: pip will pick the newest release that
+#  still supports your Python version (this project is built for Python 3.9).
+# ============================================================================
+
+# Prefer prebuilt "wheel" packages over source packages. This means pip will
+# pick a slightly older version if that's the newest one shipping a ready-made
+# binary for your Python, so NOTHING needs a C/C++ compiler to install.
+--prefer-binary
+
+# ---- ELEMENT 5: Orchestration framework (LangChain) ----
+langchain
+langchain-community          # PDF loaders live here
+langchain-text-splitters     # the chunk splitter
+langchain-huggingface        # embeddings + local HuggingFace LLM wrapper
+langchain-chroma             # connects LangChain to ChromaDB
+langchain-ollama             # optional: only used if LLM_BACKEND = "ollama"
+langchain-openai             # optional: only used if LLM_BACKEND = "openai"
+
+# ---- ELEMENT 3: Vector database ----
+chromadb
+
+# ---- ELEMENT 2 + 4: Embedding model and local LLM ----
+sentence-transformers        # runs the all-MiniLM embedding model
+transformers                 # runs the flan-t5 language model
+torch                        # the math engine both models run on (CPU is fine)
+
+# ---- ELEMENT 1: Reading the PDFs ----
+pypdf
+fonttools                  # lets pypdf decode the maths fonts in the ESP32 TRM
+pyyaml                    # reads ../corpus/manifest.yaml (doc_id mapping)

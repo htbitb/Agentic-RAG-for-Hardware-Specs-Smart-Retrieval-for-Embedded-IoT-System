@@ -1,0 +1,862 @@
+{
+  "created_at": "2026-10-22T16:42:49+00:00",
+  "base_url": "https://apphub.a.inut.vn/ksp-iot/v1",
+  "model": "ag/gemini-3.8-flash-medium",
+  "temperature": 0.0,
+  "price_in_per_m": 0.075,
+  "price_out_per_m": 0.3,
+  "api_key_set": true,
+  "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+  "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+  "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+  "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+  "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+  "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+  "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+  "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+  "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+  "hwmodel_vendor_sha256": "1e76416e9557770fce3d8ab47021f66c015516a39651c5ce09324a89d4a44394",
+  "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+  "commit": null,
+  "seeds": 3,
+  "systems": [
+    "S0",
+    "S1",
+    "S2",
+    "S2D",
+    "S3@P4",
+    "S3@P5"
+  ],
+  "split": "dev",
+  "cache_mode": "record",
+  "n_tasks": 33,
+  "task_set_sha256": "a64bf24592b829de48a246849327549fe0fe74877c7c278f9e529aa7c475a1f4",
+  "python": "3.11.16",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "args": {
+    "systems": "S0,S1,S2,S2D",
+    "split": "dev",
+    "categories": "C1,C2,C3,C6,C7,C8",
+    "suite": null,
+    "limit": null,
+    "seeds": 3,
+    "workers": 3,
+    "cache": "record",
+    "timeout": 180,
+    "rps": 4.0,
+    "llm_rpm": 60.0,
+    "out": "eval/results/dev_baseline_v2",
+    "resume": null,
+    "yes": false,
+    "retry_infra": false,
+    "no_report": true,
+    "dry_run": false
+  },
+  "known_issues": [
+    "Agent v1 trích dẫn 'FreeRTOS v10.5.0' trong khi PDF corpus là FreeRTOS V8.2.1 (không sửa trong P0).",
+    "Dữ liệu Agent v1 là hằng số mô phỏng (3 chân, 11 thanh ghi, 8 đoạn văn); điểm thấp trên task sinh từ SVD là baseline hợp lệ.",
+    "Gemini bỏ qua `seed` và API có thể không xác định ngay cả ở temperature 0; mỗi seed được ghi nhận độc lập trong cache.",
+    "Task C1 review_status=auto; C2/C6/C7/C8 chưa có người duyệt độc lập.",
+    "S2D = vòng lặp/verifier/guardrail của Agent v1 (byte-identical) + dữ liệu thật của P1 (snapshots/agent_p1); S2→S2D đo đóng góp của DỮ LIỆU.",
+    "S2D: guardrail.evaluate_hw (không đổi, D10) lấy MIN trên mọi hàng input_voltage nên 5 V vào chân STM32 FT cũng bị từ chối; không chặn 'VDDH' của nRF.",
+    "S2D: 779 thanh ghi chỉ có trong SVD (page=null; ESP32 661, STM32 101, nRF 17) không thể qua verifier V3 ⇒ trả lời 'Insufficient evidence'."
+  ],
+  "suite": null,
+  "estimate": {
+    "runs": 396,
+    "llm_calls": 1089,
+    "tokens_in": 3539250,
+    "tokens_out": 229680,
+    "usd": 0.3343,
+    "per_system": {
+      "S0": {
+        "runs": 99,
+        "llm_calls": 99,
+        "tokens_in": 34650,
+        "tokens_out": 11880,
+        "usd": 0.0062
+      },
+      "S1": {
+        "runs": 99,
+        "llm_calls": 99,
+        "tokens_in": 168300,
+        "tokens_out": 14850,
+        "usd": 0.0171
+      },
+      "S2": {
+        "runs": 99,
+        "llm_calls": 396,
+        "tokens_in": 1108800,
+        "tokens_out": 79200,
+        "usd": 0.1069
+      },
+      "S2D": {
+        "runs": 99,
+        "llm_calls": 495,
+        "tokens_in": 2227500,
+        "tokens_out": 123750,
+        "usd": 0.2042
+      }
+    },
+    "assumptions": {
+      "S0": {
+        "calls": 1,
+        "in": 350,
+        "out": 120
+      },
+      "S1": {
+        "calls": 1,
+        "in": 1700,
+        "out": 150
+      },
+      "S2": {
+        "calls": 4,
+        "in": 2800,
+        "out": 200
+      },
+      "S2D": {
+        "calls": 5,
+        "in": 4500,
+        "out": 250
+      }
+    }
+  },
+  "status": "completed",
+  "finished_at": "2026-10-22T17:22:15+00:00",
+  "wall_seconds": 2365.2,
+  "post_run_changes": [
+    "2026-10-23: `snapshot_agent_p1_data_sha256` trong manifest ghi nhầm b87298d1… vì lúc bắt đầu lượt chạy snapshots/agent_p1 có thư mục rác `None/` (memory.sqlite, audit.jsonl) do một lần dừng khẩn cấp trước đó để lại (race giữa adapter.close() và start(); đã sửa, thêm test). Thư mục rác đã xoá; các file dữ liệu của snapshot khớp SNAPSHOT.md, nên giá trị đúng là 9fe98cd3…; manifest đã sửa. Không run nào bị ảnh hưởng.",
+    "2026-10-23: 2 run S0 (C3-016 seed 0: gateway trả trang HTML 'Loading...' kèm 404; C7-012 seed 0: phản hồi không có `choices`) bị xếp là lỗi của hệ (`error:`). Đã phân loại lại cả hai dạng là lỗi hạ tầng tạm thời (retry), chuyển 2 dòng sang runs_infra_failed.jsonl và chạy lại cùng seed.",
+    "2026-10-23: baseline C4 dev (60 run = 5 task × S0/S1/S2/S2D × 3 seed) chạy vào cùng thư mục sau khi 15 task C4 được review độc lập và sửa (plan/reviews/review_C4.md) và bộ nhận diện/`final_state` được vá theo review (LaTeX, ReDoS, nêu im lặng không tính, `from_turn`, `any_pin`+`signal`). Chấm lại 396 run không-C4 với bộ chấm sau vá: 0 run đổi. 1 run S0 (C4-014 seed 1, lượt 1) bị gateway trả trang HTML 404 'Loading...' ổn định qua 3 lần chạy lại (cùng prompt) nên được giữ là lỗi hạ tầng (`infra:`) và loại khỏi TSR; 59/60 run C4 hợp lệ.",
+    "2026-10-23: S0 C7-012 seed 0 vẫn mang `error:ValidationError` sau lần chạy lại đầu tiên vì cache đã lưu nhầm phản hồi Gemini bị bộ lọc chặn prompt (HTTP 200, `choices` = null, `promptFeedback.blockReason = OTHER`) và replay nó làm pydantic ném lỗi. Sửa eval/llm_cache.py: mục cache không có `choices` bị xoá thay vì replay, lỗi chặn của nhà cung cấp được ghi rõ trong thông báo hạ tầng; dòng lỗi chuyển sang runs_infra_failed.jsonl và chạy lại (lần này Gemini trả lời bình thường). Chỉ 1 run C7 đổi.",
+    "2026-10-23 (sau khi xem câu trả lời THẬT của S0 trên C4): kiểm thủ công 13 mục 'chủ động' và các mục bỏ sót của S0 phát hiện 2 dương giả + 1 bỏ sót của bộ nhận diện và đã sửa TỔNG QUÁT cho mọi hệ (D18): (1) mọi cue từ vựng bọc ranh giới từ (\"own the counter\" khớp trong \"step down the counter\" → TIMER_SHARED dương giả); (2) \"violates/Absolute Maximum/prohibited/not allowed\" là lời cảnh báo (\"Subjecting PC5 directly to a 5 V signal violates the Absolute Maximum Ratings\" bị tính là khuyên nối thẳng → must_not dương giả); (3) \"routes AF7 on PA2/PA3 to USART2\" là nêu chân thuộc ngoại vi khác (NO_SUCH_AF bỏ sót). Chấm lại toàn bộ 456 run: 3 run đổi, cả 3 là S0/C4 — C4-014 seed 0 (trượt → ĐẠT, bỏ must_not:unsafe_connection), C4-012 seed 0 (bỏ conflict_missed:NO_SUCH_AF, vẫn trượt do final_state), C4-011 seed 2 (nêu 'chủ động' → 'muộn', vẫn trượt do final_state); 0 run nào ngoài C4 đổi. Các câu này được đưa vào eval/tests/fixtures/conflict_calibration_posthoc.yaml.",
+    "2026-10-23 (P4, D18): sau khi thấy câu trả lời thật của S3@P4, sửa 2 lỗi grader theo quy tắc TỔNG QUÁT áp dụng cho MỌI hệ và chấm lại cả 570 run: (1) `exact` (thuộc tính reset): mệnh đề nói về bit/trường (\"bit 6 is set at reset\", \"All other bits reset to 0\", \"reset value of DS[2:0] is 010\") không còn bị coi là claim reset của cả thanh ghi; (2) `textnorm.quantities`: ô số trong hàng bảng markdown mang đơn vị của ô đơn vị duy nhất cùng hàng. Kết quả: đúng 5/570 run đổi tsr_pass (đều False→True): S0 C1-020 seed 0, S2D C1-020 seed 0, S3@P4 C1-020 seed 0 và 2, S3@P4 C2-011 seed 0; chi tiết numeric_claims/citation đổi ở 1 run S3@P4; 0 run đổi chiều True→False. TSR tổng trước→sau: S0 74,1→75,0 %; S2D 61,4→62,3 %; S3@P4 87,7→90,4 %.",
+    "2026-10-23 (P5, D34/D18): sửa grader `abstain` theo quy tắc TỔNG QUÁT áp dụng cho MỌI hệ sau khi nhãn mù độc lập (45 câu C8, plan/reviews/c8_blind_labels_dev_v2_unblinded.csv) cho thấy grader cũ tin cậy kém với câu trả lời dài của S3@P4: (a) một giá trị chỉ là bịa khi gán cho đối tượng/thuộc tính ĐƯỢC HỎI — dữ kiện đúng về thuộc tính/thực thể khác được nêu rõ (giải mã hậu tố mã linh kiện, bước nhảy `0x14` giữa các thanh ghi thật, dải nhiệt độ) không tính (áp dụng khi câu hỏi nêu chip có trong corpus; chip ngoài corpus vẫn tính mọi giá trị); (b) bắt ước lượng bằng chữ ('single-digit USD', 'sub-two microamps', 'a few mA', 'low single-digit microampere range', 'a couple of dollars'...) khi đơn vị khớp thuộc tính được hỏi; (c) thêm cách nói abstain 'not available in the offline technical documentation'. Chấm lại 570 run: đúng 4/570 run đổi tsr_pass, tất cả là S3@P4/C8: C8-006 s2, C8-008 s1, C8-008 s2 False→True; C8-004 s0 True→False; S0/S1/S2/S2D 0 run đổi. Cohen's κ so với 45 nhãn mù (coi 'fail' là dương): trước P 0,25 / R 0,50 / κ 0,29 (41/45 khớp); sau P 1,00 / R 1,00 / κ 1,00 (45/45). C8 của S3@P4: 5/9 = 55,6 % → 7/9 = 77,8 % (= nhãn mù, D34). CẢNH BÁO PHƯƠNG PHÁP: quy tắc được thiết kế khi nhìn chính 45 nhãn nên κ sau là kiểm định TRONG MẪU; kiểm bằng 15 câu tổng hợp dương + 17 âm viết ở cách diễn đạt khác, nhưng P9 PHẢI lặp lại nhãn mù C8 trên đầu ra `test` (D38: khoá grader trước `test`). Đồng thời grader `process` đổi `turns` (m3: không đếm sự kiện không có run_id → `turns` giảm đúng 1 trên 114 run S3@P4; không đổi số liệu tổng hợp) và thêm khoá Self-Correction vật lý/provenance (D35); công cụ: `eval/tools/abstain_audit.py`.",
+    "2026-10-23 (P5, D18): sau khi thấy câu trả lời THẬT trên C5 dev (90 run, lượt đầu tiên chấm C5; TSR C5 ban đầu S0 0/18, S1/S2/S2D 0/18, S3@P5 2/18 — hiệu ứng sàn) hai sửa TỔNG QUÁT cho mọi hệ: (1) grader `checklist` chuẩn hoá LaTeX/markdown (\\\\mu, \\\\text{A}, \\\\approx, $…$, **đậm**, dấu gạch nối giữa chữ; M=4 trần khi PLL/VCO ở cùng dòng hoặc ≤ 6 dòng trên) trước khi khớp — các câu trả lời thật dày LaTeX nên 'Total sleep current ≈ 2,73 µA' không được nhận; mã và inline code giữ nguyên; (2) mở rộng bằng quy tắc đồng nghĩa/định dạng (không chép chuỗi lỗi) hai hạng mục `esp_link_compat` và `peak_current` của task C5 vì hai hạng mục này từ chối câu đúng ('no translation needed', 'levels match', 'a + b + c = 291 mA', 'peaks'); tệp task C5 sha256 35e40f72… → 1998f31a…; 12 lời giải tham chiếu vẫn qua và 27 biến thể sai vẫn trượt đúng hạng mục khai báo. Chấm lại: 774 run, 0 hàng ngoài C5 đổi, 18 run C5 đổi (đều False→True): S0 C5 thường 0/12→5/12, oracle 0/6→4/6; S3@P5 thường 1/12→7/12, oracle 1/6→4/6; S1, S2, S2D vẫn 0 (đọc cả 54 câu: S1 'I could not find this in the documents', S2 'step budget exhausted', S2D như S2 hoặc rỗng — thất bại thật). CẢNH BÁO: các sửa này làm SAU khi thấy đầu ra nên con số C5 là in-sample; P9 phải khoá checklist (D38) và lặp lại kiểm tay trên `test`. Hạn chế đã biết: C5-004/005 qua TSR được bằng câu hedge ('nếu cảm biến là 1,8 V thì lắp level shifter') — đọc khả năng HỎI từ `clarify` recall.",
+    "2026-10-23 (P5): thêm hệ S3@P5 vào cùng thư mục (snapshots/agent_p5, sha256 .py 45ec50d3…, hash ghim `snapshot_agent_p5_*`): 114 run C1–C4,C6–C8 (dev×3 seed, 0 lỗi hạ tầng, $≈3,9 theo giá cấu hình) + 90 run C5 dev (S0,S1,S2,S2D,S3@P5 × (4 task + 2 oracle) × 3 seed); hàng S3@P4 giữ nguyên. Sửa hạ tầng trong lúc chạy: worker tính thời gian tentative API thất bại vào `infra_wait_s` (không vào wall_s); `eval/llm_cache._validate_completion` cho phép replay finish_reason lạ."
+  ],
+  "resumed_at": [
+    "2026-10-22T17:25:27+00:00",
+    "2026-10-22T18:49:46+00:00",
+    "2026-10-22T19:34:25+00:00",
+    "2026-10-22T19:41:47+00:00",
+    "2026-10-22T19:51:34+00:00",
+    "2026-10-23T07:05:08+00:00",
+    "2026-10-23T11:30:38+00:00",
+    "2026-10-23T15:26:58+00:00"
+  ],
+  "resumes": [
+    {
+      "args": {
+        "systems": "S0",
+        "split": "dev",
+        "categories": "C3,C7",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 60.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T17:25:27+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "80092307ed4218659f4490f3298569b5c14567fafcd847e4027ad03e2b8531dd",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 6,
+        "llm_calls": 6,
+        "tokens_in": 2100,
+        "tokens_out": 720,
+        "usd": 0.0004,
+        "per_system": {
+          "S0": {
+            "runs": 6,
+            "llm_calls": 6,
+            "tokens_in": 2100,
+            "tokens_out": 720,
+            "usd": 0.0004
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1,
+            "in": 350,
+            "out": 120
+          },
+          "S1": {
+            "calls": 1,
+            "in": 1700,
+            "out": 150
+          },
+          "S2": {
+            "calls": 4,
+            "in": 2800,
+            "out": 200
+          },
+          "S2D": {
+            "calls": 5,
+            "in": 4500,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-10-22T17:26:17+00:00",
+      "wall_seconds": 50.4
+    },
+    {
+      "args": {
+        "systems": "S0,S1,S2,S2D",
+        "split": "dev",
+        "categories": "C4",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 60.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T18:49:46+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "8986bbb0727d4bbbb5a28d7226aef90c3900462f7d3eeea497a941a3611d6c86",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 60,
+        "llm_calls": 601,
+        "tokens_in": 4870992,
+        "tokens_out": 43814,
+        "usd": 0.3785,
+        "per_system": {
+          "S0": {
+            "runs": 15,
+            "llm_calls": 48,
+            "tokens_in": 264492,
+            "tokens_out": 15648,
+            "usd": 0.0245
+          },
+          "S1": {
+            "runs": 15,
+            "llm_calls": 48,
+            "tokens_in": 270816,
+            "tokens_out": 960,
+            "usd": 0.0206
+          },
+          "S2": {
+            "runs": 15,
+            "llm_calls": 310,
+            "tokens_in": 2010697,
+            "tokens_out": 10836,
+            "usd": 0.1541
+          },
+          "S2D": {
+            "runs": 15,
+            "llm_calls": 195,
+            "tokens_in": 2324987,
+            "tokens_out": 16370,
+            "usd": 0.1793
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          }
+        }
+      },
+      "finished_at": "2026-10-22T19:34:11+00:00",
+      "wall_seconds": 2664.8
+    },
+    {
+      "args": {
+        "systems": "S0,S1,S2,S2D",
+        "split": "dev",
+        "categories": "C4",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 60.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": false,
+        "retry_infra": true,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T19:34:25+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "8986bbb0727d4bbbb5a28d7226aef90c3900462f7d3eeea497a941a3611d6c86",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 12,
+        "llm_calls": 113,
+        "tokens_in": 883849,
+        "tokens_out": 8215,
+        "usd": 0.0688,
+        "per_system": {
+          "S0": {
+            "runs": 3,
+            "llm_calls": 9,
+            "tokens_in": 47992,
+            "tokens_out": 2934,
+            "usd": 0.0045
+          },
+          "S1": {
+            "runs": 3,
+            "llm_calls": 9,
+            "tokens_in": 49140,
+            "tokens_out": 180,
+            "usd": 0.0037
+          },
+          "S2": {
+            "runs": 3,
+            "llm_calls": 58,
+            "tokens_in": 364844,
+            "tokens_out": 2032,
+            "usd": 0.028
+          },
+          "S2D": {
+            "runs": 3,
+            "llm_calls": 37,
+            "tokens_in": 421873,
+            "tokens_out": 3069,
+            "usd": 0.0326
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          }
+        }
+      },
+      "finished_at": "2026-10-22T19:41:28+00:00",
+      "wall_seconds": 422.0
+    },
+    {
+      "args": {
+        "systems": "S0,S1,S2,S2D",
+        "split": "dev",
+        "categories": "C4",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 2,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 60.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": false,
+        "retry_infra": true,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T19:41:47+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "8986bbb0727d4bbbb5a28d7226aef90c3900462f7d3eeea497a941a3611d6c86",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 12,
+        "llm_calls": 113,
+        "tokens_in": 883849,
+        "tokens_out": 8215,
+        "usd": 0.0688,
+        "per_system": {
+          "S0": {
+            "runs": 3,
+            "llm_calls": 9,
+            "tokens_in": 47992,
+            "tokens_out": 2934,
+            "usd": 0.0045
+          },
+          "S1": {
+            "runs": 3,
+            "llm_calls": 9,
+            "tokens_in": 49140,
+            "tokens_out": 180,
+            "usd": 0.0037
+          },
+          "S2": {
+            "runs": 3,
+            "llm_calls": 58,
+            "tokens_in": 364844,
+            "tokens_out": 2032,
+            "usd": 0.028
+          },
+          "S2D": {
+            "runs": 3,
+            "llm_calls": 37,
+            "tokens_in": 421873,
+            "tokens_out": 3069,
+            "usd": 0.0326
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          }
+        }
+      },
+      "finished_at": "2026-10-22T19:48:50+00:00",
+      "wall_seconds": 422.4
+    },
+    {
+      "args": {
+        "systems": "S0",
+        "split": "dev",
+        "categories": "C7",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 1,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 60.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": false,
+        "retry_infra": false,
+        "no_report": true,
+        "dry_run": false
+      },
+      "started_at": "2026-10-22T19:51:34+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "0ace3e4aabb777d1cb778c8a21614290729de964bba1499b90f405c2484ebe04",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 3,
+        "llm_calls": 3,
+        "tokens_in": 10665,
+        "tokens_out": 978,
+        "usd": 0.0011,
+        "per_system": {
+          "S0": {
+            "runs": 3,
+            "llm_calls": 3,
+            "tokens_in": 10665,
+            "tokens_out": 978,
+            "usd": 0.0011
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          }
+        }
+      },
+      "finished_at": "2026-10-22T19:51:46+00:00",
+      "wall_seconds": 11.9
+    },
+    {
+      "args": {
+        "systems": "S3@P4",
+        "ablations": "",
+        "split": "dev",
+        "categories": null,
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": true,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false
+      },
+      "started_at": "2026-10-23T07:05:08+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "55bbdad3e27e15d3080b2ce8790519e74186177cff15eb2cef49b657636c7582",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 114,
+        "llm_calls": 2014,
+        "tokens_in": 46648284,
+        "tokens_out": 483336,
+        "usd": 3.6436,
+        "per_system": {
+          "S3@P4": {
+            "runs": 114,
+            "llm_calls": 2014,
+            "tokens_in": 46648284,
+            "tokens_out": 483336,
+            "usd": 3.6436
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          }
+        }
+      },
+      "finished_at": "2026-10-23T08:07:07+00:00",
+      "wall_seconds": 3718.3
+    },
+    {
+      "args": {
+        "systems": "S3@P5",
+        "ablations": "",
+        "split": "dev",
+        "categories": "C1,C2,C3,C4,C6,C7,C8",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 6,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": true,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-10-23T11:30:38+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "50f312ac5786bd78232da59e54795073fbc7d2d8ed96fd82ecc937ccc21e0708",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 114,
+        "llm_calls": 2132,
+        "tokens_in": 50286572,
+        "tokens_out": 532875,
+        "usd": 3.9314,
+        "per_system": {
+          "S3@P5": {
+            "runs": 114,
+            "llm_calls": 2132,
+            "tokens_in": 50286572,
+            "tokens_out": 532875,
+            "usd": 3.9314
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-10-23T12:06:16+00:00",
+      "wall_seconds": 2137.1
+    },
+    {
+      "args": {
+        "systems": "S0,S1,S2,S2D,S3@P5",
+        "ablations": "",
+        "split": "dev",
+        "categories": "C5",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 6,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_baseline_v2",
+        "yes": true,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": true
+      },
+      "started_at": "2026-10-23T15:26:58+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "a5dabf463ef4331a9e7c897767dde7676b939daf43cfa3c171300c419c2b4e11",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 90,
+        "llm_calls": 972,
+        "tokens_in": 17301165,
+        "tokens_out": 163360,
+        "usd": 1.3466,
+        "per_system": {
+          "S0": {
+            "runs": 18,
+            "llm_calls": 36,
+            "tokens_in": 159975,
+            "tokens_out": 11736,
+            "usd": 0.0155
+          },
+          "S1": {
+            "runs": 18,
+            "llm_calls": 36,
+            "tokens_in": 163800,
+            "tokens_out": 720,
+            "usd": 0.0125
+          },
+          "S2": {
+            "runs": 18,
+            "llm_calls": 232,
+            "tokens_in": 1216148,
+            "tokens_out": 8127,
+            "usd": 0.0936
+          },
+          "S2D": {
+            "runs": 18,
+            "llm_calls": 146,
+            "tokens_in": 1406242,
+            "tokens_out": 12277,
+            "usd": 0.1092
+          },
+          "S3@P5": {
+            "runs": 18,
+            "llm_calls": 522,
+            "tokens_in": 14355000,
+            "tokens_out": 130500,
+            "usd": 1.1158
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-10-23T15:52:19+00:00",
+      "wall_seconds": 1520.3
+    }
+  ],
+  "scoring": {
+    "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+    "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+    "scored_at": "2026-10-23T16:34:39+00:00"
+  }
+}

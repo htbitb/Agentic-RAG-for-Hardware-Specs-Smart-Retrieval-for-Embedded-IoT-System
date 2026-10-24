@@ -1,0 +1,43 @@
+id: C1-006
+category: C1
+split: dev
+difficulty: easy
+chips:
+- esp32
+tags:
+- register_access
+turns:
+- user: Is RNG_DATA_REG on the ESP32 read-only, write-only or read-write?
+expected:
+  exact:
+    attribute: access
+    kind: access
+    value: ro
+  numeric_support:
+  - '0x60035000'
+  - '0x144'
+  - '0x60035144'
+  - '0x0'
+  - '0x3FF75000'
+  - '0x3FF75144'
+  cite_values:
+  - RNG_DATA_REG
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: esp32.svd
+  peripheral: RNG
+  register: DATA
+  question_type: access
+  template: access.2
+  doc_hint: ESP32_TRM
+  doc_name: RNG_DATA_REG
+  review:
+    by: independent model review (Claude Opus 5.5)
+    date: '2026-10-22'
+    change: 'numeric_support: thêm địa chỉ DPORT của TRM (0x3FF75000/0x3FF75144, TRM p.309/73); câu hỏi không đổi'
+version: 1

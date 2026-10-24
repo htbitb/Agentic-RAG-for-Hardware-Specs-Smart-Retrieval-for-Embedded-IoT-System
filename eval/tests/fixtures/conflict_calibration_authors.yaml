@@ -1,0 +1,47 @@
+# Mẫu thật rút từ báo cáo của tác giả task C4-002..005 (họ chạy bộ nhận diện trên câu trả lời tự nhiên): ca bỏ sót và dương giả. Đây là dữ liệu HIỆU CHỈNH (không mù).
+- {id: au-01, code: "NO_SUCH_AF:PB6", label: true,  kind: explicit, text: "PB6 can't be I2C1_SCL on the STM32G474, so I use PB8."}
+- {id: au-02, code: "NO_SUCH_AF:PB6", label: true,  kind: explicit, text: "PB6 cannot be used for I2C1_SCL on this chip."}
+- {id: au-03, code: "NO_SUCH_AF:PB6", label: true,  kind: explicit, text: "PB6 isn't capable of I2C1_SCL; only PA15 and PB8 are."}
+- {id: au-04, code: "NO_SUCH_AF:PB6", label: true,  kind: explicit, text: "PB6 isn't an I2C1_SCL pin on the G474."}
+- {id: au-05, code: "NO_SUCH_AF:PB6", label: true,  kind: explicit, text: "PB6 is the wrong pin for I2C1_SCL on this device."}
+- {id: au-06, code: "PIN_CONFLICT:PB7", label: true,  kind: explicit, text: "Since PB7 is used for SDA, it cannot also be the USART1 receiver."}
+- {id: au-07, code: "PIN_CONFLICT:PB7", label: true,  kind: explicit, text: "PB7 can only carry one function at a time, so the debug UART RX moves to PA10."}
+- {id: au-08, code: "NOT_5V_TOLERANT:PA3", label: true,  kind: explicit, text: "PA3 cannot take a 5 V signal without a divider; I use PA15."}
+- {id: au-09, code: "TIMER_SHARED:TIM2", label: true,  kind: explicit, text: "Different PWM frequencies require different timers; TIM2 cannot do both."}
+- {id: au-10, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "The STM32G474 cannot run at 200 MHz; the maximum is 170 MHz."}
+- {id: au-11, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "I can't raise SYSCLK to 200 MHz: the part is rated for 170 MHz at most."}
+- {id: au-12, code: "TIMER_SHARED:TIM2", label: false, kind: mention, text: "Both channels of TIM2 are configured with the same prescaler; I set ARR = 19999 for the servo."}
+- {id: au-13, code: "TIMER_SHARED:TIM2", label: false, kind: mention, text: "TIM2 runs at 170 MHz, shared by all channels."}
+- {id: au-14, code: "unsafe_connection", pin: PA3, label: false, kind: negated, text: "Instead of wiring the GPS output directly to PA3, use PA15."}
+- {id: au-15, code: "unsafe_connection", pin: PA3, label: false, kind: negated, text: "Wiring the 5 V output directly to PA3 would damage it."}
+- {id: au-16, code: "unsafe_connection", pin: PA3, label: false, kind: negated, text: "Connecting the GPS TX directly to PA3 is unsafe."}
+- {id: au-17, code: "unsafe_connection", pin: PA3, label: false, kind: negated, text: "PA15 is 5 V tolerant, so the GPS TX can be connected directly to PA15, unlike PA3."}
+# --- báo cáo của tác giả B và C (C4-006..015 và C4-011..015) ---
+- {id: au-18, code: "NO_SUCH_AF:PA2", label: true,  kind: explicit, text: "PA2 and PA3 are USART2 pins (AF7), not USART1 pins; USART1 sits on PA9/PA10."}
+- {id: au-19, code: "NO_SUCH_AF:PA2", label: true,  kind: explicit, text: "PA2 is USART2_TX, so it can't be USART1_TX."}
+- {id: au-20, code: "NO_SUCH_AF:PA3", label: true,  kind: explicit, text: "PA3 is not USART1_RX: AF7 on PA3 is USART2_RX."}
+- {id: au-21, code: "TIMER_SHARED:TIM3", label: true,  kind: explicit, text: "TIM3 can only have one PWM frequency, so I put the buzzer on TIM17."}
+- {id: au-22, code: "TIMER_SHARED:TIM3", label: true,  kind: explicit, text: "On TIM3 the ARR and PSC apply to every channel, so channel 2 would also run at 20 kHz."}
+- {id: au-23, code: "TIMER_SHARED:TIM3", label: true,  kind: explicit, text: "The period is set per timer rather than per channel, so TIM3 cannot generate both 20 kHz and 1 kHz."}
+- {id: au-24, code: "TIMER_SHARED:TIM3", label: true,  kind: explicit, text: "The auto-reload register is common to all the channels of TIM3."}
+- {id: au-25, code: "TIMER_SHARED:TIM3", label: true,  kind: explicit, text: "TIM3 channel 2 would inherit the 20 kHz frequency of channel 1."}
+- {id: au-26, code: "PIN_CONFLICT:PB10", label: true,  kind: explicit, text: "PB10 is used by USART3_TX, so the PWM goes to PA2."}
+- {id: au-27, code: "PIN_CONFLICT:PB10", label: true,  kind: explicit, text: "Since PB10 is the USART3 TX pin, I put TIM2_CH3 on PA2 instead."}
+- {id: au-28, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "The STM32G474 tops out at 170 MHz, so I keep the system clock at 170 MHz."}
+- {id: au-29, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "Range 1 normal mode is limited to 150 MHz, so 170 MHz is not possible with R1MODE = 1."}
+- {id: au-30, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "With R1MODE = 1 the device cannot run at 170 MHz; boost mode is required above 150 MHz."}
+- {id: au-31, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "R1MODE = 1 caps the core at 150 MHz."}
+- {id: au-32, code: "CLOCK_LIMIT:SYSCLK", label: true,  kind: explicit, text: "R1MODE=1 and 170 MHz are incompatible: normal mode tops out at 150 MHz."}
+- {id: au-33, code: "CLOCK_LIMIT:PLL_IN", label: true,  kind: explicit, text: "The PLL input frequency must be between 2.66 and 16 MHz, so PLLM = 1 isn't valid for a 24 MHz crystal."}
+- {id: au-34, code: "PIN_CONFLICT:PA9", label: true,  kind: explicit, text: "PA9 is the USART1 TX pin from message 1, so I2C2_SCL cannot use it."}
+- {id: au-35, code: "PIN_CONFLICT:PA9", label: true,  kind: explicit, text: "Both USART1_TX and I2C2_SCL map to PA9; I moved I2C2 SCL to PC4 instead."}
+- {id: au-36, code: "PIN_CONFLICT:PB6", label: true,  kind: explicit, text: "Using PB6 and PB7 for USART1 would break the PWM outputs, so I moved the UART to PA9/PA10."}
+- {id: au-37, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Without a level shifter, a 3.3 V GPIO connected directly to a 1.8 V pin would be overstressed."}
+- {id: au-38, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "If you wire the 3.3 V STM32 pins directly to the 1.8 V BLE pins, the module can be damaged, so add a level shifter."}
+- {id: au-39, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Since the 1.8 V module and 3.3 V MCU differ, connecting them directly is risky; add a level shifter."}
+- {id: au-40, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Wire the 1.8 V sensor to the low-voltage side of a level shifter and the 3.3 V MCU pins directly to its high-voltage side."}
+- {id: au-41, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "The 1.8 V sensor goes through a level shifter, which connects directly to the 3.3 V MCU pins."}
+- {id: au-42, code: "unsafe_connection", pin: PC5, label: false, kind: negated, text: "PC5 is not 5 V tolerant, so I moved RX to PA10, where the LiDAR can be connected directly."}
+- {id: au-43, code: "unsafe_connection", pin: PC5, label: false, kind: negated, text: "Instead of PC5, which is a TT_a pin, use PA10 so that you can connect the sensor directly."}
+- {id: au-44, code: "unsafe_connection", pin: PC5, label: false, kind: negated, text: "PC5 is not 5 V tolerant; PA10 and PB7 are, so the 5 V LiDAR output can go straight to PA10."}
+- {id: au-45, code: "unsafe_connection", pin: PC5, label: true,  kind: explicit, text: "The LiDAR's 5 V TX can go straight to PC5, no divider needed."}

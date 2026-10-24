@@ -1,0 +1,16 @@
+W1022 23:26:49.273000 53270 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[10/22/26 23:26:49] INFO     Loading SentenceTransformer model     model.py:1210
+                             from                                               
+                             sentence-transformers/all-MiniLM-L6-v              
+                             2.                                                 
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 6080.93it/s]
+[10/22/26 23:27:21] INFO     HTTP Request: POST                  _client.py:1084
+                             https://generativelanguage.googleap                
+                             is.com/v1beta/openai/chat/completio                
+                             ns "HTTP/1.1 200 OK"                               
+                    INFO     HTTP Request: POST                  _client.py:1084
+                             https://generativelanguage.googleap                
+                             is.com/v1beta/openai/chat/completio                
+                             ns "HTTP/1.1 429 Too Many Requests"                
+/opt/homebrew/Cellar/python@3.11/3.11.16/Frameworks/Python.framework/Versions/3.11/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

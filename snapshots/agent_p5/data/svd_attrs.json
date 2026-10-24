@@ -1,0 +1,343 @@
+{
+ "chips": {
+  "esp32": {
+   "interrupts": {
+    "BT_BB": 4,
+    "BT_BB_NMI": 5,
+    "BT_MAC": 3,
+    "CACHE_IA": 68,
+    "EFUSE": 44,
+    "ETH_MAC": 38,
+    "FROM_CPU_INTR0": 24,
+    "FROM_CPU_INTR1": 25,
+    "FROM_CPU_INTR2": 26,
+    "FROM_CPU_INTR3": 27,
+    "GPIO": 22,
+    "GPIO_NMI": 23,
+    "I2C_EXT0": 49,
+    "I2C_EXT1": 50,
+    "I2S0": 32,
+    "I2S1": 33,
+    "LEDC": 43,
+    "MCPWM0": 39,
+    "MCPWM1": 40,
+    "MCPWM2": 41,
+    "MCPWM3": 42,
+    "MMU_IA": 66,
+    "MPU_IA": 67,
+    "PCNT": 48,
+    "RMT": 47,
+    "RSA": 51,
+    "RTC_CORE": 46,
+    "RWBLE": 7,
+    "RWBLE_NMI": 9,
+    "RWBT": 6,
+    "RWBT_NMI": 8,
+    "SDIO_HOST": 37,
+    "SPI0": 28,
+    "SPI1": 29,
+    "SPI1_DMA": 52,
+    "SPI2": 30,
+    "SPI2_DMA": 53,
+    "SPI3": 31,
+    "SPI3_DMA": 54,
+    "TG0_LACT_EDGE": 61,
+    "TG0_LACT_LEVEL": 17,
+    "TG0_T0_EDGE": 58,
+    "TG0_T0_LEVEL": 14,
+    "TG0_T1_EDGE": 59,
+    "TG0_T1_LEVEL": 15,
+    "TG0_WDT_EDGE": 60,
+    "TG0_WDT_LEVEL": 16,
+    "TG1_LACT_EDGE": 65,
+    "TG1_LACT_LEVEL": 21,
+    "TG1_T0_EDGE": 62,
+    "TG1_T0_LEVEL": 18,
+    "TG1_T1_EDGE": 63,
+    "TG1_T1_LEVEL": 19,
+    "TG1_WDT_EDGE": 64,
+    "TG1_WDT_LEVEL": 20,
+    "TIMER1": 56,
+    "TIMER2": 57,
+    "TWAI0": 45,
+    "UART0": 34,
+    "UART1": 35,
+    "UART2": 36,
+    "UHCI0": 12,
+    "UHCI1": 13,
+    "WDT": 55,
+    "WIFI_BB": 2,
+    "WIFI_MAC": 0,
+    "WIFI_NMI": 1
+   },
+   "registers": {},
+   "svd_file": "svd/esp32.svd",
+   "svd_sha256": "f80fb973c19896eb904c00efcead9242f0027deb0a297b7b427d6982172dfcac"
+  },
+  "nrf52840": {
+   "interrupts": {
+    "CCM_AAR": 15,
+    "COMP_LPCOMP": 19,
+    "CRYPTOCELL": 42,
+    "ECB": 14,
+    "FPU": 38,
+    "GPIOTE": 6,
+    "I2S": 37,
+    "MWU": 32,
+    "NFCT": 5,
+    "PDM": 29,
+    "POWER_CLOCK": 0,
+    "PWM0": 28,
+    "PWM1": 33,
+    "PWM2": 34,
+    "PWM3": 45,
+    "QDEC": 18,
+    "QSPI": 41,
+    "RADIO": 1,
+    "RNG": 13,
+    "RTC0": 11,
+    "RTC1": 17,
+    "RTC2": 36,
+    "SAADC": 7,
+    "SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0": 3,
+    "SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1": 4,
+    "SPIM2_SPIS2_SPI2": 35,
+    "SPIM3": 47,
+    "SWI0_EGU0": 20,
+    "SWI1_EGU1": 21,
+    "SWI2_EGU2": 22,
+    "SWI3_EGU3": 23,
+    "SWI4_EGU4": 24,
+    "SWI5_EGU5": 25,
+    "TEMP": 12,
+    "TIMER0": 8,
+    "TIMER1": 9,
+    "TIMER2": 10,
+    "TIMER3": 26,
+    "TIMER4": 27,
+    "UARTE0_UART0": 2,
+    "UARTE1": 40,
+    "USBD": 39,
+    "WDT": 16
+   },
+   "registers": {
+    "MWU.PERREGION[0].SUBSTATRA": {
+     "modified_write": "oneToClear"
+    },
+    "MWU.PERREGION[0].SUBSTATWA": {
+     "modified_write": "oneToClear"
+    },
+    "MWU.PERREGION[1].SUBSTATRA": {
+     "modified_write": "oneToClear"
+    },
+    "MWU.PERREGION[1].SUBSTATWA": {
+     "modified_write": "oneToClear"
+    },
+    "NFCT.ERRORSTATUS": {
+     "modified_write": "oneToClear"
+    },
+    "NFCT.FRAMESTATUS.RX": {
+     "modified_write": "oneToClear"
+    },
+    "P0.DIRCLR": {
+     "modified_write": "oneToClear"
+    },
+    "P0.DIRSET": {
+     "modified_write": "oneToSet"
+    },
+    "P0.OUTCLR": {
+     "modified_write": "oneToClear"
+    },
+    "P0.OUTSET": {
+     "modified_write": "oneToSet"
+    },
+    "P1.DIRCLR": {
+     "modified_write": "oneToClear"
+    },
+    "P1.DIRSET": {
+     "modified_write": "oneToSet"
+    },
+    "P1.OUTCLR": {
+     "modified_write": "oneToClear"
+    },
+    "P1.OUTSET": {
+     "modified_write": "oneToSet"
+    },
+    "PPI.CHENCLR": {
+     "modified_write": "oneToClear"
+    },
+    "PPI.CHENSET": {
+     "modified_write": "oneToSet"
+    },
+    "SPI0.RXD": {
+     "read_action": "modifyExternal"
+    },
+    "SPI1.RXD": {
+     "read_action": "modifyExternal"
+    },
+    "SPI2.RXD": {
+     "read_action": "modifyExternal"
+    },
+    "TWI0.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "TWI0.RXD": {
+     "read_action": "modifyExternal"
+    },
+    "TWI1.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "TWI1.RXD": {
+     "read_action": "modifyExternal"
+    },
+    "TWIM0.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "TWIM1.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "TWIS0.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "TWIS1.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "UART0.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "UART0.RXD": {
+     "read_action": "modifyExternal"
+    },
+    "UARTE0.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "UARTE1.ERRORSRC": {
+     "modified_write": "oneToClear"
+    },
+    "USBD.EPDATASTATUS": {
+     "modified_write": "oneToClear"
+    },
+    "USBD.EPSTALL": {
+     "read_action": "modifyExternal"
+    },
+    "USBD.EPSTATUS": {
+     "modified_write": "oneToClear"
+    },
+    "USBD.EVENTCAUSE": {
+     "modified_write": "oneToClear"
+    }
+   },
+   "svd_file": "svd/nrf52840.svd",
+   "svd_sha256": "058bce5cc7167edbd2372f33387eeb4e4e08b147a3ff1e2c8ec56bccdda2ba92"
+  },
+  "stm32g474": {
+   "interrupts": {
+    "ADC1_2": 18,
+    "ADC3": 47,
+    "ADC4": 61,
+    "ADC5": 62,
+    "COMP1_2_3": 64,
+    "COMP4_5_6": 65,
+    "COMP7": 66,
+    "CRS": 75,
+    "Cordic": 100,
+    "DMA1_CH1": 11,
+    "DMA1_CH2": 12,
+    "DMA1_CH3": 13,
+    "DMA1_CH4": 14,
+    "DMA1_CH5": 15,
+    "DMA1_CH6": 16,
+    "DMA1_CH7": 17,
+    "DMA1_CH8": 96,
+    "DMA2_CH1": 56,
+    "DMA2_CH2": 57,
+    "DMA2_CH3": 58,
+    "DMA2_CH4": 59,
+    "DMA2_CH5": 60,
+    "DMA2_CH6": 97,
+    "DMA2_CH7": 98,
+    "DMA2_CH8": 99,
+    "DMAMUX_OVR": 94,
+    "EXTI0": 6,
+    "EXTI1": 7,
+    "EXTI15_10": 40,
+    "EXTI2": 8,
+    "EXTI3": 9,
+    "EXTI4": 10,
+    "EXTI9_5": 23,
+    "FDCAN1_IT0": 21,
+    "FDCAN1_IT1": 22,
+    "FDCAN2_IT0": 86,
+    "FDCAN2_IT1": 87,
+    "FDCAN3_IT0": 88,
+    "FDCAN3_IT1": 89,
+    "FLASH": 4,
+    "FMAC": 101,
+    "FMC": 48,
+    "FPU": 81,
+    "HRTIM_Master_IRQn": 67,
+    "HRTIM_TIMA_IRQn": 68,
+    "HRTIM_TIMB_IRQn": 69,
+    "HRTIM_TIMC_IRQn": 70,
+    "HRTIM_TIMD_IRQn": 71,
+    "HRTIM_TIME_IRQn": 72,
+    "HRTIM_TIMF_IRQn": 74,
+    "HRTIM_TIM_FLT_IRQn": 73,
+    "I2C1_ER": 32,
+    "I2C1_EV": 31,
+    "I2C2_ER": 34,
+    "I2C2_EV": 33,
+    "I2C3_ER": 93,
+    "I2C3_EV": 92,
+    "I2C4_ER": 83,
+    "I2C4_EV": 82,
+    "LPTIM1": 49,
+    "LPUART": 91,
+    "PVD_PVM": 1,
+    "QUADSPI": 95,
+    "RCC": 5,
+    "RNG": 90,
+    "RTC_ALARM": 41,
+    "RTC_TAMP_CSS_LSE": 2,
+    "RTC_WKUP": 3,
+    "SAI": 76,
+    "SPI1": 35,
+    "SPI2": 36,
+    "SPI3": 51,
+    "SPI4": 84,
+    "TIM1_BRK_TIM15": 24,
+    "TIM1_CC": 27,
+    "TIM1_TRG_COM": 26,
+    "TIM1_UP_TIM16": 25,
+    "TIM2": 28,
+    "TIM20_BRK": 77,
+    "TIM20_CC": 80,
+    "TIM20_TRG_COM": 79,
+    "TIM20_UP": 78,
+    "TIM3": 29,
+    "TIM4": 30,
+    "TIM5": 50,
+    "TIM6_DACUNDER": 54,
+    "TIM7": 55,
+    "TIM8_BRK": 43,
+    "TIM8_CC": 46,
+    "TIM8_TRG_COM": 45,
+    "TIM8_UP": 44,
+    "UART4": 52,
+    "UART5": 53,
+    "UCPD1": 63,
+    "USART1": 37,
+    "USART2": 38,
+    "USART3": 39,
+    "USBWakeUP": 42,
+    "USB_HP": 19,
+    "USB_LP": 20,
+    "WWDG": 0
+   },
+   "registers": {},
+   "svd_file": "svd/STM32G474xx.svd",
+   "svd_sha256": "acdd6403c3dd30bbebe9067b79ef21a8d5568cd701881eee99be861a1661f078"
+  }
+ },
+ "version": 1
+}

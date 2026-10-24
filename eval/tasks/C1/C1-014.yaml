@@ -1,0 +1,66 @@
+id: C1-014
+category: C1
+split: test
+difficulty: medium
+chips:
+- esp32
+tags:
+- register_bits
+turns:
+- user: On the ESP32, give the bit position(s) of WDT_STG3 in RTC_CNTL_WDTCONFIG0_REG.
+expected:
+  exact:
+    attribute: bits
+    kind: bits
+    value:
+    - 19
+    - 21
+    allowed:
+    - - 7
+      - 7
+    - - 8
+      - 8
+    - - 9
+      - 9
+    - - 10
+      - 10
+    - - 11
+      - 13
+    - - 14
+      - 16
+    - - 17
+      - 17
+    - - 18
+      - 18
+    - - 22
+      - 24
+    - - 25
+      - 27
+    - - 28
+      - 30
+    - - 31
+      - 31
+  numeric_support:
+  - '0x3FF48000'
+  - '0x8C'
+  - '0x3FF4808C'
+  - '0x4C80'
+  cite_values:
+  - RTC_CNTL_WDTCONFIG0_REG
+  - WDT_STG3
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: esp32.svd
+  peripheral: RTC_CNTL
+  register: WDTCONFIG0
+  question_type: bits
+  template: bits.3
+  doc_hint: ESP32_TRM
+  doc_name: RTC_CNTL_WDTCONFIG0_REG
+  field: WDT_STG3
+version: 1

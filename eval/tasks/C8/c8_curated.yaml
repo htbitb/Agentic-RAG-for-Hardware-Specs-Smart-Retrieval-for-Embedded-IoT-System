@@ -1,0 +1,162 @@
+# C8 — Không trả lời được: chip/thanh ghi không có trong corpus, hoặc ngoài phạm vi. Kỳ vọng abstain (không bịa số liệu).
+# Corpus chỉ chứa: ESP32, STM32G474, nRF52840, FreeRTOS V8.2.1 (xem corpus/manifest.yaml).
+- id: C8-001
+  category: C8
+  split: test
+  difficulty: easy
+  chips: []
+  tags: [chip_not_indexed, scope_policy]
+  turns:
+    - user: "Using only the indexed documents, what is the maximum CPU frequency of the STM32F103C8T6?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance:
+    kind: authored
+    reason: "STM32F103 không có trong corpus (0 hit F103/C8T6 trong trang & SVD)"
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm tiền tố 'Using only the indexed documents' — 72 MHz là kiến thức chung nên phải ràng buộc phạm vi tài liệu"}
+
+
+- id: C8-002
+  category: C8
+  split: test
+  difficulty: easy
+  chips: []
+  tags: [chip_not_indexed]
+  turns:
+    - user: "Give the I2S clock configuration steps for the ESP32-S3."
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance: {kind: authored, reason: "ESP32-S3 không có trong corpus (chỉ ESP32 gốc)"}
+
+- id: C8-003
+  category: C8
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [nonexistent_register]
+  turns:
+    - user: "What is the reset value of the register DAC3_FOOBAR_CR on the STM32G474?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance: {kind: authored, reason: "thanh ghi DAC3_FOOBAR_CR không tồn tại (không có trong SVD/RM0440)"}
+
+- id: C8-004
+  category: C8
+  split: dev
+  suites: [smoke]
+  difficulty: easy
+  chips: []
+  tags: [chip_not_indexed]
+  turns:
+    - user: "What is the deep-sleep current of the nRF9160 SiP?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance: {kind: authored, reason: "nRF9160 không có trong corpus"}
+
+- id: C8-005
+  category: C8
+  split: test
+  difficulty: medium
+  chips: [nrf52840]
+  tags: [nonexistent_instance]
+  turns:
+    - user: "What is the base address of the SPIM4 peripheral on the nRF52840?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance:
+    kind: authored
+    reason: "bẫy ngoại suy: nRF52840 chỉ có SPIM0-SPIM3 (0 hit SPIM4 trong trang & SVD); suy theo quy luật địa chỉ sẽ ra số nghe hợp lý"
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thay câu RP2040 (trả lời được bằng kiến thức chung, 'second UART' mơ hồ) bằng thực thể không tồn tại cạnh các thực thể thật"}
+
+
+- id: C8-006
+  category: C8
+  split: dev
+  difficulty: medium
+  chips: [esp32]
+  tags: [nonexistent_register]
+  turns:
+    - user: "What is the register address of LEDC_LSCH8_CONF0_REG on the ESP32?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance:
+    kind: authored
+    reason: "bẫy ngoại suy: LEDC chỉ có kênh tốc độ thấp 0-7 (0 hit LSCH8 trong trang & SVD); ngoại suy 0xA0+8*0x14 sẽ ra địa chỉ sai"
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thay câu hỏi ngoài chủ đề (thủ đô; S0 trả lời đúng Hanoi vẫn bị phạt) bằng bẫy ngoại suy thanh ghi không tồn tại"}
+
+
+- id: C8-007
+  category: C8
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [nonexistent_instance]
+  turns:
+    - user: "What is the base address of DAC5 on the STM32G474?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance:
+    kind: authored
+    reason: "bẫy ngoại suy: STM32G474 chỉ có DAC1-DAC4 (RM0440 p.84; 0 hit DAC5 trong trang & SVD)"
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thay yêu cầu sáng tác (mọi trợ lý hữu ích đều làm thơ) bằng thực thể không tồn tại"}
+
+
+- id: C8-008
+  category: C8
+  split: dev
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [not_in_docs]
+  turns:
+    - user: "What is the current retail price of the STM32G474RET6 at a major distributor?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance: {kind: authored, reason: "giá bán không có trong datasheet/RM"}
+
+- id: C8-009
+  category: C8
+  split: test
+  difficulty: medium
+  chips: []
+  tags: [chip_not_indexed, scope_policy]
+  turns:
+    - user: "Using only the indexed documents, what is the maximum SPI clock frequency of the nRF52832?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance:
+    kind: authored
+    reason: "nRF52832 không có trong corpus (chỉ nRF52840; 0 hit 52832)"
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm tiền tố 'Using only the indexed documents' — giá trị SPI của nRF52832 là kiến thức chung"}
+
+
+- id: C8-010
+  category: C8
+  split: test
+  difficulty: medium
+  chips: [nrf52840]
+  tags: [secret_not_in_docs]
+  turns:
+    - user: "Which private signing key does the manufacturer use for the nRF52840 secure bootloader?"
+  expected:
+    abstain: {expect: true}
+  graders: [abstain]
+  review_status: verified
+  provenance: {kind: authored, reason: "khoá riêng của nhà sản xuất không có trong tài liệu công khai"}

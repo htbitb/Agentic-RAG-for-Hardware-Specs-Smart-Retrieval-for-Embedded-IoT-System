@@ -1,0 +1,41 @@
+id: C1-017
+category: C1
+split: test
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_address
+turns:
+- user: Give the 32-bit address of the SQR4 register in the ADC1 block of the STM32G474.
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x5000003C'
+    allowed:
+    - '0x50000000'
+  numeric_support:
+  - '0x50000000'
+  - '0x3C'
+  - '0x5000003C'
+  - '0x0'
+  cite_values:
+  - '0x5000003C'
+  - '0x50000000'
+  - SQR4
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: ADC1
+  register: SQR4
+  question_type: address
+  template: address.4
+  doc_hint: STM32G474_RM0440
+  doc_name: SQR4
+version: 1

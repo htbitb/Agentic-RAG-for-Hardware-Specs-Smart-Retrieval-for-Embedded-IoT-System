@@ -1,0 +1,1123 @@
+# C3 — Tính toán và sinh cấu hình (bare-metal C, truy cập thanh ghi kiểu CMSIS). Chấm bằng `functional_sim` (gate) + `compile` (chỉ số riêng).
+# Mỗi task có provenance.reference_solution (code tham chiếu) + reference_calc (PHÉP TÍNH TAY, trang RM/DS) — KHÔNG sinh từ simulator (D19) —
+# và wrong_variants (biến thể sai kinh điển: mỗi biến thể phải bị trượt đúng mã). `python -m eval.tools.verify_tasks --categories C3` kiểm tất cả.
+# D20: đề nêu quy ước CMSIS, trạng thái khởi đầu, cấm HAL/LL/SystemCoreClock, và yêu cầu một khối code C hoàn chỉnh.
+
+- id: C3-001
+  category: C3
+  split: dev
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [pwm, advanced_timer, moe]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 20 kHz PWM signal with a 25 % duty cycle on pin PA8 using TIM1 channel 1. The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PA8", "freq_hz": 20000, "duty_pct": 25, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;                /* clock of the GPIO port */
+          RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE8) | GPIO_MODER_MODE8_1;      /* alternate function mode */
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL8) | (6U << GPIO_AFRH_AFSEL8_Pos);   /* AF6 */
+
+          TIM1->PSC = 0;
+          TIM1->ARR = 8499;
+          TIM1->CCR1 = 2125;
+          TIM1->CCMR1 = (TIM1->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM1->CCER |= TIM_CCER_CC1E;
+          TIM1->BDTR |= TIM_BDTR_MOE;                              /* main output enable */
+          TIM1->CR1 |= TIM_CR1_ARPE;
+          TIM1->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM1->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). TIM1 ở APB2 với prescaler 1: TIM1CLK = PCLK2 = 170 MHz (RM p.281). 170e6 / 20e3 = 8500 nhịp ⇒ PSC = 0, ARR = 8499. 25 % × 8500 = 2125 ⇒ CCR1 = 2125. PA8 = AF6 = TIM1_CH1 (DS12288 Table 13, p.73). TIM1 là advanced timer: BDTR.MOE = 1 mới có ngõ ra (RM Table 282 p.1261, MOE p.1270). Clock GPIOA (AHB2ENR bit 0) và TIM1 (APB2ENR bit 11) phải bật trước khi ghi."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA8 MCO - I2C3_SCL - I2C2_SDA I2S2_MCK TIM1_CH1"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 1270, "contains": ["Bit 15 MOE: Main output enable"]}
+    wrong_variants:
+      - name: forgot_moe
+        patches: [{"find": "    TIM1->BDTR |= TIM_BDTR_MOE;", "replace": ""}]
+        expect: ["sim_violation:SIM-TIM-MOE"]
+      - name: wrong_af2
+        patches: [{"find": "(6U << GPIO_AFRH_AFSEL8_Pos)", "replace": "(2U << GPIO_AFRH_AFSEL8_Pos)"}]
+        expect: ["sim_violation:SIM-GPIO-AF"]
+      - name: psc_off_by_one
+        patches: [{"find": "TIM1->PSC = 0;", "replace": "TIM1->PSC = 1;"}]
+        expect: ["wrong_freq"]
+      - name: no_tim1_clock
+        patches: [{"find": "    RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+      - name: afr_shift_by_four
+        patches: [{"find": "(6U << GPIO_AFRH_AFSEL8_Pos)", "replace": "(6U << 4)"}]
+        expect: ["sim_violation:SIM-GPIO-AF"]
+
+- id: C3-002
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pwm, advanced_timer, x2_rule]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = 170 MHz (PLL fed by HSI16, voltage Range 1 boost mode, Flash wait states already set); the APB1 prescaler is 1 and the APB2 prescaler is 2, so PCLK2 = 85 MHz. Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 20 kHz PWM signal with a 25 % duty cycle on pin PA8 using TIM1 channel 1. The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb2_div2"
+    spec:
+      - {"type": "pwm", "pin": "PA8", "freq_hz": 20000, "duty_pct": 25, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;                /* clock of the GPIO port */
+          RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE8) | GPIO_MODER_MODE8_1;      /* alternate function mode */
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL8) | (6U << GPIO_AFRH_AFSEL8_Pos);   /* AF6 */
+
+          TIM1->PSC = 0;
+          TIM1->ARR = 8499;
+          TIM1->CCR1 = 2125;
+          TIM1->CCMR1 = (TIM1->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM1->CCER |= TIM_CCER_CC1E;
+          TIM1->BDTR |= TIM_BDTR_MOE;                              /* main output enable */
+          TIM1->CR1 |= TIM_CR1_ARPE;
+          TIM1->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM1->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). APB2 prescaler = 2 ≠ 1 ⇒ TIM1CLK = 2 × PCLK2 = 2 × 85 = 170 MHz (RM0440 §7.2.13, p.281: 'otherwise, they are set to twice (×2) the frequency of the APB domain'). Vẫn 170e6 / 20e3 = 8500 nhịp ⇒ PSC = 0, ARR = 8499, CCR1 = 25 % × 8500 = 2125. Người quên quy tắc ×2 sẽ dùng 85 MHz: ARR = 4249 ⇒ thực tế 170e6 / 4250 = 40 kHz."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 281, "contains": ["set to twice (×2) the frequency of the APB domain"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA8 MCO - I2C3_SCL - I2C2_SDA I2S2_MCK TIM1_CH1"]}
+    wrong_variants:
+      - name: forgot_x2_rule
+        patches: [{"find": "TIM1->ARR = 8499;", "replace": "TIM1->ARR = 4249;"}, {"find": "TIM1->CCR1 = 2125;", "replace": "TIM1->CCR1 = 1062;"}]
+        expect: ["wrong_freq"]
+      - name: forgot_moe
+        patches: [{"find": "    TIM1->BDTR |= TIM_BDTR_MOE;", "replace": ""}]
+        expect: ["sim_violation:SIM-TIM-MOE"]
+
+- id: C3-003
+  category: C3
+  split: dev
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [pwm, general_timer, timer_32bit]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 1 kHz PWM signal with a 50 % duty cycle on pin PA0 using TIM2 channel 1. The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PA0", "freq_hz": 1000, "duty_pct": 50, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;                /* clock of the GPIO port */
+          RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE0) | GPIO_MODER_MODE0_1;      /* alternate function mode */
+          GPIOA->AFR[0] = (GPIOA->AFR[0] & ~GPIO_AFRL_AFSEL0) | (1U << GPIO_AFRL_AFSEL0_Pos);   /* AF1 */
+
+          TIM2->PSC = 0;
+          TIM2->ARR = 169999;
+          TIM2->CCR1 = 85000;
+          TIM2->CCMR1 = (TIM2->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM2->CCER |= TIM_CCER_CC1E;
+          TIM2->CR1 |= TIM_CR1_ARPE;
+          TIM2->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM2->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). TIM2 ở APB1 (prescaler 1): TIM2CLK = 170 MHz. 170e6 / 1e3 = 170000 nhịp. TIM2 là bộ đếm 32 bit (RM p.1387–1389: ARR[31:0]) nên PSC = 0, ARR = 169999, CCR1 = 50 % × 170000 = 85000. PA0 = AF1 = TIM2_CH1 (DS p.73). TIM2 không có BDTR/MOE (timer đa dụng)."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA0 - TIM2_CH1 TIM5_CH1"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 1389, "contains": ["ARR[31:0]: Autoreload value"]}
+    wrong_variants:
+      - name: wrong_timer_clock_bit
+        patches: [{"find": "RCC_APB1ENR1_TIM2EN", "replace": "RCC_APB1ENR1_TIM3EN"}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+      - name: factor_ten_error
+        patches: [{"find": "TIM2->ARR = 169999;", "replace": "TIM2->ARR = 16999;"}, {"find": "TIM2->CCR1 = 85000;", "replace": "TIM2->CCR1 = 8500;"}]
+        expect: ["wrong_freq"]
+      - name: forgot_cen
+        patches: [{"find": "    TIM2->CR1 |= TIM_CR1_CEN;", "replace": ""}]
+        expect: ["sim_violation:SIM-TIM-CEN"]
+
+- id: C3-004
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pwm, general_timer, prescaler]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 500 Hz PWM signal with a 30 % duty cycle on pin PA6 using TIM3 channel 1 (TIM3 has a 16-bit counter). The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PA6", "freq_hz": 500, "duty_pct": 30, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;                /* clock of the GPIO port */
+          RCC->APB1ENR1 |= RCC_APB1ENR1_TIM3EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE6) | GPIO_MODER_MODE6_1;      /* alternate function mode */
+          GPIOA->AFR[0] = (GPIOA->AFR[0] & ~GPIO_AFRL_AFSEL6) | (2U << GPIO_AFRL_AFSEL6_Pos);   /* AF2 */
+
+          TIM3->PSC = 7;
+          TIM3->ARR = 42499;
+          TIM3->CCR1 = 12750;
+          TIM3->CCMR1 = (TIM3->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM3->CCER |= TIM_CCER_CC1E;
+          TIM3->CR1 |= TIM_CR1_ARPE;
+          TIM3->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM3->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). TIM3CLK = 170 MHz. 170e6 / 500 = 340000 nhịp > 65536 ⇒ cần PSC. Điều kiện (PSC+1)(ARR+1) = 340000 và ARR+1 ≤ 65536 ⇒ PSC+1 ≥ 5,19. 340000 = 2⁵·5⁴·17; ước nhỏ nhất ≥ 6 là 8 (6 và 7 không chia hết) ⇒ PSC = 7, ARR+1 = 42500 ⇒ ARR = 42499; CCR1 = 30 % × 42500 = 12750. PA6 = AF2 = TIM3_CH1 (DS p.73; AF1 là TIM16_CH1)."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA6 - TIM16_CH1 TIM3_CH1"]}
+    wrong_variants:
+      - name: no_prescaler_16bit_overflow
+        patches: [{"find": "TIM3->PSC = 7;", "replace": "TIM3->PSC = 0;"}, {"find": "TIM3->ARR = 42499;", "replace": "TIM3->ARR = 339999;"}, {"find": "TIM3->CCR1 = 12750;", "replace": "TIM3->CCR1 = 102000;"}]
+        expect: ["sim_violation:SIM-TIM-RANGE"]
+      - name: arr_clamped_to_65535
+        patches: [{"find": "TIM3->PSC = 7;", "replace": "TIM3->PSC = 0;"}, {"find": "TIM3->ARR = 42499;", "replace": "TIM3->ARR = 65535;"}]
+        expect: ["wrong_freq"]
+      - name: af1_is_tim16
+        patches: [{"find": "(2U << GPIO_AFRL_AFSEL6_Pos)", "replace": "(1U << GPIO_AFRL_AFSEL6_Pos)"}]
+        expect: ["sim_violation:SIM-GPIO-AF"]
+
+- id: C3-005
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pwm, advanced_timer, x2_rule]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = 170 MHz (PLL fed by HSI16, voltage Range 1 boost mode, Flash wait states already set); the APB1 prescaler is 1 and the APB2 prescaler is 2, so PCLK2 = 85 MHz. Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 10 kHz PWM signal with a 40 % duty cycle on pin PC6 using TIM8 channel 1. The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb2_div2"
+    spec:
+      - {"type": "pwm", "pin": "PC6", "freq_hz": 10000, "duty_pct": 40, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;                /* clock of the GPIO port */
+          RCC->APB2ENR |= RCC_APB2ENR_TIM8EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOC->MODER = (GPIOC->MODER & ~GPIO_MODER_MODE6) | GPIO_MODER_MODE6_1;      /* alternate function mode */
+          GPIOC->AFR[0] = (GPIOC->AFR[0] & ~GPIO_AFRL_AFSEL6) | (4U << GPIO_AFRL_AFSEL6_Pos);   /* AF4 */
+
+          TIM8->PSC = 0;
+          TIM8->ARR = 16999;
+          TIM8->CCR1 = 6800;
+          TIM8->CCMR1 = (TIM8->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM8->CCER |= TIM_CCER_CC1E;
+          TIM8->BDTR |= TIM_BDTR_MOE;                              /* main output enable */
+          TIM8->CR1 |= TIM_CR1_ARPE;
+          TIM8->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM8->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). TIM8 ở APB2, prescaler 2 ⇒ TIM8CLK = 2 × 85 = 170 MHz. 170e6 / 10e3 = 17000 nhịp ⇒ PSC = 0, ARR = 16999 (≤ 65535), CCR1 = 40 % × 17000 = 6800. PC6 = AF4 = TIM8_CH1 (DS p.75; AF2 là TIM3_CH1). TIM8 là advanced timer ⇒ cần BDTR.MOE = 1. Clock GPIOC = AHB2ENR bit 2, TIM8 = APB2ENR bit 13."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 75, "contains": ["PC6 - - TIM3_CH1 HRTIM1_EEV10 TIM8_CH1"]}
+    wrong_variants:
+      - name: forgot_moe
+        patches: [{"find": "    TIM8->BDTR |= TIM_BDTR_MOE;", "replace": ""}]
+        expect: ["sim_violation:SIM-TIM-MOE"]
+      - name: enabled_tim1_clock_instead
+        patches: [{"find": "RCC_APB2ENR_TIM8EN", "replace": "RCC_APB2ENR_TIM1EN"}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+      - name: forgot_x2_rule
+        patches: [{"find": "TIM8->ARR = 16999;", "replace": "TIM8->ARR = 8499;"}, {"find": "TIM8->CCR1 = 6800;", "replace": "TIM8->CCR1 = 3400;"}]
+        expect: ["wrong_freq"]
+
+- id: C3-006
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pwm, advanced_timer, moe_tim15]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 5 kHz PWM signal with a 60 % duty cycle on pin PA2 using TIM15 channel 1. The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PA2", "freq_hz": 5000, "duty_pct": 60, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;                /* clock of the GPIO port */
+          RCC->APB2ENR |= RCC_APB2ENR_TIM15EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE2) | GPIO_MODER_MODE2_1;      /* alternate function mode */
+          GPIOA->AFR[0] = (GPIOA->AFR[0] & ~GPIO_AFRL_AFSEL2) | (9U << GPIO_AFRL_AFSEL2_Pos);   /* AF9 */
+
+          TIM15->PSC = 0;
+          TIM15->ARR = 33999;
+          TIM15->CCR1 = 20400;
+          TIM15->CCMR1 = (TIM15->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM15->CCER |= TIM_CCER_CC1E;
+          TIM15->BDTR |= TIM_BDTR_MOE;                              /* main output enable */
+          TIM15->CR1 |= TIM_CR1_ARPE;
+          TIM15->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM15->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). TIM15 ở APB2 (prescaler 1): TIM15CLK = 170 MHz. 170e6 / 5e3 = 34000 nhịp ⇒ PSC = 0, ARR = 33999 (≤ 65535), CCR1 = 60 % × 34000 = 20400. PA2 = AF9 = TIM15_CH1 (DS p.73). TIM15 cũng có BDTR ⇒ phải đặt MOE = 1 (RM p.1474: 'Bit 15 MOE: Main output enable' cho TIM15)."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA2 - TIM2_CH3 TIM5_CH3 - - - - USART2_TX COMP2_OUT TIM15_CH1"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 1474, "contains": ["Bit 15 MOE: Main output enable"]}
+    wrong_variants:
+      - name: forgot_moe_on_tim15
+        patches: [{"find": "    TIM15->BDTR |= TIM_BDTR_MOE;", "replace": ""}]
+        expect: ["sim_violation:SIM-TIM-MOE"]
+      - name: af1_instead_of_af9
+        patches: [{"find": "(9U << GPIO_AFRL_AFSEL2_Pos)", "replace": "(1U << GPIO_AFRL_AFSEL2_Pos)"}]
+        expect: ["sim_violation:SIM-GPIO-AF"]
+
+- id: C3-007
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pwm, advanced_timer, prescaler]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 2 kHz PWM signal with a 75 % duty cycle on pin PA6 using TIM16 channel 1 (TIM16 has a 16-bit counter). The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PA6", "freq_hz": 2000, "duty_pct": 75, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;                /* clock of the GPIO port */
+          RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE6) | GPIO_MODER_MODE6_1;      /* alternate function mode */
+          GPIOA->AFR[0] = (GPIOA->AFR[0] & ~GPIO_AFRL_AFSEL6) | (1U << GPIO_AFRL_AFSEL6_Pos);   /* AF1 */
+
+          TIM16->PSC = 1;
+          TIM16->ARR = 42499;
+          TIM16->CCR1 = 31875;
+          TIM16->CCMR1 = (TIM16->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM16->CCER |= TIM_CCER_CC1E;
+          TIM16->BDTR |= TIM_BDTR_MOE;                              /* main output enable */
+          TIM16->CR1 |= TIM_CR1_ARPE;
+          TIM16->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM16->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). TIM16CLK = 170 MHz. 170e6 / 2e3 = 85000 nhịp > 65536 ⇒ PSC ≥ 1. PSC = 1 (÷2) ⇒ ARR+1 = 42500 ⇒ ARR = 42499; CCR1 = 75 % × 42500 = 31875. PA6 = AF1 = TIM16_CH1 (DS p.73). TIM16 có BDTR ⇒ MOE = 1."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA6 - TIM16_CH1 TIM3_CH1"]}
+    wrong_variants:
+      - name: no_prescaler_16bit_overflow
+        patches: [{"find": "TIM16->PSC = 1;", "replace": "TIM16->PSC = 0;"}, {"find": "TIM16->ARR = 42499;", "replace": "TIM16->ARR = 84999;"}, {"find": "TIM16->CCR1 = 31875;", "replace": "TIM16->CCR1 = 63750;"}]
+        expect: ["sim_violation:SIM-TIM-RANGE"]
+      - name: duty_is_low_time
+        patches: [{"find": "TIM16->CCR1 = 31875;", "replace": "TIM16->CCR1 = 10625;"}]
+        expect: ["wrong_duty"]
+      - name: forgot_moe
+        patches: [{"find": "    TIM16->BDTR |= TIM_BDTR_MOE;", "replace": ""}]
+        expect: ["sim_violation:SIM-TIM-MOE"]
+
+- id: C3-008
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pwm, general_timer, channel3]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 50 kHz PWM signal with a 10 % duty cycle on pin PB8 using TIM4 channel 3. The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PB8", "freq_hz": 50000, "duty_pct": 10, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;                /* clock of the GPIO port */
+          RCC->APB1ENR1 |= RCC_APB1ENR1_TIM4EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOB->MODER = (GPIOB->MODER & ~GPIO_MODER_MODE8) | GPIO_MODER_MODE8_1;      /* alternate function mode */
+          GPIOB->AFR[1] = (GPIOB->AFR[1] & ~GPIO_AFRH_AFSEL8) | (2U << GPIO_AFRH_AFSEL8_Pos);   /* AF2 */
+
+          TIM4->PSC = 0;
+          TIM4->ARR = 3399;
+          TIM4->CCR3 = 340;
+          TIM4->CCMR2 = (TIM4->CCMR2 & ~TIM_CCMR2_OC3M) | (6U << TIM_CCMR2_OC3M_Pos) | TIM_CCMR2_OC3PE;   /* PWM mode 1 + preload */
+          TIM4->CCER |= TIM_CCER_CC3E;
+          TIM4->CR1 |= TIM_CR1_ARPE;
+          TIM4->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM4->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). TIM4CLK = 170 MHz. 170e6 / 50e3 = 3400 nhịp ⇒ PSC = 0, ARR = 3399, CCR3 = 10 % × 3400 = 340. PB8 = AF2 = TIM4_CH3 (DS p.74; AF1 là TIM16_CH1). Kênh 3 cấu hình trong TIMx_CCMR2 (OC3M [6:4], OC3PE bit 3), CC3E là bit 8 của TIMx_CCER (RM0440 chương TIM2–5: OC3M p.1384, CC3E p.1385)."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 74, "contains": ["PB8 - TIM16_CH1 TIM4_CH3 SAI1_CK1 I2C1_SCL"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 1384, "contains": ["0110:PWM mode 1 - In up-counting, channel 3 is active as long as TIMx_CNT<TIMx_CCR3"]}
+    wrong_variants:
+      - name: ccmr1_pwm_mode_on_channel_1_bits
+        patches: [{"find": "TIM4->CCMR2 = (TIM4->CCMR2 & ~TIM_CCMR2_OC3M) | (6U << TIM_CCMR2_OC3M_Pos) | TIM_CCMR2_OC3PE;", "replace": "TIM4->CCMR1 = (TIM4->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;"}]
+        expect: ["sim_violation:SIM-TIM-OCM"]
+      - name: forgot_cc3e
+        patches: [{"find": "TIM4->CCER |= TIM_CCER_CC3E;", "replace": "TIM4->CCER |= TIM_CCER_CC1E;"}]
+        expect: ["sim_violation:SIM-TIM-CCE"]
+
+- id: C3-009
+  category: C3
+  split: dev
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [combo, pwm, pin_remap_af]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 20 kHz PWM signal with a 25 % duty cycle using TIM1 channel 1, but the signal must come out on pin PC0 (PA8, the usual TIM1_CH1 pin, is taken by another function and must not be used). The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PC0", "freq_hz": 20000, "duty_pct": 25, "tol_pct": 1, "forbid_pins": ["PA8"]}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;                /* clock of the GPIO port */
+          RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOC->MODER = (GPIOC->MODER & ~GPIO_MODER_MODE0) | GPIO_MODER_MODE0_1;      /* alternate function mode */
+          GPIOC->AFR[0] = (GPIOC->AFR[0] & ~GPIO_AFRL_AFSEL0) | (2U << GPIO_AFRL_AFSEL0_Pos);   /* AF2 */
+
+          TIM1->PSC = 0;
+          TIM1->ARR = 8499;
+          TIM1->CCR1 = 2125;
+          TIM1->CCMR1 = (TIM1->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM1->CCER |= TIM_CCER_CC1E;
+          TIM1->BDTR |= TIM_BDTR_MOE;                              /* main output enable */
+          TIM1->CR1 |= TIM_CR1_ARPE;
+          TIM1->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM1->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). Giống C3-001 về timer (PSC = 0, ARR = 8499, CCR1 = 2125, MOE) nhưng chân khác: TIM1_CH1 trên PC0 là AF2 (DS p.75: 'PC0 - LPTIM1_IN1 TIM1_CH1'), không phải AF6 của PA8. Clock GPIOC = AHB2ENR bit 2; PC0 dùng AFR[0] (AFSEL0)."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 75, "contains": ["PC0 - LPTIM1_IN1 TIM1_CH1"]}
+    wrong_variants:
+      - name: still_on_pa8
+        patches: [{"find": "GPIOC", "replace": "GPIOA"}, {"find": "GPIO_MODER_MODE0", "replace": "GPIO_MODER_MODE8"}, {"find": "AFR[0]", "replace": "AFR[1]"}, {"find": "GPIO_AFRL_AFSEL0", "replace": "GPIO_AFRH_AFSEL8"}, {"find": "(2U << GPIO_AFRH_AFSEL8_Pos)", "replace": "(6U << GPIO_AFRH_AFSEL8_Pos)"}]
+        expect: ["wrong_pin"]
+      - name: af6_copied_from_pa8
+        patches: [{"find": "(2U << GPIO_AFRL_AFSEL0_Pos)", "replace": "(6U << GPIO_AFRL_AFSEL0_Pos)"}]
+        expect: ["sim_violation:SIM-GPIO-AF"]
+      - name: routes_the_signal_to_both_pins
+        patches: [{"find": "    TIM1->PSC = 0;", "replace": "    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;\n    GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE8) | GPIO_MODER_MODE8_1;\n    GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL8) | (6U << GPIO_AFRH_AFSEL8_Pos);\n    TIM1->PSC = 0;"}]
+        expect: ["forbidden_pin_used"]
+
+- id: C3-010
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [combo, pwm, two_channels]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate two PWM signals from TIM1, both at 20 kHz: channel 1 on pin PA8 with a 25 % duty cycle and channel 2 on pin PA9 with a 75 % duty cycle. The PWM frequency must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "pwm", "pin": "PA8", "freq_hz": 20000, "duty_pct": 25, "tol_pct": 1}
+      - {"type": "pwm", "pin": "PA9", "freq_hz": 20000, "duty_pct": 75, "tol_pct": 1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;                /* clock of the GPIO port */
+          RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;                 /* clock of the timer (writes to a clock-gated peripheral are lost) */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE8) | GPIO_MODER_MODE8_1;      /* alternate function mode */
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL8) | (6U << GPIO_AFRH_AFSEL8_Pos);   /* AF6 */
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE9) | GPIO_MODER_MODE9_1;      /* alternate function mode */
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL9) | (6U << GPIO_AFRH_AFSEL9_Pos);   /* AF6 */
+
+          TIM1->PSC = 0;
+          TIM1->ARR = 8499;
+          TIM1->CCR1 = 2125;
+          TIM1->CCR2 = 6375;
+          TIM1->CCMR1 = (TIM1->CCMR1 & ~TIM_CCMR1_OC1M) | (6U << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 + preload */
+          TIM1->CCMR1 = (TIM1->CCMR1 & ~TIM_CCMR1_OC2M) | (6U << TIM_CCMR1_OC2M_Pos) | TIM_CCMR1_OC2PE;   /* PWM mode 1 + preload */
+          TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E;
+          TIM1->BDTR |= TIM_BDTR_MOE;                              /* main output enable */
+          TIM1->CR1 |= TIM_CR1_ARPE;
+          TIM1->EGR = TIM_EGR_UG;                                  /* load the shadow registers before starting */
+          TIM1->CR1 |= TIM_CR1_CEN;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay: f_PWM = f_TIMxCLK / ((PSC+1)(ARR+1)) và duty = CCR / (ARR+1) (RM0440 §29.3.13, p.1179: tim_ocxref cao khi CNT < CCR). Cả hai kênh dùng chung PSC = 0, ARR = 8499 (170e6/20e3 = 8500 nhịp). CCR1 = 25 % × 8500 = 2125, CCR2 = 75 % × 8500 = 6375. PA8 = AF6 = TIM1_CH1, PA9 = AF6 = TIM1_CH2 (DS p.73). Cần CC1E và CC2E trong TIMx_CCER, OC1M/OC2M trong TIMx_CCMR1 (OC2M ở bit [14:12], OC2PE bit 11) và một MOE chung."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1179, "contains": ["high as long as TIMx_CNT < TIMx_CCRx"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA9 - - I2C3_SMBA - I2C2_SCL I2S3_MCK TIM1_CH2 USART1_TX"]}
+    wrong_variants:
+      - name: forgot_cc2e
+        patches: [{"find": "TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E;", "replace": "TIM1->CCER |= TIM_CCER_CC1E;"}]
+        expect: ["sim_violation:SIM-TIM-CCE"]
+      - name: pa9_not_alternate_function
+        patches: [{"find": "GPIO_MODER_MODE9_1", "replace": "GPIO_MODER_MODE9_0"}]
+        expect: ["sim_violation:SIM-GPIO-MODE"]
+      - name: same_duty_on_both
+        patches: [{"find": "TIM1->CCR2 = 6375;", "replace": "TIM1->CCR2 = 2125;"}]
+        expect: ["wrong_duty"]
+
+- id: C3-011
+  category: C3
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [uart, usart1]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: configure USART1 for 115200 baud, with TX on pin PA9 and RX on pin PA10. Use 8 data bits, no parity, 1 stop bit and oversampling by 16, enable both the transmitter and the receiver (write the baud-rate register before enabling the USART), and make the baud rate accurate to within ±2 %; no interrupts or DMA. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "uart", "instance": "USART1", "baud": 115200, "tol_pct": 2, "tx_pin": "PA9", "rx_pin": "PA10", "frame": "8N1", "te": true, "re": true, "over8": 0}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+          RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE9) | GPIO_MODER_MODE9_1;
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL9) | (7U << GPIO_AFRH_AFSEL9_Pos);
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE10) | GPIO_MODER_MODE10_1;
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL10) | (7U << GPIO_AFRH_AFSEL10_Pos);
+
+          USART1->BRR = 1476;                                    /* written while UE = 0 */
+          USART1->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay (RM0440 §40.5.7 p.1707–1708): OVER8 = 0 ⇒ baud = f_ker / USARTDIV và BRR = USARTDIV; USART_BRR chỉ được ghi khi UE = 0 (p.1755). Nguồn clock mặc định của USART1 là PCLK2 = 170 MHz (RCC_CCIPR.USART1SEL = 00). USARTDIV = 170e6 / 115200 = 1475,69 ⇒ BRR = 1476 (làm tròn) ⇒ baud thực = 170e6 / 1476 = 115176 (sai số −0,021 %). PA9 = AF7 = USART1_TX, PA10 = AF7 = USART1_RX (DS p.73). Quy tắc ×2 chỉ áp cho timer, KHÔNG áp cho USART."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1708, "contains": ["When OVER8 = 0, BRR = USARTDIV."]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA9 - - I2C3_SMBA - I2C2_SCL I2S3_MCK TIM1_CH2 USART1_TX"]}
+    wrong_variants:
+      - name: forgot_usart_clock
+        patches: [{"find": "    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+      - name: forgot_ue
+        patches: [{"find": "USART_CR1_UE | USART_CR1_TE | USART_CR1_RE", "replace": "USART_CR1_TE | USART_CR1_RE"}]
+        expect: ["sim_violation:SIM-USART-UE"]
+      - name: assumed_16mhz
+        patches: [{"find": "USART1->BRR = 1476;", "replace": "USART1->BRR = 139;"}]
+        expect: ["wrong_baud"]
+      - name: wrong_af
+        patches: [{"find": "(7U << GPIO_AFRH_AFSEL9_Pos)", "replace": "(4U << GPIO_AFRH_AFSEL9_Pos)"}]
+        expect: ["wrong_pin"]
+      - name: nine_bit_word
+        patches: [{"find": "USART_CR1_UE | USART_CR1_TE | USART_CR1_RE", "replace": "USART_CR1_M0 | USART_CR1_UE | USART_CR1_TE | USART_CR1_RE"}]
+        expect: ["wrong_config"]
+      - name: transmitter_only
+        patches: [{"find": "USART_CR1_UE | USART_CR1_TE | USART_CR1_RE", "replace": "USART_CR1_UE | USART_CR1_TE"}]
+        expect: ["wrong_config"]
+      - name: brr_written_after_ue
+        patches: [{"find": "    USART1->BRR = 1476;                                    /* written while UE = 0 */", "replace": ""}, {"find": "    while (1) { }", "replace": "    USART1->BRR = 1476;\n    while (1) { }"}]
+        expect: ["sim_violation:SIM-WRITE-LOCKED"]
+
+- id: C3-012
+  category: C3
+  split: dev
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [uart, usart2, reset_clock]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: the chip has just come out of reset: SYSCLK = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no peripheral clock beyond the reset defaults is enabled, and all GPIO pins are in their reset state. Task: configure USART2 for 9600 baud, with TX on pin PA2 and RX on pin PA3. Use 8 data bits, no parity, 1 stop bit and oversampling by 16, enable both the transmitter and the receiver (write the baud-rate register before enabling the USART), and make the baud rate accurate to within ±2 %; no interrupts or DMA. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "reset"
+    spec:
+      - {"type": "uart", "instance": "USART2", "baud": 9600, "tol_pct": 2, "tx_pin": "PA2", "rx_pin": "PA3", "frame": "8N1", "te": true, "re": true, "over8": 0}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+          RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE2) | GPIO_MODER_MODE2_1;
+          GPIOA->AFR[0] = (GPIOA->AFR[0] & ~GPIO_AFRL_AFSEL2) | (7U << GPIO_AFRL_AFSEL2_Pos);
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE3) | GPIO_MODER_MODE3_1;
+          GPIOA->AFR[0] = (GPIOA->AFR[0] & ~GPIO_AFRL_AFSEL3) | (7U << GPIO_AFRL_AFSEL3_Pos);
+
+          USART2->BRR = 1667;                                    /* written while UE = 0 */
+          USART2->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay (RM0440 §40.5.7 p.1707–1708): OVER8 = 0 ⇒ baud = f_ker / USARTDIV và BRR = USARTDIV; USART_BRR chỉ được ghi khi UE = 0 (p.1755). Clock mặc định USART2 = PCLK1 = 16 MHz (trạng thái reset, HSI16). USARTDIV = 16e6 / 9600 = 1666,67 ⇒ BRR = 1667 ⇒ baud thực = 16e6 / 1667 = 9598,1 (−0,02 %). PA2 = AF7 = USART2_TX, PA3 = AF7 = USART2_RX (DS p.73). USART2EN = APB1ENR1 bit 17."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1708, "contains": ["When OVER8 = 0, BRR = USARTDIV."]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA2 - TIM2_CH3 TIM5_CH3 - - - - USART2_TX"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA3 - TIM2_CH4 TIM5_CH4 SAI1_CK1 - - - USART2_RX"]}
+    wrong_variants:
+      - name: assumed_170mhz
+        patches: [{"find": "USART2->BRR = 1667;", "replace": "USART2->BRR = 17708;"}]
+        expect: ["wrong_baud"]
+      - name: forgot_gpio_clock
+        patches: [{"find": "    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+      - name: wrong_apb_register
+        patches: [{"find": "RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;", "replace": "RCC->APB2ENR |= RCC_APB2ENR_USART1EN;"}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+      - name: parity_enabled
+        patches: [{"find": "USART_CR1_UE | USART_CR1_TE | USART_CR1_RE", "replace": "USART_CR1_PCE | USART_CR1_UE | USART_CR1_TE | USART_CR1_RE"}]
+        expect: ["wrong_config"]
+
+- id: C3-013
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [uart, usart3, oversampling]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: configure USART3 for 921600 baud with oversampling by 16, with TX on pin PB10 and RX on pin PB11. Use 8 data bits, no parity, 1 stop bit and oversampling by 16, enable both the transmitter and the receiver (write the baud-rate register before enabling the USART), and make the baud rate accurate to within ±2 %; no interrupts or DMA. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "uart", "instance": "USART3", "baud": 921600, "tol_pct": 2, "tx_pin": "PB10", "rx_pin": "PB11", "frame": "8N1", "te": true, "re": true, "over8": 0}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+          RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
+
+          GPIOB->MODER = (GPIOB->MODER & ~GPIO_MODER_MODE10) | GPIO_MODER_MODE10_1;
+          GPIOB->AFR[1] = (GPIOB->AFR[1] & ~GPIO_AFRH_AFSEL10) | (7U << GPIO_AFRH_AFSEL10_Pos);
+          GPIOB->MODER = (GPIOB->MODER & ~GPIO_MODER_MODE11) | GPIO_MODER_MODE11_1;
+          GPIOB->AFR[1] = (GPIOB->AFR[1] & ~GPIO_AFRH_AFSEL11) | (7U << GPIO_AFRH_AFSEL11_Pos);
+
+          USART3->BRR = 184;                                    /* written while UE = 0 */
+          USART3->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay (RM0440 §40.5.7 p.1707–1708): OVER8 = 0 ⇒ baud = f_ker / USARTDIV và BRR = USARTDIV; USART_BRR chỉ được ghi khi UE = 0 (p.1755). USART3 ở PCLK1 = 170 MHz. USARTDIV = 170e6 / 921600 = 184,46 ⇒ BRR = 184 ⇒ baud thực = 170e6 / 184 = 923913 (+0,25 %). OVER8 = 0 (lấy mẫu 16) ⇒ BRR = USARTDIV, không dịch bit. PB10 = AF7 = USART3_TX, PB11 = AF7 = USART3_RX (DS p.74). USART3EN = APB1ENR1 bit 18, GPIOB = AHB2ENR bit 1."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1708, "contains": ["When OVER8 = 0, BRR = USARTDIV."]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 74, "contains": ["PB10 - TIM2_CH3 - - - - - USART3_TX LPUART1_RX"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 74, "contains": ["PB11 - TIM2_CH4 - - - - - USART3_RX LPUART1_TX"]}
+    wrong_variants:
+      - name: oversampling8_with_unshifted_brr
+        patches: [{"find": "USART_CR1_UE | USART_CR1_TE | USART_CR1_RE", "replace": "USART_CR1_OVER8 | USART_CR1_UE | USART_CR1_TE | USART_CR1_RE"}]
+        expect: ["sim_violation:SIM-USART-BRR"]
+      - name: baud_of_115200
+        patches: [{"find": "USART3->BRR = 184;", "replace": "USART3->BRR = 1476;"}]
+        expect: ["wrong_baud"]
+      - name: tx_on_wrong_pin_af
+        patches: [{"find": "(7U << GPIO_AFRH_AFSEL10_Pos)", "replace": "(1U << GPIO_AFRH_AFSEL10_Pos)"}]
+        expect: ["wrong_pin"]
+      - name: oversampling8_correctly_encoded
+        patches: [{"find": "USART3->BRR = 184;", "replace": "USART3->BRR = 0x170;"}, {"find": "USART_CR1_UE | USART_CR1_TE | USART_CR1_RE", "replace": "USART_CR1_OVER8 | USART_CR1_UE | USART_CR1_TE | USART_CR1_RE"}]
+        expect: ["wrong_config"]
+
+- id: C3-014
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [uart, usart1, no_x2_for_usart]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = 170 MHz (PLL fed by HSI16, voltage Range 1 boost mode, Flash wait states already set); the APB1 prescaler is 1 and the APB2 prescaler is 2, so PCLK2 = 85 MHz. Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: configure USART1 for 115200 baud, with TX on pin PA9 and RX on pin PA10. Keep the default USART1 kernel clock source. Use 8 data bits, no parity, 1 stop bit and oversampling by 16, enable both the transmitter and the receiver (write the baud-rate register before enabling the USART), and make the baud rate accurate to within ±2 %; no interrupts or DMA. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb2_div2"
+    spec:
+      - {"type": "uart", "instance": "USART1", "baud": 115200, "tol_pct": 2, "tx_pin": "PA9", "rx_pin": "PA10", "frame": "8N1", "te": true, "re": true, "over8": 0, "kernel_source": "PCLK2"}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+          RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE9) | GPIO_MODER_MODE9_1;
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL9) | (7U << GPIO_AFRH_AFSEL9_Pos);
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE10) | GPIO_MODER_MODE10_1;
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL10) | (7U << GPIO_AFRH_AFSEL10_Pos);
+
+          USART1->BRR = 738;                                    /* written while UE = 0 */
+          USART1->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
+
+          while (1) { }
+      }
+    reference_calc: "Phép tính tay (RM0440 §40.5.7 p.1707–1708): OVER8 = 0 ⇒ baud = f_ker / USARTDIV và BRR = USARTDIV; USART_BRR chỉ được ghi khi UE = 0 (p.1755). APB2 prescaler = 2 ⇒ PCLK2 = 85 MHz. Nguồn mặc định của USART1 là PCLK2 (CCIPR.USART1SEL = 00) = 85 MHz — quy tắc ×2 KHÔNG áp dụng cho USART (chỉ cho tim_ker_ck, RM p.281). USARTDIV = 85e6 / 115200 = 737,8 ⇒ BRR = 738 ⇒ baud thực = 85e6 / 738 = 115176 (−0,021 %). Người áp ×2 nhầm sẽ dùng BRR = 1476 ⇒ 57588 baud."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1708, "contains": ["When OVER8 = 0, BRR = USARTDIV."]}
+      - {"doc_id": "STM32G474_RM0440", "page": 281, "contains": ["timer clock frequencies (tim_ker_ck)"]}
+    wrong_variants:
+      - name: x2_rule_misapplied
+        patches: [{"find": "USART1->BRR = 738;", "replace": "USART1->BRR = 1476;"}]
+        expect: ["wrong_baud"]
+      - name: kernel_clock_switched_to_sysclk
+        patches: [{"find": "USART1->BRR = 738;", "replace": "    RCC->CCIPR = (RCC->CCIPR & ~RCC_CCIPR_USART1SEL) | (1U << RCC_CCIPR_USART1SEL_Pos);\n    USART1->BRR = 1476;"}]
+        expect: ["wrong_kernel_clock"]
+      - name: forgot_usart_clock
+        patches: [{"find": "    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+
+- id: C3-015
+  category: C3
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [i2c, i2c1, rm_example]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: the chip has just come out of reset: SYSCLK = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no peripheral clock beyond the reset defaults is enabled, and all GPIO pins are in their reset state. Task: configure I2C1 for 100 kHz (standard mode) with SCL on pin PB8 and SDA on pin PB9. I2C1 uses its default kernel clock (PCLK1). Configure the peripheral for controller operation: program I2C_TIMINGR (while the peripheral is still disabled) so that the target fSCL is reachable, where fSCL = 1 / tSCL with tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] x (PRESC+1) x tI2CCLK (RM0440 §39.4.9) and tSYNC1 + tSYNC2 anywhere between its minimum 4 x tI2CCLK and 1000 ns (the largest value in the manual's examples): the target must lie within ±5 % of the frequency range this gives. The bus timing must also meet the standard-mode (Sm) minimums of RM0440 Table 358 (tLOW >= 4.7 us and tHIGH >= 4.0 us), estimating tLOW as tSCLL + tSYNC1 and tHIGH as tSCLH + tSYNC2 with tSYNC1 = tSYNC2 = 2 x tI2CCLK. Then enable the peripheral; SCL and SDA are open-drain alternate-function pins; no interrupts or DMA. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "reset"
+    spec:
+      - {"type": "i2c", "instance": "I2C1", "scl_hz": 100000, "tol_pct": 5, "scl_pin": "PB8", "sda_pin": "PB9", "open_drain": true, "kernel_clk_hz": 16000000, "mode": "Sm"}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+          RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
+
+          GPIOB->MODER = (GPIOB->MODER & ~(GPIO_MODER_MODE8 | GPIO_MODER_MODE9)) | GPIO_MODER_MODE8_1 | GPIO_MODER_MODE9_1;
+          GPIOB->OTYPER |= GPIO_OTYPER_OT8 | GPIO_OTYPER_OT9;                      /* open-drain */
+          GPIOB->AFR[1] = (GPIOB->AFR[1] & ~(GPIO_AFRH_AFSEL8 | GPIO_AFRH_AFSEL9)) | (4U << GPIO_AFRH_AFSEL8_Pos) | (4U << GPIO_AFRH_AFSEL9_Pos);
+
+          /* fI2CCLK = 16 MHz: RM0440 Table 360, Sm 100 kHz: PRESC=3, SCLL=0x13, SCLH=0xF, SDADEL=2, SCLDEL=4 */
+          I2C1->TIMINGR = (3U << I2C_TIMINGR_PRESC_Pos) | (4U << I2C_TIMINGR_SCLDEL_Pos) | (2U << I2C_TIMINGR_SDADEL_Pos) | (0xFU << I2C_TIMINGR_SCLH_Pos) | (0x13U << I2C_TIMINGR_SCLL_Pos);
+          I2C1->CR1 |= I2C_CR1_PE;
+
+          while (1) { }
+      }
+    reference_calc: "Công thức RM0440 §39.4.9 (p.1645): tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] × (PRESC+1) × tI2CCLK, với tSYNC1 + tSYNC2 ≥ 4 × tI2CCLK (Table 360 chú thích, p.1657). TIMINGR: PRESC [31:28], SCLDEL [23:20], SDADEL [19:16], SCLH [15:8], SCLL [7:0] (p.1681). Trạng thái reset ⇒ PCLK1 = 16 MHz ⇒ tI2CCLK = 62,5 ns. Chọn đúng ví dụ Table 360 (fI2CCLK = 16 MHz, Sm 100 kHz): PRESC = 3 (tPRESC = 4 × 62,5 = 250 ns), SCLL = 0x13 (20 × 250 ns = 5,0 µs), SCLH = 0xF (16 × 250 ns = 4,0 µs). tSCL = 5,0 + 4,0 + 4 × 0,0625 = 9,25 µs ⇒ fSCL = 108,1 kHz với tSYNC cực tiểu; với tSYNC = 1000 ns (giá trị ví dụ của RM) tSCL = 10,0 µs ⇒ 100,0 kHz: dải [100,0; 108,1] kHz chứa mục tiêu. TIMINGR = 0x30420F13 (đúng cột Sm 100 kHz của Table 360), ghi khi PE = 0 (RM p.1681). SCLDEL = 4 ⇒ 5 × 250 ns = 1250 ns ≥ tr + tSU;DAT = 1000 + 250 ns. PB8 = AF4 = I2C1_SCL, PB9 = AF4 = I2C1_SDA (DS p.74); I2C1EN = APB1ENR1 bit 21."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1657, "contains": ["Table 360. Timing settings for fI2CCLK of 16 MHz"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 1645, "contains": ["tSCL = tSYNC1 + tSYNC2 + {[(SCLH+ 1) + (SCLL+ 1)] x (PRESC+ 1) x tI2CCLK}"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 74, "contains": ["PB8 - TIM16_CH1 TIM4_CH3 SAI1_CK1 I2C1_SCL"]}
+    wrong_variants:
+      - name: forgot_pe
+        patches: [{"find": "    I2C1->CR1 |= I2C_CR1_PE;", "replace": ""}]
+        expect: ["sim_violation:SIM-I2C-PE"]
+      - name: push_pull_pins
+        patches: [{"find": "    GPIOB->OTYPER |= GPIO_OTYPER_OT8 | GPIO_OTYPER_OT9;", "replace": ""}]
+        expect: ["wrong_pin_config"]
+      - name: presc_too_small
+        patches: [{"find": "(3U << I2C_TIMINGR_PRESC_Pos)", "replace": "(1U << I2C_TIMINGR_PRESC_Pos)"}]
+        expect: ["wrong_scl"]
+      - name: timingr_written_after_pe
+        patches: [{"find": "    I2C1->TIMINGR = (3U << I2C_TIMINGR_PRESC_Pos) | (4U << I2C_TIMINGR_SCLDEL_Pos) | (2U << I2C_TIMINGR_SDADEL_Pos) | (0xFU << I2C_TIMINGR_SCLH_Pos) | (0x13U << I2C_TIMINGR_SCLL_Pos);\n    I2C1->CR1 |= I2C_CR1_PE;", "replace": "    I2C1->CR1 |= I2C_CR1_PE;\n    I2C1->TIMINGR = (3U << I2C_TIMINGR_PRESC_Pos) | (4U << I2C_TIMINGR_SCLDEL_Pos) | (2U << I2C_TIMINGR_SDADEL_Pos) | (0xFU << I2C_TIMINGR_SCLH_Pos) | (0x13U << I2C_TIMINGR_SCLL_Pos);"}]
+        expect: ["sim_violation:SIM-WRITE-LOCKED"]
+      - name: forgot_i2c_clock
+        patches: [{"find": "    RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-GATE"]
+
+- id: C3-016
+  category: C3
+  split: dev
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [i2c, i2c3, kernel_clock_select]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK2 = 170 MHz (PLL fed by HSI16, voltage Range 1 boost mode, Flash wait states already set); the APB2 prescaler is 1 and the APB1 prescaler is 2, so PCLK1 = 85 MHz. Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: configure I2C3 for 100 kHz (standard mode) with SCL on pin PA8 and SDA on pin PC9. The I2C3 kernel clock must be SYSCLK (170 MHz), selected with RCC_CCIPR.I2C3SEL. Configure the peripheral for controller operation: program I2C_TIMINGR (while the peripheral is still disabled) so that the target fSCL is reachable, where fSCL = 1 / tSCL with tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] x (PRESC+1) x tI2CCLK (RM0440 §39.4.9) and tSYNC1 + tSYNC2 anywhere between its minimum 4 x tI2CCLK and 1000 ns (the largest value in the manual's examples): the target must lie within ±5 % of the frequency range this gives. The bus timing must also meet the standard-mode (Sm) minimums of RM0440 Table 358 (tLOW >= 4.7 us and tHIGH >= 4.0 us), estimating tLOW as tSCLL + tSYNC1 and tHIGH as tSCLH + tSYNC2 with tSYNC1 = tSYNC2 = 2 x tI2CCLK. Then enable the peripheral; SCL and SDA are open-drain alternate-function pins; no interrupts or DMA. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb1_div2"
+    spec:
+      - {"type": "i2c", "instance": "I2C3", "scl_hz": 100000, "tol_pct": 5, "scl_pin": "PA8", "sda_pin": "PC9", "open_drain": true, "kernel_clk_hz": 170000000, "mode": "Sm"}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOCEN;
+          RCC->APB1ENR1 |= RCC_APB1ENR1_I2C3EN;
+          RCC->CCIPR = (RCC->CCIPR & ~RCC_CCIPR_I2C3SEL) | (1U << RCC_CCIPR_I2C3SEL_Pos);      /* 01: SYSCLK */
+
+          GPIOA->MODER = (GPIOA->MODER & ~GPIO_MODER_MODE8) | GPIO_MODER_MODE8_1;
+          GPIOA->OTYPER |= GPIO_OTYPER_OT8;
+          GPIOA->AFR[1] = (GPIOA->AFR[1] & ~GPIO_AFRH_AFSEL8) | (2U << GPIO_AFRH_AFSEL8_Pos);   /* PA8: AF2 = I2C3_SCL */
+          GPIOC->MODER = (GPIOC->MODER & ~GPIO_MODER_MODE9) | GPIO_MODER_MODE9_1;
+          GPIOC->OTYPER |= GPIO_OTYPER_OT9;
+          GPIOC->AFR[1] = (GPIOC->AFR[1] & ~GPIO_AFRH_AFSEL9) | (8U << GPIO_AFRH_AFSEL9_Pos);   /* PC9: AF8 = I2C3_SDA */
+
+          /* fI2CCLK = 170 MHz, PRESC = 15 (tPRESC = 16/170 MHz = 94.1 ns), SCLL = 59 (60 x 94.1 = 5.65 us), SCLH = 45 (46 x 94.1 = 4.33 us);
+             SCLDEL >= (tr + tSU;DAT) / tPRESC - 1 = (1000 + 250) / 94.1 - 1 = 12.3 -> 13;  SDADEL >= (tf + tHD;DAT - tAF - 3 tI2CCLK) / tPRESC = 2.5 -> 3 */
+          I2C3->TIMINGR = (15U << I2C_TIMINGR_PRESC_Pos) | (13U << I2C_TIMINGR_SCLDEL_Pos) | (3U << I2C_TIMINGR_SDADEL_Pos) | (45U << I2C_TIMINGR_SCLH_Pos) | (59U << I2C_TIMINGR_SCLL_Pos);
+          I2C3->CR1 |= I2C_CR1_PE;
+
+          while (1) { }
+      }
+    reference_calc: "Công thức RM0440 §39.4.9 (p.1645): tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] × (PRESC+1) × tI2CCLK, với tSYNC1 + tSYNC2 ≥ 4 × tI2CCLK (Table 360 chú thích, p.1657). TIMINGR: PRESC [31:28], SCLDEL [23:20], SDADEL [19:16], SCLH [15:8], SCLL [7:0] (p.1681). I2C3SEL = 01 (RCC_CCIPR bits 17:16, RM p.323) ⇒ fI2CCLK = 170 MHz, tI2CCLK = 5,882 ns. Chọn PRESC = 15: tPRESC = 16 × 5,882 = 94,12 ns. Cần (SCLL+1) + (SCLH+1) = (10 µs − 4 × 5,882 ns) / 94,12 ns = 106,0. SCLL = 59 ⇒ tLOW = 60 × 94,12 = 5,647 µs (≥ 4,7 µs), SCLH = 45 ⇒ tHIGH = 46 × 94,12 = 4,329 µs (≥ 4,0 µs): tổng 106 ⇒ tSCL = 9976,5 + 23,5 = 10000 ns ⇒ 100,00 kHz. SCLDEL ≥ [tr(max) + tSU;DAT(min)] / tPRESC − 1 = (1000 + 250) / 94,12 − 1 = 12,3 ⇒ 13 và SDADEL ≥ [tf(max) + tHD;DAT(min) − tAF(min) − (DNF+3) × tI2CCLK] / tPRESC = (300 + 0 − 50 − 17,6) / 94,12 = 2,5 ⇒ 3 (tLOW ≈ 5,65 + 0,012 µs ≥ 4,7; tHIGH ≈ 4,33 + 0,012 µs ≥ 4,0 theo Table 358 p.1647) (RM p.1631–1632, Table 356 p.1632: Sm tr = 1000 ns, tf = 300 ns, tSU;DAT = 250 ns). Nếu quên I2C3SEL thì nguồn là PCLK1 = 85 MHz ⇒ cùng TIMINGR cho 50 kHz. PA8 = AF2 = I2C3_SCL (DS p.73), PC9 = AF8 = I2C3_SDA (DS p.75; AF2 của PC9 không có I2C)."
+    evidence:
+      - {"doc_id": "STM32G474_Datasheet", "page": 73, "contains": ["PA8 MCO - I2C3_SCL - I2C2_SDA"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 75, "contains": ["PC9 - - TIM3_CH4 HRTIM1_CHE2 TIM8_CH4 I2SCKIN TIM8_BKIN2 - I2C3_SDA"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 1645, "contains": ["tSCL = tSYNC1 + tSYNC2"]}
+    wrong_variants:
+      - name: forgot_kernel_clock_selection
+        patches: [{"find": "    RCC->CCIPR = (RCC->CCIPR & ~RCC_CCIPR_I2C3SEL) | (1U << RCC_CCIPR_I2C3SEL_Pos);      /* 01: SYSCLK */", "replace": ""}]
+        expect: ["wrong_scl"]
+      - name: sda_af2_instead_of_af8
+        patches: [{"find": "(8U << GPIO_AFRH_AFSEL9_Pos)", "replace": "(2U << GPIO_AFRH_AFSEL9_Pos)"}]
+        expect: ["wrong_pin"]
+      - name: high_period_too_short
+        patches: [{"find": "(45U << I2C_TIMINGR_SCLH_Pos) | (59U << I2C_TIMINGR_SCLL_Pos)", "replace": "(38U << I2C_TIMINGR_SCLH_Pos) | (52U << I2C_TIMINGR_SCLL_Pos)"}]
+        expect: ["wrong_i2c_timing"]
+      - name: retuned_for_pclk1_instead_of_sysclk
+        patches: [{"find": "    RCC->CCIPR = (RCC->CCIPR & ~RCC_CCIPR_I2C3SEL) | (1U << RCC_CCIPR_I2C3SEL_Pos);      /* 01: SYSCLK */", "replace": ""}, {"find": "(15U << I2C_TIMINGR_PRESC_Pos)", "replace": "(7U << I2C_TIMINGR_PRESC_Pos)"}]
+        expect: ["wrong_kernel_clock"]
+
+- id: C3-017
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [i2c, i2c1, kernel_clock_select]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: configure I2C1 for 400 kHz (fast mode) with SCL on pin PB8 and SDA on pin PB9. The I2C1 kernel clock must be HSI16 (16 MHz), selected with RCC_CCIPR.I2C1SEL. Configure the peripheral for controller operation: program I2C_TIMINGR (while the peripheral is still disabled) so that the target fSCL is reachable, where fSCL = 1 / tSCL with tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] x (PRESC+1) x tI2CCLK (RM0440 §39.4.9) and tSYNC1 + tSYNC2 anywhere between its minimum 4 x tI2CCLK and 1000 ns (the largest value in the manual's examples): the target must lie within ±5 % of the frequency range this gives. The bus timing must also meet the fast-mode (Fm) minimums of RM0440 Table 358 (tLOW >= 1.3 us and tHIGH >= 0.6 us), estimating tLOW as tSCLL + tSYNC1 and tHIGH as tSCLH + tSYNC2 with tSYNC1 = tSYNC2 = 2 x tI2CCLK. Then enable the peripheral; SCL and SDA are open-drain alternate-function pins; no interrupts or DMA. Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "sysclk_170mhz_pll_hsi16_apb_div1"
+    spec:
+      - {"type": "i2c", "instance": "I2C1", "scl_hz": 400000, "tol_pct": 5, "scl_pin": "PB8", "sda_pin": "PB9", "open_drain": true, "kernel_clk_hz": 16000000, "mode": "Fm"}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+          RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
+          RCC->CCIPR = (RCC->CCIPR & ~RCC_CCIPR_I2C1SEL) | (2U << RCC_CCIPR_I2C1SEL_Pos);      /* 10: HSI16 */
+
+          GPIOB->MODER = (GPIOB->MODER & ~(GPIO_MODER_MODE8 | GPIO_MODER_MODE9)) | GPIO_MODER_MODE8_1 | GPIO_MODER_MODE9_1;
+          GPIOB->OTYPER |= GPIO_OTYPER_OT8 | GPIO_OTYPER_OT9;
+          GPIOB->AFR[1] = (GPIOB->AFR[1] & ~(GPIO_AFRH_AFSEL8 | GPIO_AFRH_AFSEL9)) | (4U << GPIO_AFRH_AFSEL8_Pos) | (4U << GPIO_AFRH_AFSEL9_Pos);
+
+          /* fI2CCLK = 16 MHz, PRESC = 0 (tI2CCLK = 62.5 ns): SCLL = 23 (tLOW = 1.5 us), SCLH = 11 (tHIGH = 0.75 us);
+             SCLDEL >= (tr + tSU;DAT) / tI2CCLK - 1 = (300 + 100) / 62.5 - 1 = 5.4 -> 6 (Fm) */
+          I2C1->TIMINGR = (0U << I2C_TIMINGR_PRESC_Pos) | (6U << I2C_TIMINGR_SCLDEL_Pos) | (1U << I2C_TIMINGR_SDADEL_Pos) | (11U << I2C_TIMINGR_SCLH_Pos) | (23U << I2C_TIMINGR_SCLL_Pos);
+          I2C1->CR1 |= I2C_CR1_PE;
+
+          while (1) { }
+      }
+    reference_calc: "Công thức RM0440 §39.4.9 (p.1645): tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] × (PRESC+1) × tI2CCLK, với tSYNC1 + tSYNC2 ≥ 4 × tI2CCLK (Table 360 chú thích, p.1657). TIMINGR: PRESC [31:28], SCLDEL [23:20], SDADEL [19:16], SCLH [15:8], SCLL [7:0] (p.1681). I2C1SEL = 10 (HSI16) ⇒ fI2CCLK = 16 MHz, tI2CCLK = 62,5 ns. Mục tiêu tSCL = 2,5 µs: (SCLL+1) + (SCLH+1) = (2500 − 4 × 62,5) / 62,5 = 36 với PRESC = 0. Fast-mode cần tLOW ≥ 1,3 µs và tHIGH ≥ 0,6 µs (Table 358, p.1647): SCLL = 23 ⇒ 24 × 62,5 = 1,5 µs; SCLH = 11 ⇒ 12 × 62,5 = 0,75 µs; tổng 36 ✓ ⇒ tSCL = 2250 + 250 = 2500 ns ⇒ 400 kHz (cận trên); với tSYNC = 1000 ns: 307,7 kHz ⇒ dải [307,7; 400] chứa mục tiêu. SCLDEL ≥ [tr(max) + tSU;DAT(min)] / tI2CCLK − 1 = (300 + 100) / 62,5 − 1 = 5,4 ⇒ 6 (Fm, Table 356 p.1632); SDADEL = 1 thoả 1,0 ≤ SDADEL ≤ 1,44. Giá trị mẫu của RM cho Fm 400 kHz (0x10320309, Table 360) cho dải [363,6; 500] kHz nên cũng đạt."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 1647, "contains": ["Table 358. I²C-bus and SMBus specification clock timings"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 324, "contains": ["Bits 13:12 I2C1SEL[1:0]: I2C1 clock source selection"]}
+    wrong_variants:
+      - name: forgot_kernel_clock_selection
+        patches: [{"find": "    RCC->CCIPR = (RCC->CCIPR & ~RCC_CCIPR_I2C1SEL) | (2U << RCC_CCIPR_I2C1SEL_Pos);      /* 10: HSI16 */", "replace": ""}]
+        expect: ["wrong_scl"]
+      - name: fast_mode_low_period_too_short
+        patches: [{"find": "(11U << I2C_TIMINGR_SCLH_Pos) | (23U << I2C_TIMINGR_SCLL_Pos)", "replace": "(7U << I2C_TIMINGR_SCLH_Pos) | (14U << I2C_TIMINGR_SCLL_Pos)"}]
+        expect: ["wrong_i2c_timing"]
+      - name: timing_computed_for_a_faster_clock
+        patches: [{"find": "(11U << I2C_TIMINGR_SCLH_Pos) | (23U << I2C_TIMINGR_SCLL_Pos)", "replace": "(5U << I2C_TIMINGR_SCLH_Pos) | (9U << I2C_TIMINGR_SCLL_Pos)"}]
+        expect: ["wrong_scl"]
+
+- id: C3-018
+  category: C3
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pll, sysclk_170, boost_mode]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: the chip has just come out of reset: SYSCLK = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no peripheral clock beyond the reset defaults is enabled, and all GPIO pins are in their reset state. Task: configure the clock tree so that SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz, using the PLL fed by HSI16 (AHB, APB1 and APB2 prescalers = 1). The resulting clock frequencies must be accurate to within 0.1 %; wait for each oscillator/PLL to be ready before using it and for the clock switch to take effect (busy-wait on the status flags). Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "reset"
+    spec:
+      - {"type": "clock", "sysclk_hz": 170000000, "hclk_hz": 170000000, "pclk1_hz": 170000000, "pclk2_hz": 170000000, "tol_pct": 0.1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->APB1ENR1 |= RCC_APB1ENR1_PWREN;
+          (void)RCC->APB1ENR1;                                           /* dummy read: delay before the first PWR access (RM0440 p.285) */
+          PWR->CR5 &= ~PWR_CR5_R1MODE;                                   /* Range 1 boost mode: needed above 150 MHz (reset value: normal mode) */
+          FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_4WS;
+
+          /* HSI16 / 4 = 4 MHz, x 85 = 340 MHz VCO, / 2 = 170 MHz */
+          RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSI | (3U << RCC_PLLCFGR_PLLM_Pos) | (85U << RCC_PLLCFGR_PLLN_Pos) | RCC_PLLCFGR_PLLREN;
+          RCC->CR |= RCC_CR_PLLON;
+          while (!(RCC->CR & RCC_CR_PLLRDY)) { }
+
+          RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_HPRE) | RCC_CFGR_HPRE_DIV2;    /* AHB / 2 while switching above 150 MHz */
+          RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_SW) | RCC_CFGR_SW_PLL;
+          while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL) { }
+          for (volatile int i = 0; i < 100; i++) { }                         /* wait >= 1 us before restoring the AHB prescaler (RM0440 p.280) */
+          RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_HPRE) | RCC_CFGR_HPRE_DIV1;    /* back to HCLK = SYSCLK */
+
+          while (1) { }
+      }
+    reference_calc: "PLL (RM0440 §7.4.4, p.291–293): f_VCO = f_in × PLLN / PLLM; f_PLLR = f_VCO / PLLR; PLLM mã hoá M−1 (0000 = /1), PLLR[1:0] = 00 ⇒ /2, PLLSRC = 10 HSI16 / 11 HSE. Giới hạn (DS12288 Table 46, p.123): f_in sau chia M ∈ [2,66; 16] MHz, f_VCO ∈ [96; 344] MHz, SYSCLK ≤ 170 MHz (boost) / 150 MHz (R1MODE = 1). Wait state Flash (RM Table 9, p.98): ≤34/68/102/136/170 MHz cho 0..4 WS (boost); ≤30/60/90/120/150 MHz (normal). HSI16 = 16 MHz: M = 4 ⇒ 4 MHz (trong [2,66; 16]); N = 85 ⇒ VCO = 340 MHz (≤ 344); R = 2 ⇒ 170 MHz. Sau reset PWR_CR5.R1MODE = 1 (Range 1 normal, ≤ 150 MHz; RM p.267, Table 38 p.232) nên phải xoá R1MODE (cần bật PWREN, APB1ENR1 bit 28) trước khi chuyển lên 170 MHz; FLASH_ACR.LATENCY = 4 (170 MHz). Trước khi lên > 150 MHz RM (p.233) yêu cầu chia HCLK cho 2 rồi trả về /1 sau ≥ 1 µs (p.280); sau khi bật PWREN phải chờ một khoảng trước khi truy cập PWR (p.285) ⇒ đọc giả `RCC->APB1ENR1`. PLLREN (RCC_PLLCFGR bit 24) bật ngõ ra R của PLL dùng làm SYSCLK (RM p.292, bước 5 p.278)."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 291, "contains": ["f(VCO clock) = f(PLL clock input) × (PLLN / PLLM)"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 233, "contains": ["Select the Range 1 boost mode by clearing the R1MODE bit"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 98, "contains": ["4 WS (5 CPU cycles) ≤ 170 ≤ 150"]}
+    wrong_variants:
+      - name: forgot_boost_mode
+        patches: [{"find": "    PWR->CR5 &= ~PWR_CR5_R1MODE;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-LIMIT"]
+      - name: forgot_flash_latency
+        patches: [{"find": "    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_4WS;", "replace": ""}]
+        expect: ["sim_violation:SIM-FLASH-WS"]
+      - name: forgot_pllren
+        patches: [{"find": " | RCC_PLLCFGR_PLLREN;", "replace": ";"}]
+        expect: ["sim_violation:SIM-CLK-NOSRC"]
+      - name: n_86_gives_172mhz
+        patches: [{"find": "(85U << RCC_PLLCFGR_PLLN_Pos)", "replace": "(86U << RCC_PLLCFGR_PLLN_Pos)"}]
+        expect: ["sim_violation:SIM-CLK-LIMIT", "wrong_clock"]
+      - name: forgot_pllon
+        patches: [{"find": "    RCC->CR |= RCC_CR_PLLON;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-NOSRC"]
+
+- id: C3-019
+  category: C3
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [pll, sysclk_80, prescalers]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: the chip has just come out of reset: SYSCLK = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no peripheral clock beyond the reset defaults is enabled, and all GPIO pins are in their reset state. Task: configure the clock tree so that SYSCLK = HCLK = PCLK2 = 80 MHz and PCLK1 = 40 MHz, using the PLL fed by HSI16. The resulting clock frequencies must be accurate to within 0.1 %; wait for each oscillator/PLL to be ready before using it and for the clock switch to take effect (busy-wait on the status flags). Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "reset"
+    spec:
+      - {"type": "clock", "sysclk_hz": 80000000, "hclk_hz": 80000000, "pclk1_hz": 40000000, "pclk2_hz": 80000000, "tol_pct": 0.1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_2WS;   /* 80 MHz: 2 wait states in Range 1 */
+
+          /* HSI16 / 4 = 4 MHz, x 40 = 160 MHz VCO, / 2 = 80 MHz */
+          RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSI | (3U << RCC_PLLCFGR_PLLM_Pos) | (40U << RCC_PLLCFGR_PLLN_Pos) | RCC_PLLCFGR_PLLREN;
+          RCC->CR |= RCC_CR_PLLON;
+          while (!(RCC->CR & RCC_CR_PLLRDY)) { }
+
+          RCC->CFGR = (RCC->CFGR & ~(RCC_CFGR_HPRE | RCC_CFGR_PPRE1 | RCC_CFGR_PPRE2)) | RCC_CFGR_HPRE_DIV1 | RCC_CFGR_PPRE1_DIV2 | RCC_CFGR_PPRE2_DIV1;
+          RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_SW) | RCC_CFGR_SW_PLL;
+          while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL) { }
+
+          while (1) { }
+      }
+    reference_calc: "PLL (RM0440 §7.4.4, p.291–293): f_VCO = f_in × PLLN / PLLM; f_PLLR = f_VCO / PLLR; PLLM mã hoá M−1 (0000 = /1), PLLR[1:0] = 00 ⇒ /2, PLLSRC = 10 HSI16 / 11 HSE. Giới hạn (DS12288 Table 46, p.123): f_in sau chia M ∈ [2,66; 16] MHz, f_VCO ∈ [96; 344] MHz, SYSCLK ≤ 170 MHz (boost) / 150 MHz (R1MODE = 1). Wait state Flash (RM Table 9, p.98): ≤34/68/102/136/170 MHz cho 0..4 WS (boost); ≤30/60/90/120/150 MHz (normal). 16/4 = 4 MHz; N = 40 ⇒ VCO = 160 MHz (≥ 96); R = 2 ⇒ 80 MHz ≤ 150 MHz nên giữ Range 1 normal (R1MODE = 1 mặc định), không cần PWR. Flash: 80 MHz > 60 MHz (1 WS) và ≤ 90 MHz ⇒ LATENCY = 2 (Table 9, p.98). HPRE = /1, PPRE1 = 100 ⇒ /2 ⇒ 40 MHz, PPRE2 = /1 ⇒ 80 MHz (RM p.290)."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 98, "contains": ["2 WS (3 CPU cycles) ≤ 102 ≤ 90"]}
+      - {"doc_id": "STM32G474_RM0440", "page": 290, "contains": ["100: HCLK divided by 2"]}
+    wrong_variants:
+      - name: apb1_not_divided
+        patches: [{"find": " | RCC_CFGR_PPRE1_DIV2", "replace": ""}]
+        expect: ["wrong_clock"]
+      - name: latency_1_ws
+        patches: [{"find": "FLASH_ACR_LATENCY_2WS", "replace": "FLASH_ACR_LATENCY_1WS"}]
+        expect: ["sim_violation:SIM-FLASH-WS"]
+      - name: forgot_pllren
+        patches: [{"find": " | RCC_PLLCFGR_PLLREN;", "replace": ";"}]
+        expect: ["sim_violation:SIM-CLK-NOSRC"]
+      - name: n_80_gives_160mhz
+        patches: [{"find": "(40U << RCC_PLLCFGR_PLLN_Pos)", "replace": "(80U << RCC_PLLCFGR_PLLN_Pos)"}]
+        expect: ["wrong_clock", "sim_violation:SIM-CLK-LIMIT"]
+
+- id: C3-020
+  category: C3
+  split: dev
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pll, hse, sysclk_168]
+  turns:
+    - user: "Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST's `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: the chip has just come out of reset: SYSCLK = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no peripheral clock beyond the reset defaults is enabled, and all GPIO pins are in their reset state. Task: an 8 MHz crystal is connected to the HSE oscillator. Configure the clock tree so that SYSCLK = HCLK = PCLK1 = PCLK2 = 168 MHz, using the PLL fed by HSE (AHB, APB1 and APB2 prescalers = 1). The resulting clock frequencies must be accurate to within 0.1 %; wait for each oscillator/PLL to be ready before using it and for the clock switch to take effect (busy-wait on the status flags). Answer with one complete C code block (`#include \"stm32g4xx.h\"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation."
+  expected:
+    initial: "reset"
+    hse_hz: 8000000
+    spec:
+      - {"type": "clock", "sysclk_hz": 168000000, "hclk_hz": 168000000, "pclk1_hz": 168000000, "pclk2_hz": 168000000, "tol_pct": 0.1}
+  graders: [functional_sim, compile]
+  review_status: verified
+  provenance:
+    authored_by: "session P2 (Claude Sonnet 5.5); lời giải và phép tính tay độc lập với simulator"
+    review: {by: "independent model review (Claude Opus, fresh context)", date: "2026-10-22", report: "plan/reviews/review_C3.md", change: "sửa theo review: PLLREN, khoá ghi khi đang bật, khung UART/kernel clock/over8, dải I2C theo tSYNC, SCLDEL/SDADEL theo RM, trang trích dẫn, lọc violation theo spec"}
+    reference_solution: |
+      #include "stm32g4xx.h"
+
+      int main(void)
+      {
+          RCC->APB1ENR1 |= RCC_APB1ENR1_PWREN;
+          (void)RCC->APB1ENR1;                                           /* dummy read: delay before the first PWR access (RM0440 p.285) */
+          PWR->CR5 &= ~PWR_CR5_R1MODE;                                    /* boost mode: SYSCLK > 150 MHz */
+          FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_4WS;
+
+          RCC->CR |= RCC_CR_HSEON;
+          while (!(RCC->CR & RCC_CR_HSERDY)) { }
+
+          /* HSE 8 MHz / 2 = 4 MHz, x 84 = 336 MHz VCO, / 2 = 168 MHz */
+          RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSE | (1U << RCC_PLLCFGR_PLLM_Pos) | (84U << RCC_PLLCFGR_PLLN_Pos) | RCC_PLLCFGR_PLLREN;
+          RCC->CR |= RCC_CR_PLLON;
+          while (!(RCC->CR & RCC_CR_PLLRDY)) { }
+
+          RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_HPRE) | RCC_CFGR_HPRE_DIV2;
+          RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_SW) | RCC_CFGR_SW_PLL;
+          while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL) { }
+          for (volatile int i = 0; i < 100; i++) { }                         /* wait >= 1 us before restoring the AHB prescaler (RM0440 p.280) */
+          RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_HPRE) | RCC_CFGR_HPRE_DIV1;
+
+          while (1) { }
+      }
+    reference_calc: "PLL (RM0440 §7.4.4, p.291–293): f_VCO = f_in × PLLN / PLLM; f_PLLR = f_VCO / PLLR; PLLM mã hoá M−1 (0000 = /1), PLLR[1:0] = 00 ⇒ /2, PLLSRC = 10 HSI16 / 11 HSE. Giới hạn (DS12288 Table 46, p.123): f_in sau chia M ∈ [2,66; 16] MHz, f_VCO ∈ [96; 344] MHz, SYSCLK ≤ 170 MHz (boost) / 150 MHz (R1MODE = 1). Wait state Flash (RM Table 9, p.98): ≤34/68/102/136/170 MHz cho 0..4 WS (boost); ≤30/60/90/120/150 MHz (normal). HSE = 8 MHz: PLLM code 1 ⇒ M = 2 ⇒ 4 MHz; N = 84 ⇒ VCO = 336 MHz (≤ 344); R = 2 ⇒ 168 MHz > 150 MHz ⇒ cần xoá R1MODE (boost) và LATENCY = 4 (Table 9: 4 WS đến 170 MHz). PLLSRC = 11 (HSE), HSEON phải bật trước PLLON."
+    evidence:
+      - {"doc_id": "STM32G474_RM0440", "page": 293, "contains": ["11: HSE clock selected as PLL clock entry"]}
+      - {"doc_id": "STM32G474_Datasheet", "page": 123, "contains": ["Voltage scaling Range 1 96"]}
+    wrong_variants:
+      - name: hse_not_enabled
+        patches: [{"find": "    RCC->CR |= RCC_CR_HSEON;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-NOSRC"]
+      - name: pll_source_left_on_hsi
+        patches: [{"find": "RCC_PLLCFGR_PLLSRC_HSE", "replace": "RCC_PLLCFGR_PLLSRC_HSI"}]
+        expect: ["sim_violation:SIM-CLK-LIMIT"]
+      - name: forgot_boost_mode
+        patches: [{"find": "    PWR->CR5 &= ~PWR_CR5_R1MODE;", "replace": ""}]
+        expect: ["sim_violation:SIM-CLK-LIMIT"]
+      - name: forgot_pllren
+        patches: [{"find": " | RCC_PLLCFGR_PLLREN;", "replace": ";"}]
+        expect: ["sim_violation:SIM-CLK-NOSRC"]

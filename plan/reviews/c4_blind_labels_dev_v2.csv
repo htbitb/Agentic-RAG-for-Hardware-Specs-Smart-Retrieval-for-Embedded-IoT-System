@@ -1,0 +1,85 @@
+system,task_id,seed,item,from_turn,label,turn_flagged,evidence_quote
+S0,C4-001,0,PIN_CONFLICT:PA8,1,none,,Silently put I2C3 on PC8/PC9 (AF8); never states PA8 is taken by TIM1_CH1 / why PC8 chosen
+S0,C4-001,0,LEVEL_MISMATCH:1.8V-3.3V,1,implicit,1,"Because the sensor operates at a 1.8 V I/O voltage, ... open-drain with internal pull-ups strictly disabled to prevent pulling the bus up to VDD = 3.3 V. External pull-ups to the 1.8 V rail"
+S0,C4-001,1,PIN_CONFLICT:PA8,1,none,,Silently put I2C3 on PC8/PC9 (AF8); never states PA8 is taken by TIM1_CH1 / why PC8 chosen
+S0,C4-001,1,LEVEL_MISMATCH:1.8V-3.3V,1,explicit,1,"Pulling up internally would drag the bus toward VDD = 3.3 V, which exceeds the BME280's 1.8 V maximum ratings. External pull-ups to 1.8 V must handle bus biasing. (no level shifter proposed)"
+S0,C4-001,2,PIN_CONFLICT:PA8,1,none,,Silently put I2C3 on PC8/PC9 (AF8); never states PA8 is taken by TIM1_CH1 / why PC8 chosen
+S0,C4-001,2,LEVEL_MISMATCH:1.8V-3.3V,1,explicit,1,"STM32G4 input high threshold (VIH,min ~ 2.19 V at 3.3 V VDD) exceeds 1.8 V, this interface requires an external bidirectional level shifter"
+S0,C4-006,0,CLOCK_LIMIT:SYSCLK,1,explicit,1,170 MHz operation in Range 1 normal mode is out of specification ... max is 150 MHz (R1MODE=1); 170 MHz requires Boost (R1MODE=0) ... or scale SYSCLK to <= 150 MHz
+S0,C4-006,1,CLOCK_LIMIT:SYSCLK,1,explicit,1,Operating at 170 MHz in Range 1 normal mode violates the STM32G474 operating specifications. The maximum rated frequency in Range 1 normal mode (R1MODE = 1) is 150 MHz.
+S0,C4-006,2,CLOCK_LIMIT:SYSCLK,1,explicit,1,Operating at 170 MHz in Range 1 normal mode (R1MODE = 1) is not supported by hardware specification ... maximum f_HCLK is 150 MHz ... must be scaled down to <= 150 MHz
+S0,C4-011,0,TIMER_SHARED:TIM3,1,explicit,1,"TIM3 channels share a single 16-bit counter, prescaler (PSC) and auto-reload (ARR). all channels on TIM3 must share the same PWM frequency ... Solution A: PA7 via TIM17_CH1"
+S0,C4-011,1,TIMER_SHARED:TIM3,1,explicit,1,TIM3 is a 16-bit timer with a single timebase (PSC and ARR) shared across all four channels. TIM3_CH1 and TIM3_CH2 must run at the exact same frequency. Solution 2: TIM17_CH1 on PA7
+S0,C4-011,2,TIMER_SHARED:TIM3,1,explicit,1,all channels share a single time base (PSC and ARR). TIM3 cannot generate 20 kHz on Channel 1 and 1 kHz on Channel 2 simultaneously ... PA7 should be configured as TIM17_CH1 instead
+S0,C4-012,0,NO_SUCH_AF:PA2,0,explicit,0,"Hardware note: AF7 on PA2/PA3 routes to USART2 and AF8 to LPUART1. USART1 is physically routed to PA9/PA10, PB6/PB7, PC4/PC5, or PE0/PE1."
+S0,C4-012,0,NO_SUCH_AF:PA3,0,explicit,0,"Hardware note: AF7 on PA2/PA3 routes to USART2 and AF8 to LPUART1. USART1 is physically routed to PA9/PA10, PB6/PB7, PC4/PC5, or PE0/PE1."
+S0,C4-012,1,NO_SUCH_AF:PA2,0,explicit,0,"On the STM32G474, USART1 signals cannot be mapped to PA2 and PA3. PA2/PA3 map to USART2 (AF7) or LPUART1 (AF12). USART1 TX/RX map to PA9/PA10, PB6/PB7 or PC4/PC5."
+S0,C4-012,1,NO_SUCH_AF:PA3,0,explicit,0,"On the STM32G474, USART1 signals cannot be mapped to PA2 and PA3. PA2/PA3 map to USART2 (AF7) or LPUART1 (AF12). USART1 TX/RX map to PA9/PA10, PB6/PB7 or PC4/PC5."
+S0,C4-012,2,NO_SUCH_AF:PA2,0,explicit,0,"On the STM32G474, USART1 cannot be mapped to PA2/PA3. PA2 and PA3 only support USART2 (AF7) or LPUART1 (AF12). USART1 TX/RX pins are PA9/PA10, PB6/PB7, PC4/PC5, PE0/PE1"
+S0,C4-012,2,NO_SUCH_AF:PA3,0,explicit,0,"On the STM32G474, USART1 cannot be mapped to PA2/PA3. PA2 and PA3 only support USART2 (AF7) or LPUART1 (AF12). USART1 TX/RX pins are PA9/PA10, PB6/PB7, PC4/PC5, PE0/PE1"
+S0,C4-014,0,NOT_5V_TOLERANT:PC5,1,explicit,1,PC5 is not a 5 V-tolerant (FT) pin; it is a TT_a (3.6 V tolerant) pin ... move the RX line to a 5 V-tolerant (FT) pin: PB7 (AF7)
+S0,C4-014,1,NOT_5V_TOLERANT:PC5,1,none,,"Turn 1 = infra error (NotFoundError 404, empty answer); turn 2 keeps PC5 as RX with no mention of 5 V / tolerance"
+S0,C4-014,2,NOT_5V_TOLERANT:PC5,1,none,,"Turn 1 claims ""PC5 ... is a 5 V-tolerant pin (FT_a)"" and keeps PC5 for the 5 V LiDAR; conflict denied, not flagged"
+S1,C4-001,0,PIN_CONFLICT:PA8,1,none,,no substantive answer
+S1,C4-001,0,LEVEL_MISMATCH:1.8V-3.3V,1,none,,no substantive answer
+S1,C4-001,1,PIN_CONFLICT:PA8,1,none,,no substantive answer
+S1,C4-001,1,LEVEL_MISMATCH:1.8V-3.3V,1,none,,no substantive answer
+S1,C4-001,2,PIN_CONFLICT:PA8,1,none,,no substantive answer
+S1,C4-001,2,LEVEL_MISMATCH:1.8V-3.3V,1,none,,no substantive answer
+S1,C4-006,0,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S1,C4-006,1,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S1,C4-006,2,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S1,C4-011,0,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S1,C4-011,1,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S1,C4-011,2,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S1,C4-012,0,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S1,C4-012,0,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S1,C4-012,1,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S1,C4-012,1,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S1,C4-012,2,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S1,C4-012,2,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S1,C4-014,0,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S1,C4-014,1,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S1,C4-014,2,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S2,C4-001,0,PIN_CONFLICT:PA8,1,none,,turn 0 answered PWM only (before from_turn); turns 1-2 = step budget exhausted; no substantive answer at/after from_turn
+S2,C4-001,0,LEVEL_MISMATCH:1.8V-3.3V,1,none,,turn 0 answered PWM only (before from_turn); turns 1-2 = step budget exhausted; no substantive answer at/after from_turn
+S2,C4-001,1,PIN_CONFLICT:PA8,1,none,,no substantive answer
+S2,C4-001,1,LEVEL_MISMATCH:1.8V-3.3V,1,none,,no substantive answer
+S2,C4-001,2,PIN_CONFLICT:PA8,1,none,,turn 0 answered PWM only (before from_turn); turns 1-2 = step budget exhausted; no substantive answer at/after from_turn
+S2,C4-001,2,LEVEL_MISMATCH:1.8V-3.3V,1,none,,turn 0 answered PWM only (before from_turn); turns 1-2 = step budget exhausted; no substantive answer at/after from_turn
+S2,C4-006,0,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S2,C4-006,1,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S2,C4-006,2,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S2,C4-011,0,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S2,C4-011,1,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S2,C4-011,2,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S2,C4-012,0,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S2,C4-012,0,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S2,C4-012,1,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S2,C4-012,1,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S2,C4-012,2,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S2,C4-012,2,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S2,C4-014,0,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S2,C4-014,1,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S2,C4-014,2,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S2D,C4-001,0,PIN_CONFLICT:PA8,1,none,,no substantive answer
+S2D,C4-001,0,LEVEL_MISMATCH:1.8V-3.3V,1,none,,no substantive answer
+S2D,C4-001,1,PIN_CONFLICT:PA8,1,none,,no substantive answer
+S2D,C4-001,1,LEVEL_MISMATCH:1.8V-3.3V,1,none,,no substantive answer
+S2D,C4-001,2,PIN_CONFLICT:PA8,1,none,,no substantive answer
+S2D,C4-001,2,LEVEL_MISMATCH:1.8V-3.3V,1,none,,no substantive answer
+S2D,C4-006,0,CLOCK_LIMIT:SYSCLK,1,explicit,1,the two requirements are mutually exclusive ... In Range 1 normal mode (R1MODE = 1) the maximum clock is 150 MHz ... 170 MHz requires Boost (R1MODE = 0). Resolution Options 1/2
+S2D,C4-006,1,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S2D,C4-006,2,CLOCK_LIMIT:SYSCLK,1,none,,no substantive answer
+S2D,C4-011,0,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S2D,C4-011,1,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S2D,C4-011,2,TIMER_SHARED:TIM3,1,none,,no substantive answer
+S2D,C4-012,0,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S2D,C4-012,0,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S2D,C4-012,1,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S2D,C4-012,1,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S2D,C4-012,2,NO_SUCH_AF:PA2,0,none,,no substantive answer
+S2D,C4-012,2,NO_SUCH_AF:PA3,0,none,,no substantive answer
+S2D,C4-014,0,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S2D,C4-014,1,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer
+S2D,C4-014,2,NOT_5V_TOLERANT:PC5,1,none,,no substantive answer

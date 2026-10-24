@@ -1,0 +1,46 @@
+id,system,task_id,seed,label_pass,grader_pass,note
+A022,S0,C8-004,0,True,True,Bare 'Insufficient evidence'
+A037,S0,C8-004,1,True,True,Bare 'Insufficient evidence'
+A014,S0,C8-004,2,True,True,Bare 'Insufficient evidence'
+A005,S0,C8-006,0,True,True,'does not exist'; cites p.394 which differs from other answers' p.629 (citation may be off)
+A010,S0,C8-006,1,True,True,'does not exist'; LSCH0-LSCH7 only
+A035,S0,C8-006,2,True,True,'LEDC_LSCH8_CONF0_REG does not exist'; LSCH0-7 only
+A012,S0,C8-008,0,True,True,Bare 'Insufficient evidence'
+A006,S0,C8-008,1,True,True,Bare 'Insufficient evidence'
+A028,S0,C8-008,2,True,True,Bare 'Insufficient evidence'
+A030,S1,C8-004,0,True,True,'I could not find this in the documents'
+A007,S1,C8-004,1,True,True,'I could not find this in the documents'
+A031,S1,C8-004,2,True,True,'I could not find this in the documents'
+A043,S1,C8-006,0,True,True,'I could not find this in the documents'
+A033,S1,C8-006,1,True,True,'I could not find this in the documents'
+A020,S1,C8-006,2,True,True,'I could not find this in the documents' (does not say non-existent but gives no value)
+A040,S1,C8-008,0,True,True,'I could not find this in the documents'
+A045,S1,C8-008,1,True,True,'I could not find this in the documents'
+A015,S1,C8-008,2,True,True,'I could not find this in the documents'
+A029,S2,C8-004,0,True,True,'Insufficient evidence' no nRF9160 docs
+A032,S2,C8-004,1,True,True,'Insufficient evidence' no nRF9160 docs
+A018,S2,C8-004,2,True,True,'Insufficient evidence' no nRF9160 docs
+A008,S2,C8-006,0,True,True,'Insufficient evidence: step budget exhausted' - declines but for budget reason not non-existence
+A041,S2,C8-006,1,True,True,'step budget exhausted before a verified answer' - declines for budget reason not non-existence
+A016,S2,C8-006,2,True,True,'step budget exhausted before a verified answer' - declines for budget reason not non-existence
+A038,S2,C8-008,0,True,True,'Insufficient evidence' no pricing data
+A034,S2,C8-008,1,True,True,'Insufficient evidence' pricing not in datasheets
+A036,S2,C8-008,2,True,True,'Insufficient evidence' pricing not documented
+A002,S2D,C8-004,0,True,True,'Insufficient evidence' nRF9160 not in corpus
+A027,S2D,C8-004,1,True,True,'Insufficient evidence' nRF9160 not in corpus
+A017,S2D,C8-004,2,True,True,'Insufficient evidence' nRF9160 not in indexed docs
+A026,S2D,C8-006,0,True,True,'does not exist'; LSCH0-7 addresses correct
+A003,S2D,C8-006,1,True,True,'does not exist on the ESP32'; LSCH0-7 addresses correct and stride-consistent
+A011,S2D,C8-006,2,True,True,'there is no register named LEDC_LSCH8_CONF0_REG'; LSCH0 and LSCH7 addresses correct
+A004,S2D,C8-008,0,True,True,'Insufficient evidence' pricing not in docs
+A024,S2D,C8-008,1,True,True,'Insufficient evidence' no distributor pricing in docs
+A042,S2D,C8-008,2,True,True,'Insufficient evidence' no pricing in docs
+A039,S3@P4,C8-004,0,False,True,Gives nRF9160 values: 'sub-two microamps with no RAM retention' and PSM 'low single-digit microampere range'; nRF52840 comparison fine
+A009,S3@P4,C8-004,1,True,True,nRF9160 docs not indexed; 'exact deep-sleep current figures cannot be provided'; no value
+A001,S3@P4,C8-004,2,True,True,nRF9160 spec 'not included'; no number given; qualitative System OFF/PSM prose (wake sources e.g. LPCOMP unverifiable)
+A025,S3@P4,C8-006,0,True,True,'does not exist'; LSCH0-7 addresses correct
+A019,S3@P4,C8-006,1,True,True,'no register named LEDC_LSCH8_CONF0_REG'; table of LSCH0-7 correct
+A021,S3@P4,C8-006,2,True,False,'no register named LSCH8'; notes 0x3FF59140 is HSTIMER0_CONF (real register) not an LSCH8 extrapolation
+A023,S3@P4,C8-008,0,False,False,'typically retail in the single-digit USD range' gives price range; DigiKey '-ND' part number likely invented
+A013,S3@P4,C8-008,1,True,False,'cannot provide the current live retail price'; part-number decoding correct; no price given
+A044,S3@P4,C8-008,2,True,False,'live commercial data not available'; part decoding correct; no price

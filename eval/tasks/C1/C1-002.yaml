@@ -1,0 +1,41 @@
+id: C1-002
+category: C1
+split: dev
+suites: [smoke]
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_offset
+turns:
+- user: What is the address offset of TISEL within the TIM15 peripheral of the STM32G474?
+expected:
+  exact:
+    attribute: offset
+    kind: hex
+    value: '0x5C'
+    allowed:
+    - '0x40014000'
+    - '0x4001405C'
+  numeric_support:
+  - '0x40014000'
+  - '0x5C'
+  - '0x4001405C'
+  - '0x0'
+  cite_values:
+  - TISEL
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: TIM15
+  register: TISEL
+  question_type: offset
+  template: offset.1
+  doc_hint: STM32G474_RM0440
+  doc_name: TISEL
+version: 1

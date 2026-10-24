@@ -1,0 +1,2 @@
+# Demo `approval` — Reject + góp ý ⇒ lập lại kế hoạch ⇒ file mới ⇒ Approve (LLM thật)
+Tiến trình 1 (`--stop-on-interrupt`) dừng ở interrupt `approval` cho `pwm_pa8.c`; tiến trình 2: `reject` kèm góp ý "đừng ghi .c, đưa giá trị vào header pwm_pa8_cfg.h chỉ có #define" ⇒ sự kiện `replan_required (USER_REJECTED)` ⇒ `plan_updated (after_replan)` ⇒ agent đổi bước "Save header pwm_pa8_cfg.h" ⇒ interrupt `approval` thứ hai ⇒ tiến trình 3: `approve` ⇒ file ghi vào `workspace_out/`, agent `finish`. Chạy liền một lần, không chỉnh prompt.

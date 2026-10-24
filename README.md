@@ -1,15 +1,26 @@
-# Agentic RAG for Hardware Specs (ESP32 / STM32G474 / nRF52840 / FreeRTOS)
+# Agentic RAG for Hardware Specs (STM32G474 / ESP32 / nRF52840 / FreeRTOS)
 
-Full explanation (what / why / how it runs): **[docs/explanation.html](docs/explanation.html)**
+Agent hỗ trợ thiết kế phần cứng nhúng cho môn CO5151 Agentic AI. Dự án đã chuyển từ v1, một vòng ReAct tra cứu trên dữ liệu chỉ đọc, sang **v3**. Bản v3 có:
+- dữ liệu thật từ SVD và PDF;
+- Board State và DRC;
+- sandbox mô phỏng thanh ghi;
+- runtime có kế hoạch, ngân sách, checkpoint và resume;
+- Verification Gate G1–G5;
+- human-in-the-loop qua interrupt và resume;
+- harness đánh giá chung cho 5 hệ.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-copy .env.example .env                       # optional: add LLM_API_KEY, otherwise SimulatedLLM is used
-.\.venv\Scripts\python.exe run_all.py        # build index + evaluation (3 seeds + attack suite)
-.\.venv\Scripts\python.exe -m ui.server      # web UI on http://127.0.0.1:8000
-.\.venv\Scripts\python.exe main.py -v "What is the ESP32 deep-sleep current with RTC timer and RTC memory?"
-```
+| Thư mục | Nội dung |
+|---|---|
+| `agent/` | Agent v3: runtime, Gate, MCP servers, `hwmodel/`, UI (xem `agent/README.md`) |
+| `native-RAG/` | Baseline Native RAG (S1) |
+| `eval/` | Harness đánh giá, task C1–C8, grader, kết quả (`eval/results/dev_baseline_v2/report.md`) |
+| `corpus/` | Corpus chung: PDF, SVD, header |
+| `snapshots/` | Các phiên bản agent đóng băng dùng để đánh giá |
+| `plan/` | Kế hoạch, sổ quyết định, brief và ledger từng giai đoạn, review, demo |
 
-Simulated parts (see the HTML doc, section "Simulated / missing parts"):
-LLM (no API key), STM32G474 + nRF52840 facts/corpus (no PDFs), one poisoned app note for injection tests.
+Đọc theo thứ tự sau:
+1. `plan/AgenticUpgradePlan.md`: kế hoạch tổng thể.
+2. `plan/DECISIONS.md`: các quyết định.
+3. `plan/HANDOFF_P6_P9.md`: trạng thái hiện tại và phần việc còn lại.
+
+Khi chạy, tạo `agent/.env` từ `agent/.env.example.txt`. **Không commit `.env`.**

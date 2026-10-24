@@ -1,0 +1,42 @@
+id: C1-018
+category: C1
+split: test
+difficulty: easy
+chips:
+- nrf52840
+tags:
+- register_address
+turns:
+- user: Give the 32-bit address of the PSEL_MISO register in the SPI1 block of the nRF52840.
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x40004510'
+    allowed:
+    - '0x40004000'
+    - '0xFFFFFFFF'
+  numeric_support:
+  - '0x40004000'
+  - '0x510'
+  - '0x40004510'
+  - '0xFFFFFFFF'
+  cite_values:
+  - '0x40004510'
+  - '0x40004000'
+  - PSEL_MISO
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: nrf52840.svd
+  peripheral: SPI1
+  register: PSEL_MISO
+  question_type: address
+  template: address.4
+  doc_hint: nRF52840_PS
+  doc_name: PSEL_MISO
+version: 1

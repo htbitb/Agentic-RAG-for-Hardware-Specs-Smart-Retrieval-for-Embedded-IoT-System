@@ -1,0 +1,87 @@
+# Câu do reviewer ĐỘC LẬP (c4-reviewer-1/2, p3-code-reviewer) tự viết khi soát C4 và bộ nhận diện — mỗi câu đã được reviewer gán nhãn trước khi biết sửa đổi tương ứng.
+# Dùng làm dữ liệu hiệu chỉnh/hồi quy (đã thấy), KHÔNG phải ước lượng khái quát. kind: explicit | implicit | negated (câu đúng KHÔNG nêu xung đột/không khuyên nối thẳng).
+# rv-005, rv-030, rv-043 (câu lượt TRƯỚC lượt gây xung đột) KHÔNG nằm ở đây: đó là việc của `from_turn`, không phải của bộ nhận diện.
+# --- C4-001 (PA8 / LEVEL 1.8-3.3)
+- {id: rv-001, code: "PIN_CONFLICT:PA8", label: true, kind: explicit, text: "PA8 is the TIM1_CH1 output. Warning: PA8 is shared between TIM1_CH1 and I2C3_SCL, so I put SCL on PC8."}
+- {id: rv-002, code: "PIN_CONFLICT:PA8", label: true, kind: explicit, text: "PA8 cannot be used for I2C3_SCL because it is already the PWM output."}
+- {id: rv-003, code: "PIN_CONFLICT:PA8", label: false, kind: negated, text: "I2C3 uses PC8 for SCL and PC9 for SDA instead of PA8."}
+- {id: rv-004, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true, kind: explicit, text: "Your sensor is powered at 1.8 V and the MCU at 3.3 V, so these are different voltage domains and you need a level shifter."}
+- {id: rv-006, code: "unsafe_connection", rails: [1.8, 3.3], label: true, kind: explicit, text: "You don't need a level shifter between the BME280 and the STM32; just wire SDA and SCL straight across."}
+- {id: rv-007, code: "unsafe_connection", rails: [1.8, 3.3], label: true, kind: explicit, text: "A level shifter isn't strictly necessary for the 1.8 V sensor on a 3.3 V bus."}
+- {id: rv-008, code: "unsafe_connection", rails: [1.8, 3.3], label: true, kind: explicit, text: "A level shifter is optional here, the 1.8 V sensor can sit directly on the 3.3 V pins."}
+- {id: rv-009, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Place a level shifter between the 3.3 V MCU side and the 1.8 V sensor side. The sensor then connects directly to the shifter's 1.8 V port."}
+- {id: rv-010, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Without a level shifter the 3.3 V MCU would overdrive the 1.8 V sensor, so I added one."}
+# --- C4-002 (PB6 không có SCL)
+- {id: rv-011, code: "NO_SUCH_AF:PB6", label: true, kind: explicit, text: "PB6 lacks an I2C1_SCL function, so SCL goes to PB8."}
+- {id: rv-012, code: "NO_SUCH_AF:PB6", label: true, kind: explicit, text: "PB6 cannot function as I2C1_SCL; the AF map only offers TIM4_CH1 and USART1_TX there."}
+- {id: rv-013, code: "NO_SUCH_AF:PB6", label: true, kind: explicit, text: "PB6 isn't connected to the I2C1 peripheral in the AF map."}
+- {id: rv-014, code: "NO_SUCH_AF:PB6", label: false, kind: negated, text: "I put SCL on PB8 instead of PB6."}
+- {id: rv-015, code: "PIN_CONFLICT:PB7", label: true, kind: explicit, text: "PB7 cannot be used for USART1_RX because it is already the I2C1_SDA line."}
+- {id: rv-016, code: "PIN_CONFLICT:PB7", label: true, kind: explicit, text: "PB7 has been assigned to I2C1_SDA, so it is not free."}
+# --- C4-003/014 (TT_a 5 V)
+- {id: rv-017, code: "NOT_5V_TOLERANT:PA3", label: true, kind: explicit, text: "PA3 is only 3.6 V tolerant. PA15 is an FT pin, so I use it for RX."}
+- {id: rv-018, code: "NOT_5V_TOLERANT:PA3", label: true, kind: explicit, text: "PA3 tops out at about 4 V, so a 5 V line must not be driven into it."}
+- {id: rv-019, code: "NOT_5V_TOLERANT:PA3", label: false, kind: negated, text: "RX is on PA15 instead of PA3."}
+- {id: rv-020, code: "unsafe_connection", pin: PA3, label: false, kind: negated, text: "PA3 is not 5 V tolerant. PA15 is 5 V tolerant, so no level shifter is needed."}
+- {id: rv-021, code: "unsafe_connection", pin: PA3, label: false, kind: negated, text: "PA3 is not 5 V tolerant, so I moved RX to PA15, as PA15 is FT, there is no need for a level shifter."}
+- {id: rv-022, code: "unsafe_connection", pin: PA3, label: false, kind: negated, text: "I moved RX away from PA3 and you can skip the level shifter because the new pin is FT."}
+- {id: rv-023, code: "unsafe_connection", pin: PA3, label: true, kind: explicit, text: "No level shifter is needed, connect the 5 V GPS TX straight to PA3."}
+- {id: rv-024, code: "unsafe_connection", pin: PC5, label: false, kind: negated, text: "PC5 is not 5 V tolerant, so I moved RX to PA10. PA10 is a 5 V tolerant pin, so you can connect the LiDAR directly to it."}
+- {id: rv-025, code: "unsafe_connection", pin: PC5, label: false, kind: negated, text: "The LiDAR's 5 V signal would exceed the maximum voltage allowed on PC5 (TT_a). PA10 is FT, so wire the LiDAR directly to PA10 - no level shifter is needed there."}
+- {id: rv-026, code: "unsafe_connection", pin: PC5, label: true, kind: explicit, text: "Wire the LiDAR TX directly to PC5, no divider or level shifter is needed."}
+- {id: rv-027, code: "NOT_5V_TOLERANT:PC5", label: true, kind: explicit, text: "PC5 is only rated for 3.6 V, whereas the LiDAR outputs 5 V."}
+- {id: rv-028, code: "NOT_5V_TOLERANT:PC5", label: true, kind: explicit, text: "PC5 can't handle the LiDAR's 5 V output."}
+- {id: rv-029, code: "NOT_5V_TOLERANT:PC5", label: false, kind: negated, text: "PC5 (TT_a) is 5 V tolerant, so the LiDAR output is fine on PC5."}
+# --- C4-004/011 (TIMER_SHARED)
+- {id: rv-031, code: "TIMER_SHARED:TIM3", label: true, kind: explicit, text: "Because both channels belong to TIM3, they must run at the same PWM frequency."}
+- {id: rv-032, code: "TIMER_SHARED:TIM3", label: true, kind: explicit, text: "TIM3 would drive both outputs. They share a single counter, so TIM3 cannot generate 20 kHz and 1 kHz together."}
+- {id: rv-033, code: "TIMER_SHARED:TIM3", label: false, kind: negated, text: "Each channel of TIM3 has its own CCR, so there is no conflict."}
+# --- C4-005/006/007/015 (CLOCK_LIMIT)
+- {id: rv-034, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "Range 1 normal mode (R1MODE = 1) limits SYSCLK to 150 MHz."}
+- {id: rv-035, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "Range 1 normal mode only allows up to 150 MHz for SYSCLK, so with R1MODE = 1 I have lowered the system clock."}
+- {id: rv-036, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "With R1MODE = 1 the system clock must be 150 MHz or lower."}
+- {id: rv-037, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "With R1MODE = 1 the system clock may not be higher than 150 MHz."}
+- {id: rv-038, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "R1MODE = 1 and SYSCLK = 170 MHz cannot coexist; normal mode is only good for 150 MHz."}
+- {id: rv-039, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "SYSCLK must not exceed 170 MHz."}
+- {id: rv-040, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "The maximum SYSCLK frequency of the STM32G474 is 170 MHz, so 200 MHz is out."}
+- {id: rv-041, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "I can't set 180 MHz. The core is only rated up to 170 MHz."}
+- {id: rv-042, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "170 MHz is already the top speed of this chip, so I cannot raise SYSCLK to 180 MHz."}
+- {id: rv-044, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: negated, text: "SYSCLK raised to 180 MHz with PLLN = 90, which is within the range, so there is no problem."}
+- {id: rv-045, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: negated, text: "SYSCLK is 150 MHz instead of 170 MHz."}
+- {id: rv-046, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "SYSCLK is 150 MHz instead of 170 MHz because normal mode cannot run faster."}
+- {id: rv-047, code: "CLOCK_LIMIT:PLL_IN", label: true, kind: explicit, text: "The PLL input clock must not exceed 16 MHz, but PLLM = 1 would give it 24 MHz."}
+- {id: rv-048, code: "CLOCK_LIMIT:PLL_IN", label: true, kind: explicit, text: "A 24 MHz HSE with PLLM = 1 puts 24 MHz on the PLL input, which is above the allowed 16 MHz."}
+- {id: rv-049, code: "CLOCK_LIMIT:PLL_IN", label: true, kind: explicit, text: "The VCO input must stay within 2.66-16 MHz, so PLLM = 1 is not allowed with a 24 MHz crystal."}
+# --- C4-008/010/013 (PIN_CONFLICT)
+- {id: rv-050, code: "PIN_CONFLICT:PA9", label: true, kind: explicit, text: "PA9 would be shared by USART1_TX and I2C2_SCL, which is impossible."}
+- {id: rv-051, code: "PIN_CONFLICT:PA9", label: false, kind: negated, text: "SCL is placed on PC4 instead of PA9; SDA stays on PA8."}
+- {id: rv-052, code: "PIN_CONFLICT:PB10", label: true, kind: explicit, text: "PB10 is being used by USART3_TX, so the heater PWM goes to PA2."}
+- {id: rv-053, code: "PIN_CONFLICT:PB10", label: true, kind: explicit, text: "PB10 is currently assigned to USART3_TX; TIM2_CH3 cannot take it."}
+- {id: rv-054, code: "PIN_CONFLICT:PB10", label: true, kind: explicit, text: "PB10 is not free: it is the USART3 TX pin, so I used PA2 for TIM2_CH3."}
+- {id: rv-055, code: "PIN_CONFLICT:PB10", label: true, kind: explicit, text: "TIM2_CH3 shares PB10 with USART3_TX, so only one of them can use it."}
+- {id: rv-056, code: "PIN_CONFLICT:PB10", label: true, kind: explicit, text: "Both USART3_TX and TIM2_CH3 compete for PB10, so I moved the PWM."}
+- {id: rv-057, code: "PIN_CONFLICT:PB10", label: true, kind: explicit, text: "PB10 is already USART3_TX, so I put the heater PWM on PA2."}
+- {id: rv-058, code: "PIN_CONFLICT:PB10", label: false, kind: negated, text: "PB10 supports TIM2_CH3 (AF1) and USART3_TX (AF7); I set AF1 on PB10 for the PWM."}
+- {id: rv-059, code: "NO_SUCH_AF:PA2", label: true, kind: explicit, text: "PA2 and PA3 belong to USART2; USART1 lives on PA9/PA10."}
+- {id: rv-060, code: "NO_SUCH_AF:PA2", label: true, kind: explicit, text: "PA2/PA3 map to USART2 on this chip, so for USART1 I switched to PA9 and PA10."}
+- {id: rv-061, code: "NO_SUCH_AF:PA2", label: true, kind: explicit, text: "The pins PA2 and PA3 belong to USART2, so USART1 TX/RX cannot be placed there."}
+- {id: rv-062, code: "NO_SUCH_AF:PA2", label: false, kind: negated, text: "PA2 and PA3 support USART2 in AF7; here I am setting AF7 on them for USART1 as you asked."}
+# --- LEVEL_MISMATCH tách câu / cách nói khác
+- {id: rv-063, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true, kind: explicit, text: "The BLE module is a 1.8 V part and the STM32 pins are 3.3 V, so you need a logic-level converter."}
+- {id: rv-064, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true, kind: explicit, text: "Don't wire PA2 and PA3 straight to a 1.8 V module while the MCU is at 3.3 V; use a level translator."}
+- {id: rv-065, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true, kind: explicit, text: "A 1.8 V sensor on a 3.3 V I2C bus is a problem: the pins aren't compatible without a level shifter."}
+- {id: rv-066, code: "LEVEL_MISMATCH:1.8V-3.3V", label: false, kind: negated, text: "The 24LC256 EEPROM and the MCU both run at 3.3 V, so there is no voltage mismatch and no level shifter."}
+# --- p3-code-reviewer: unsafe_connection (must_not)
+- {id: rv-067, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Directly connecting the 3.3 V MCU pins to the 1.8 V module is not recommended; I used a level shifter."}
+- {id: rv-068, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Connecting the 1.8 V sensor directly to the 3.3 V pins would be wrong."}
+- {id: rv-069, code: "unsafe_connection", rails: [1.8, 3.3], label: true, kind: explicit, text: "No level shifter is needed for the 1.8 V sensor; the STM32 pins are 5 V tolerant."}
+- {id: rv-070, code: "unsafe_connection", rails: [1.8, 3.3], label: true, kind: explicit, text: "FT pins are 5 V tolerant, so you can connect the 1.8 V sensor directly."}
+- {id: rv-071, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Connect the pull-ups directly to the 1.8 V rail on the sensor side, with the level shifter between the two buses."}
+- {id: rv-072, code: "unsafe_connection", rails: [1.8, 3.3], label: false, kind: negated, text: "Level shifter not needed, since both devices are 3.3 V."}
+- {id: rv-073, code: "PIN_CONFLICT:PA8", label: false, kind: negated, text: "I checked for pin conflicts and found none on PA8."}
+- {id: rv-074, code: "PIN_CONFLICT:PA8", label: false, kind: negated, text: "PA8 isn't in conflict with anything here."}
+- {id: rv-075, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: negated, text: "SYSCLK doesn't exceed 170 MHz, so the configuration is valid."}
+# --- LaTeX (kết quả pilot thật: S0/S2 viết $...\text{ }$)
+- {id: rv-076, code: "LEVEL_MISMATCH:1.8V-3.3V", label: true, kind: explicit, text: "The sensor runs at $1.8\\text{ V}$ while $V_{DD} = 3.3\\,\\mathrm{V}$, so a level shifter is required."}
+- {id: rv-077, code: "CLOCK_LIMIT:SYSCLK", label: true, kind: explicit, text: "The maximum SYSCLK is $170\\text{ MHz}$, so $200\\text{ MHz}$ is not possible."}
+- {id: rv-078, code: "CLOCK_LIMIT:SYSCLK", label: false, kind: negated, text: "SYSCLK is set to $170\\text{ MHz}$ using PLLN = 85."}

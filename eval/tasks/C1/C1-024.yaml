@@ -1,0 +1,41 @@
+id: C1-024
+category: C1
+split: test
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_address
+turns:
+- user: On the STM32G474, at which address is the DAC_STR2 register of DAC4 located?
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x5000145C'
+    allowed:
+    - '0x50001400'
+  numeric_support:
+  - '0x50001400'
+  - '0x5C'
+  - '0x5000145C'
+  - '0x0'
+  cite_values:
+  - '0x5000145C'
+  - '0x50001400'
+  - DAC_STR2
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: DAC4
+  register: DAC_STR2
+  question_type: address
+  template: address.2
+  doc_hint: STM32G474_RM0440
+  doc_name: DAC_STR2
+version: 1

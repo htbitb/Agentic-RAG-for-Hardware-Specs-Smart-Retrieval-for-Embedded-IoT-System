@@ -1,0 +1,446 @@
+# C2 — Multi-hop / cross-document (tuyển chọn thủ công). Mọi bằng chứng (provenance.evidence) được
+# `python -m eval.tools.verify_tasks` kiểm trên text trang PDF của corpus (trang = chỉ số PDF 1-based).
+# review_status: verified = đã qua công cụ xác minh; CHƯA có người duyệt độc lập (xem eval/tasks/INDEX.md).
+- id: C2-001
+  category: C2
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [pin_af, multi_hop]
+  turns:
+    - user: "On the STM32G474, which alternate function number connects TIM4_CH1 to pin PB6, and which alternate function number on the same pin provides USART1_TX?"
+  expected:
+    keyfacts:
+      - {attribute: af_tim4_ch1, value: AF2, aliases: ["AF 2", "alternate function 2"]}
+      - {attribute: af_usart1_tx, value: AF7, aliases: ["AF 7", "alternate function 7"]}
+    cite_values: [PB6, TIM4_CH1]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_Datasheet, page: 74, contains: ["PB6 - TIM16_CH1N TIM4_CH1 - - TIM8_CH1 TIM8_ETR USART1_TX COMP4_OUT"]}
+    note: "Cột AF suy ra từ vị trí token trong hàng PB6 của Table 13 (AF0='-', AF1=TIM16_CH1N, AF2=TIM4_CH1, ..., AF7=USART1_TX)."
+
+- id: C2-002
+  category: C2
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pin_af, timer, register, multi_hop]
+  turns:
+    - user: "I want TIM4 channel 3 to drive pin PB8 on an STM32G474. Which alternate function number must be selected for PB8, which GPIO register holds that selection for pins 8 to 15, and which TIM4 register bit enables the channel 3 output?"
+  expected:
+    keyfacts:
+      - {attribute: af_tim4_ch3, value: AF2, aliases: ["AF 2", "alternate function 2"]}
+      - {attribute: gpio_register, value: GPIOx_AFRH, aliases: ["GPIOB_AFRH", "AFRH"], literal: true}
+      - {attribute: enable_bit, value: CC3E, literal: true}
+    cite_values: [PB8, TIM4_CH3, AFRH, CC3E]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_Datasheet, page: 74, contains: ["PB8 - TIM16_CH1 TIM4_CH3 SAI1_CK1 I2C1_SCL"]}
+      - {doc_id: STM32G474_RM0440, page: 360, contains: ["GPIO alternate function high register (GPIOx_AFRH)"]}
+      - {doc_id: STM32G474_RM0440, page: 1385, contains: ["Bit 8 CC3E: Capture/Compare 3 output enable"]}
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "sửa trang bằng chứng CC3E: p.1259 là TIM1/8/20; TIM4 (general-purpose TIM2-5) ở p.1385"}
+
+- id: C2-003
+  category: C2
+  split: dev
+  suites: [smoke]
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [flash_latency, procedure]
+  turns:
+    - user: "The STM32G474 core runs from VCORE Range 2. How many flash wait states are needed at an HCLK of 24 MHz, and what is the highest HCLK frequency allowed in Range 2 according to the wait-state table?"
+  expected:
+    keyfacts:
+      - {attribute: ws_24mhz_range2, value: "1 WS", aliases: ["1 wait state", "one wait state", "LATENCY = 1", "LATENCY=1", "1 WS (2 CPU cycles)", "one WS", "LATENCY[3:0] = 1"], literal: true}
+      - {attribute: max_hclk_range2, value: 26}
+    cite_values: ["Number of wait states according to CPU clock", "2 WS (3 CPU cycles)"]
+    numeric_support: [{value: 24, unit: MHz}, {value: 26, unit: MHz}]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_RM0440, page: 98, contains: ["1 WS (2 CPU cycles) ≤ 68 ≤ 60 ≤ 24", "2 WS (3 CPU cycles) ≤ 102 ≤ 90 ≤ 26", "3 WS (4 CPU cycles) ≤ 136 ≤ 120 -"]}
+    note: "Giá trị 26 MHz là ô cuối của hàng '2 WS' (Range 2) trong Table 9; trang không ghi đơn vị MHz trong ô."
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm alias 'one WS', 'LATENCY[3:0] = 1' (optional)"}
+
+- id: C2-004
+  category: C2
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [clock, flash_latency, cross_doc]
+  turns:
+    - user: "What is the maximum AHB/APB frequency of the STM32G474, and how many flash wait states does the reference manual require to run at that frequency in VCORE Range 1 boost mode? Also, up to what HCLK frequency can Range 1 boost mode run with zero wait states?"
+  expected:
+    keyfacts:
+      - {attribute: max_hclk, value: 170, unit: MHz}
+      - {attribute: ws_at_max, value: "4 WS", aliases: ["4 wait states", "four wait states", "LATENCY = 4", "LATENCY=4", "4 WS (5 CPU cycles)"], literal: true}
+      - {attribute: zero_ws_limit, value: 34}
+    cite_values: ["170 MHz", "4 WS (5 CPU cycles)"]
+    numeric_support: [{value: 34, unit: MHz}]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_Datasheet, page: 29, contains: ["The maximum frequency of the AHB and the APB domains is 170 MHz."]}
+      - {doc_id: STM32G474_RM0440, page: 98, contains: ["0 WS (1 CPU cycles) ≤ 34 ≤ 30 ≤ 12", "4 WS (5 CPU cycles) ≤ 170 ≤ 150 -"]}
+    note: "Ngưỡng 34 MHz là ô đầu của hàng '0 WS' (Range 1 boost); trang không ghi đơn vị trong ô."
+
+- id: C2-005
+  category: C2
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [absolute_max, io_voltage]
+  turns:
+    - user: "On the STM32G474, what is the absolute maximum input voltage on an FT_c pin, how is the maximum defined for the other FT_xxx pins, and what must be done to sustain an input voltage above 4 V?"
+  expected:
+    keyfacts:
+      - {attribute: ft_c_max, value: 5.5}
+      - {attribute: ft_xxx_formula, value: "min (VDD, VDDA) + 4.0", aliases: ["VDD + 4.0 V", "min(VDD, VDDA) + 4 V", "min(VDD,VDDA)+4.0", "4.0 V above the supply", "VDD+4"]}
+      - {attribute: above_4v_condition, value: "pull-up/pull-down resistors must be disabled", aliases: ["disable the internal pull-up", "internal pull-up/pull-down resistors must be disabled", "pull-up and pull-down resistors must be disabled", "disabled the internal pull", "pull-up/pull-down disabled", "pull-ups and pull-downs must be disabled", "disable the internal pull up", "disable the internal pull ups", "disable internal pull up", "disable internal pull ups", "disable the pull up", "disable pull up", "pull up and pull down resistors disabled", "pull up pull down resistors disabled", "pull ups and pull downs disabled", "turn off the internal pull"]}
+    cite_values: ["FT_c", "Voltage characteristics"]
+    numeric_support: [{value: 5.5, unit: V}, {value: 4.0, unit: V}, {value: 0.3, unit: V}]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_Datasheet, page: 82, contains: ["Input voltage on FT_c pins V SS-0.3 5.5", "min (VDD, VDDA) + 4.0"]}
+      - {doc_id: STM32G474_Datasheet, page: 83, contains: ["To sustain a voltage higher than 4 V the intern al pull-up/pull-down resistors must be disabled."]}
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm alias cho above_4v_condition ('you must disable the internal pull-ups and pull-downs' bị chấm thiếu)"}
+
+- id: C2-006
+  category: C2
+  split: test
+  difficulty: medium
+  chips: [esp32]
+  tags: [supply_voltage, footnote]
+  turns:
+    - user: "What is the allowed supply voltage range for the ESP32 analog and RTC power pins (VDDA, VDD3P3_RTC, VDD3P3, VDD_SDIO in 3.3 V mode), and how does the minimum depend on whether the chip has an in-package flash or PSRAM?"
+  expected:
+    keyfacts:
+      - {attribute: vdd_max, value: 3.6, unit: V}
+      - {attribute: vdd_min_no_flash, value: 2.3, unit: V}
+      - {attribute: vdd_min_3v3_flash, value: 3.0, unit: V}
+    cite_values: ["Recommended Power Supply Characteristics", "2.3/3.0"]
+    numeric_support: [{value: 3.3, unit: V}]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: ESP32_Datasheet, page: 51, contains: ["Voltage applied to power supply", "2.3/3.0 note 2 3.3 3.6 V", "Chips with a 3.3 V flash or PSRAM in-package: this minimum voltage is 3.0 V", "Chips with no flash or PSRAM in-package: this minimum voltage is 2.3 V"]}
+
+- id: C2-007
+  category: C2
+  split: test
+  difficulty: easy
+  chips: [esp32]
+  tags: [gpio, input_only]
+  turns:
+    - user: "Which GPIO numbers of the ESP32 are input-only, and what hardware do those pins lack?"
+  expected:
+    keyfacts:
+      - {attribute: input_only_gpios, value: "34-39", aliases: ["34 to 39", "34 through 39", "GPIO34 to GPIO39", "GPIO34 GPIO39", "GPIO 34 39", "GPIO34 35 36 37 38 39", "34 35 36 37 38 39", "34 35 36 37 38 and 39", "GPIO34 39", "GPIO34 to 39", "GPIO34 through 39", "GPIO34 GPIO35 GPIO36 GPIO37 GPIO38 GPIO39"]}
+      - {attribute: no_output_driver, value: "no output driver", aliases: ["do not feature an output driver", "lack an output driver", "output is not supported", "cannot be used as outputs", "no output stage", "without an output driver", "lack output driver", "lack output drivers", "lacking an output driver", "no output drivers", "without an output driver", "without output drivers", "missing an output driver", "missing output driver", "not have an output driver", "no output stage"]}
+      - {attribute: no_pull, value: "pull-up/pull-down", aliases: ["pull up and pull down", "pull-up and pull-down", "internal pull-up", "pullup", "pull-ups", "pullups", "pulldowns", "pull-downs", "pull-up resistors", "pull-up or pull-down"]}
+    cite_values: ["input-only", "GPIO pins 34-39"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: ESP32_Datasheet, page: 61, contains: ["GPIO pins 34-39 are input-only", "do not feature an output driver or internal pull- up/pull-down circuitry"]}
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm alias: GPIO34-39, số nhiều output drivers, pullups/pulldowns"}
+
+- id: C2-008
+  category: C2
+  split: dev
+  difficulty: medium
+  chips: [esp32]
+  tags: [clock, cross_doc]
+  turns:
+    - user: "What is the highest CPU_CLK frequency of the ESP32, and at which CPU clock frequencies can the CPU run in active mode when it is clocked from the PLL?"
+  expected:
+    keyfacts:
+      - {attribute: cpu_max, value: 240, unit: MHz}
+      - {attribute: pll_80, value: 80, unit: MHz}
+      - {attribute: pll_160, value: 160, unit: MHz}
+    cite_values: ["CPU_CLK", "240 MHz"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: ESP32_TRM, page: 168, contains: ["CPU_CLK clock can be as high as 240 MHz when the CPU is in high performance mode"]}
+      - {doc_id: ESP32_TRM, page: 188, contains: ["PLL (80 MHz/160 MHz/240 MHz)"]}
+
+- id: C2-009
+  category: C2
+  split: test
+  difficulty: easy
+  chips: [esp32]
+  tags: [i2c]
+  turns:
+    - user: "Which bus speeds and addressing modes does the ESP32 I2C controller support?"
+  expected:
+    keyfacts:
+      - {attribute: standard_mode, value: "100 kbit/s", aliases: ["100 kbps", "100 kHz", "100 kbit", "100 kb/s"]}
+      - {attribute: fast_mode, value: "400 kbit/s", aliases: ["400 kbps", "400 kHz", "400 kbit", "400 kb/s"]}
+      - {attribute: addr_7bit, value: "7-bit", aliases: ["7 bit", "7 or 10 bit", "7 and 10 bit", "7 or 10", "7 and 10"]}
+      - {attribute: addr_10bit, value: "10-bit", aliases: ["10 bit"]}
+    cite_values: ["standard mode (100 kbit/s)", "fast mode (400 kbit/s)"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: ESP32_TRM, page: 389, contains: ["Supports standard mode (100 kbit/s)", "Supports fast mode (400 kbit/s)", "Supports 7-bit addressing and 10-bit addressing"]}
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm alias kb/s và '7 or 10 bit'"}
+
+- id: C2-010
+  category: C2
+  split: test
+  difficulty: medium
+  chips: [esp32]
+  tags: [power_modes]
+  turns:
+    - user: "What current does the ESP32 draw in Light-sleep mode, in Hibernation mode with only the RTC timer, and in Deep-sleep with the ULP coprocessor powered up?"
+  expected:
+    keyfacts:
+      - {attribute: light_sleep, value: 0.8, unit: mA}
+      - {attribute: hibernation, value: 5, unit: uA}
+      - {attribute: deep_sleep_ulp, value: 150, unit: uA}
+    cite_values: ["Power Consumption by Power Modes", "Hibernation"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: ESP32_Datasheet, page: 30, contains: ["Light-sleep - 0.8 mA", "The ULP coprocessor is powered up. 150 µA", "Hibernation RTC timer only 5 µA"]}
+    note: "10 µA = hàng Deep-sleep 'RTC timer + RTC memory' của cùng bảng — một hàng hợp lệ khác nên KHÔNG còn là forbidden (câu trả lời đầy đủ liệt kê các hàng Deep-sleep vẫn đúng); keyfacts đã ghim 150 µA."
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "xoá forbidden 10 µA (hàng hợp lệ khác của cùng bảng; câu trả lời đầy đủ bị chấm bịa)"}
+
+- id: C2-011
+  category: C2
+  split: dev
+  difficulty: medium
+  chips: [nrf52840]
+  tags: [supply_voltage]
+  turns:
+    - user: "What are the recommended operating supply voltage ranges of the nRF52840 for the VDD pin, the VDDH pin, and the VBUS USB supply?"
+  expected:
+    keyfacts:
+      - {attribute: vdd_min, value: 1.7}
+      - {attribute: vdd_max, value: 3.6, unit: V}
+      - {attribute: vddh_min, value: 2.5}
+      - {attribute: vddh_max, value: 5.5, unit: V}
+      - {attribute: vbus_min, value: 4.35}
+    cite_values: ["Recommended operating conditions", "VDDH supply voltage"]
+    numeric_support: [{value: 1.7, unit: V}, {value: 2.5, unit: V}, {value: 4.35, unit: V}, {value: 5.0, unit: V}, {value: 3.0, unit: V}, {value: 3.7, unit: V}]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: nRF52840_PS, page: 971, contains: ["VDD VDD supply voltage, independent of DCDC enable 1.7 3.0 3.6 V", "VDDH VDDH supply voltage, independent of DCDC enable 2.5 3.7 5.5 V", "VBUS VBUS USB supply voltage 4.35 5.0 5.5 V"]}
+
+- id: C2-012
+  category: C2
+  split: test
+  difficulty: hard
+  chips: [nrf52840]
+  tags: [absolute_max, io_voltage, vdd_dependent]
+  turns:
+    - user: "According to the absolute maximum ratings of the nRF52840, what is the highest voltage allowed on a GPIO pin when VDD is 3.3 V, and what is it when VDD is 3.7 V?"
+  expected:
+    keyfacts:
+      - {attribute: io_max_vdd_3v3, value: 3.6, unit: V, tol_pct: 0.5}
+      - {attribute: io_max_vdd_3v7, value: 3.9, unit: V}
+    cite_values: ["Absolute maximum ratings", "I/O pin voltage"]
+    numeric_support: [{value: 0.3, unit: V}, {value: 3.3, unit: V}, {value: 3.7, unit: V}]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: nRF52840_PS, page: 972, contains: ["I/O pin voltage VI/O, VDD ≤3.6 V -0.3 VDD + 0.3 V", "VI/O, VDD >3.6 V -0.3 3.9 V"]}
+    note: "3.3 V + 0.3 V = 3.6 V (VDD ≤ 3.6 V); khi VDD > 3.6 V giới hạn cố định 3.9 V."
+
+- id: C2-013
+  category: C2
+  split: test
+  difficulty: easy
+  chips: [nrf52840]
+  tags: [adc, gpio]
+  turns:
+    - user: "What resolution, sampling rate and number of channels does the nRF52840 ADC offer, and how many general purpose I/O pins does the chip have?"
+  expected:
+    keyfacts:
+      - {attribute: adc_resolution, value: "12-bit", aliases: ["12 bit", "12 bits"]}
+      - {attribute: adc_rate, value: "200 ksps", aliases: ["200 ks/s", "200 kSPS", "200 kilosamples"]}
+      - {attribute: adc_channels, value: "8 configurable channels", aliases: ["8 channels", "eight channels", "8 configurable"]}
+      - {attribute: gpio_count, value: "48", kind: text, aliases: ["48 general purpose", "48 GPIO", "48 I/O", "48 pins"]}
+    cite_values: ["12-bit, 200 ksps ADC", "48 general purpose I/O pins"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: nRF52840_PS, page: 2, contains: ["48 general purpose I/O pins", "12-bit, 200 ksps ADC", "8 configurable channels with programmable gain"]}
+    note: "Số GPIO phụ thuộc gói chân (QFN48 ít hơn aQFN73/WLCSP; PS p.929), nhưng '48' là con số trong feature list (p.2) nên GIỮ câu hỏi và đáp án (D11)."
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "giữ câu hỏi; ghi chú GPIO phụ thuộc gói chân (D11)"}
+
+- id: C2-014
+  category: C2
+  split: test
+  difficulty: medium
+  chips: [esp32, stm32g474]
+  tags: [cross_chip, cpu_frequency, cross_doc]
+  turns:
+    - user: "Which has the higher maximum CPU clock frequency, the ESP32 or the STM32G474, and by how many MHz?"
+  expected:
+    keyfacts:
+      - {attribute: esp32_max, value: 240, unit: MHz}
+      - {attribute: stm32_max, value: 170, unit: MHz}
+      - {attribute: difference, value: 70, unit: MHz, derived: true}
+    cite_values: ["240 MHz", "170 MHz"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: ESP32_Datasheet, page: 4, contains: ["2 cores at 240 MHz"]}
+      - {doc_id: STM32G474_Datasheet, page: 1, contains: ["frequency up to 170 MHz with 213 DMIPS"]}
+
+- id: C2-015
+  category: C2
+  split: dev
+  difficulty: hard
+  chips: [esp32, stm32g474, nrf52840]
+  tags: [cross_chip, supply_voltage, cross_doc]
+  turns:
+    - user: "I only have a 1.8 V rail for the main supply. Based on the datasheets, which of the STM32G474, the ESP32 (without in-package flash) and the nRF52840 can run from it? Give each chip's minimum supply voltage."
+  expected:
+    keyfacts:
+      - {attribute: stm32_vdd_min, value: 1.71, unit: V}
+      - {attribute: nrf_vdd_min, value: 1.7, unit: V}
+      - {attribute: esp32_vdd_min, value: 2.3, unit: V}
+    cite_values: ["1.71 V to 3.6 V", "VDD supply voltage", "2.3/3.0"]
+    numeric_support: [{value: 1.8, unit: V}, {value: 3.6, unit: V}]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_Datasheet, page: 16, contains: ["Operating voltage 1.71 V to 3.6 V"]}
+      - {doc_id: nRF52840_PS, page: 971, contains: ["VDD VDD supply voltage, independent of DCDC enable 1.7 3.0 3.6 V"]}
+      - {doc_id: ESP32_Datasheet, page: 51, contains: ["2.3/3.0 note 2 3.3 3.6 V", "Chips with no flash or PSRAM in-package: this minimum voltage is 2.3 V"]}
+    note: "Kết luận đúng: STM32G474 (1.71 V) và nRF52840 (1.7 V) chạy được với 1.8 V; ESP32 (2.3 V) thì không."
+
+- id: C2-016
+  category: C2
+  split: dev
+  difficulty: medium
+  chips: [freertos]
+  tags: [rtos, delay]
+  turns:
+    - user: "In FreeRTOS, what is the difference between vTaskDelay() and vTaskDelayUntil(), and which one should a task use to run at a constant frequency?"
+  expected:
+    keyfacts:
+      - {attribute: until_absolute, value: "absolute time", aliases: ["absolute wake time", "an absolute time", "absolute"]}
+      - {attribute: until_periodic, value: "constant execution frequency", aliases: ["fixed frequency", "constant frequency", "fixed period", "periodic", "constant rate"]}
+      - {attribute: delay_relative, value: "specified number of ticks", aliases: ["relative", "number of ticks from", "ticks from the time it is called", "after the call"]}
+    cite_values: ["vTaskDelayUntil", "Differences Between vTaskDelay() and vTaskDelayUntil()"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: FreeRTOS_Ref_Manual, page: 40, contains: ["Differences Between vTaskDelay() and vTaskDelayUntil()", "until an absolute time is reached", "constant execution frequency"]}
+      - {doc_id: FreeRTOS_Ref_Manual, page: 38, contains: ["vTaskDelay( 100 ) when the tick count was 10,000"]}
+
+- id: C2-017
+  category: C2
+  split: test
+  difficulty: medium
+  chips: [freertos]
+  tags: [rtos, isr, queue]
+  turns:
+    - user: "What values can xQueueSendFromISR() return in FreeRTOS, and may the pxHigherPriorityTaskWoken parameter be NULL?"
+  expected:
+    keyfacts:
+      - {attribute: ret_true, value: pdTRUE, literal: true}
+      - {attribute: ret_full, value: errQUEUE_FULL, literal: true}
+      - {attribute: null_allowed, value: "optional", aliases: ["can be NULL", "may be NULL", "can be set to NULL", "NULL is allowed", "since V7.3.0", "from FreeRTOS V7.3.0", "pass NULL", "passing NULL", "NULL can be passed", "NULL is permitted", "NULL is acceptable", "NULL is fine", "NULL is valid", "can be passed as NULL", "set to NULL", "optional parameter"]}
+    cite_values: ["xQueueSendFromISR", "errQUEUE_FULL"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: FreeRTOS_Ref_Manual, page: 172, contains: ["From FreeRTOS V7.3.0 pxHigherPriorityTaskWoken is an optional parameter and can be set to NULL", "pdTRUE Data was successfully sent to the queue", "errQUEUE_FULL Data could not be sent to the queue because the queue was already full"]}
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm alias 'you can pass NULL'..."}
+
+- id: C2-018
+  category: C2
+  split: test
+  difficulty: medium
+  chips: [freertos]
+  tags: [rtos, mutex, semaphore]
+  turns:
+    - user: "In FreeRTOS, what is the main difference between a mutex and a binary semaphore, and which one is the better choice for synchronising a task with an interrupt?"
+  expected:
+    keyfacts:
+      - {attribute: mutex_priority_inheritance, value: "priority inheritance", aliases: ["priority-inheritance"]}
+      - {attribute: binary_for_sync, value: "binary semaphore", aliases: ["binary semaphores"]}
+      - {attribute: mutex_for_exclusion, value: "mutual exclusion", aliases: ["mutex exclusion", "exclusive access"]}
+    cite_values: ["priority inheritance", "binary semaphore"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: FreeRTOS_Ref_Manual, page: 178, contains: ["Mutexes include a priority inheritance mechanism, binary semaphores do not", "binary semaphores the better choice for implementing synchronization", "mutexes the better choice for implementing simple mutual exclusion"]}
+
+- id: C2-019
+  category: C2
+  split: dev
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [register, clock, multi_hop]
+  turns:
+    - user: "On the STM32G474, which RCC register field selects the USART1 kernel clock, and which clock sources can it select?"
+  expected:
+    keyfacts:
+      - {attribute: field, value: USART1SEL, literal: true}
+      - {attribute: register, value: RCC_CCIPR, aliases: ["CCIPR"], literal: true}
+      - {attribute: src_pclk, value: PCLK, aliases: ["PCLK1", "PCLK2", "APB clock", "peripheral clock"], literal: true}
+      - {attribute: src_sysclk, value: SYSCLK, aliases: ["system clock"], literal: true}
+      - {attribute: src_hsi16, value: HSI16, aliases: ["HSI 16", "16 MHz HSI", "HSI16 oscillator"], literal: true}
+      - {attribute: src_lse, value: LSE, literal: true}
+    cite_values: ["USART1SEL", "RCC_CCIPR"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_RM0440, page: 322, contains: ["Peripherals independent clock configuration register (RCC_CCIPR)"]}
+      - {doc_id: STM32G474_RM0440, page: 324, contains: ["USART1SEL[1:0]: USART1 clock source selection", "00: PCLK selected as USART1 clock", "01: System clock (SYSCLK) selected as USART1 clock", "10: HSI16 clock selected as USART1 clock", "11: LSE clock selected as USART1 clock"]}
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "thêm alias 'HSI 16 MHz'"}
+
+- id: C2-020
+  category: C2
+  split: test
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [pll, formula, procedure]
+  turns:
+    - user: "On the STM32G474, what formulas give the PLL VCO frequency and the PLL_R output frequency from PLLN, PLLM and PLLR, what is the allowed range of PLLM, and what must be done to the PLL before its configuration can be changed?"
+  expected:
+    keyfacts:
+      - {attribute: vco_formula, value: "PLLN / PLLM", aliases: ["divided by PLLM and multiplied by PLLN", "divided by PLLM then multiplied by PLLN", "divided by PLLM multiplied by PLLN", "PLLN/PLLM", "PLLN divided by PLLM", "multiplied by PLLN and divided by PLLM", "× (PLLN / PLLM)", "x PLLN / PLLM", "PLLN over PLLM"]}
+      - {attribute: pllr_formula, value: "VCO clock / PLLR", aliases: ["VCO / PLLR", "divided by PLLR", "VCO frequency divided by PLLR", "f(VCO clock) / PLLR"]}
+      - {attribute: pllm_range, value: "1 to 16", aliases: ["1 and 16", "1-16", "1..16", "from 1 to 16", "1 16", "1 ≤ PLLM ≤ 16", "1 to 8", "1 and 8", "1-8", "1..8", "from 1 to 8", "1 8"]}
+      - {attribute: disable_pll, value: "disable the PLL", aliases: ["disabling the PLL", "PLLON to 0", "PLLON = 0", "clear PLLON", "PLLON cleared", "PLL must be disabled", "PLL is disabled", "wait until PLLRDY is cleared", "disable PLL", "turn off the PLL", "switch off the PLL", "stop the PLL", "clear the PLLON", "PLLON bit to 0", "set PLLON to 0", "disabled the PLL", "PLLRDY"]}
+    cite_values: ["f(VCO clock) = f(PLL clock input)", "PLLM from 1 to 8", "1 ≤ PLLM ≤ 16"]
+  graders: [keyfacts, numeric_claims, citation]
+  review_status: verified
+  provenance:
+    evidence:
+      - {doc_id: STM32G474_RM0440, page: 291, contains: ["f(VCO clock) = f(PLL clock input) × (PLLN / PLLM)", "f(PLL_R) = f(VCO clock) / PLLR"]}
+      - {doc_id: STM32G474_RM0440, page: 278, contains: ["programmable factor PLLM from 1 to 8", "Disable the PLL by setting PLLON to 0"]}
+      - {doc_id: STM32G474_RM0440, page: 293, contains: ["VCO input frequency = PLL input clock frequency / PLLM with 1 ≤ PLLM ≤ 16"]}
+    note: "RM0440 TỰ MÂU THUẪN về dải PLLM: §7.2.4 (p.278) ghi 'PLLM from 1 to 8', còn mô tả thanh ghi RCC_PLLCFGR (p.293) và trường PLLM[3:0] 4 bit ghi 1 ≤ PLLM ≤ 16 (0000..1111 = 1..16). Chọn phương án KHOAN DUNG (D11): chấp nhận cả '1 to 16' và '1 to 8'; giữ nguyên câu hỏi."
+    review: {by: "independent model review (Claude Opus 5.5)", date: "2026-10-22", change: "pllm_range: chấp nhận cả '1 to 16' (p.293) và '1 to 8' (p.278) vì RM tự mâu thuẫn; thêm bằng chứng p.293; thêm alias vco_formula/disable_pll"}
+

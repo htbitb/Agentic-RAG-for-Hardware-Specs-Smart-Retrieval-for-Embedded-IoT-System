@@ -1,0 +1,41 @@
+id: C1-004
+category: C1
+split: test
+difficulty: easy
+chips:
+- stm32g474
+tags:
+- register_address
+turns:
+- user: I need the final address of FDCAN2_TXBTIE (STM32G474) for a bare-metal driver. What is it?
+expected:
+  exact:
+    attribute: address
+    kind: hex
+    value: '0x400068DC'
+    allowed:
+    - '0x40006800'
+  numeric_support:
+  - '0x40006800'
+  - '0xDC'
+  - '0x400068DC'
+  - '0x0'
+  cite_values:
+  - '0x400068DC'
+  - '0x40006800'
+  - TXBTIE
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: FDCAN2
+  register: TXBTIE
+  question_type: address
+  template: address.3
+  doc_hint: STM32G474_RM0440
+  doc_name: TXBTIE
+version: 1

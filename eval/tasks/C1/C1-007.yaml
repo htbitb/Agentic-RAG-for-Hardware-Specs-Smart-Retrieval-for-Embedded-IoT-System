@@ -1,0 +1,40 @@
+id: C1-007
+category: C1
+split: dev
+difficulty: easy
+chips:
+- nrf52840
+tags:
+- register_offset
+turns:
+- user: How far from the RADIO base address is the EVENTS_ADDRESS register on the nRF52840?
+expected:
+  exact:
+    attribute: offset
+    kind: hex
+    value: '0x104'
+    allowed:
+    - '0x40001000'
+    - '0x40001104'
+  numeric_support:
+  - '0x40001000'
+  - '0x104'
+  - '0x40001104'
+  - '0x0'
+  cite_values:
+  - EVENTS_ADDRESS
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: nrf52840.svd
+  peripheral: RADIO
+  register: EVENTS_ADDRESS
+  question_type: offset
+  template: offset.2
+  doc_hint: nRF52840_PS
+  doc_name: EVENTS_ADDRESS
+version: 1

@@ -1,0 +1,202 @@
+# Corpus manifest — nguồn tài liệu dùng chung cho mọi hệ (S0/S1/S2/S3) và grader.
+# page_offset: pdf_index_1based = printed_page + page_offset (đã kiểm tra bằng trang mẫu, xem page_offset_evidence).
+# doc_id khớp doc_id mà agent v1 dùng khi có. kind=svd: nguồn sự thật cho generator C1.
+# Ghi chú nguồn: st.com và docs.nordicsemi.com chặn tải tự động -> PDF ST/Nordic do người dùng tải thủ công từ trang chính thức.
+- doc_id: ESP32_Datasheet
+  kind: pdf
+  aliases:
+  - esp32_datasheet_en
+  - esp32_datasheet_en.pdf
+  - ESP32 Datasheet
+  - ESP32 Series Datasheet
+  - ESP32 Datasheet v5.3
+  file: pdfs/esp32_datasheet_en.pdf
+  chip: esp32
+  title: ESP32 Series Datasheet
+  version: v5.3
+  sha256: a7917e6b47528c9dcab06837a49d452e582751335797db879f1cf2d17cd29adf
+  pages: 78
+  page_offset: 0
+  source_url: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+  known_issues: []
+  page_offset_evidence: TOC 'Product Overview 2' & '2.2 Pin Overview 14' khớp pdf p.2 & p.14
+- doc_id: ESP32_TRM
+  kind: pdf
+  aliases:
+  - esp32_technical_reference_manual_en
+  - esp32_technical_reference_manual_en.pdf
+  - ESP32 TRM
+  - ESP32 Technical Reference Manual
+  file: pdfs/esp32_technical_reference_manual_en.pdf
+  chip: esp32
+  title: ESP32 Technical Reference Manual
+  version: v5.8
+  sha256: 4ba58e9fa0405ec2bf80b912a29b483f6edc8c4b2b1058201913a2fe37e582f0
+  pages: 784
+  page_offset: 0
+  source_url: https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
+  known_issues: []
+  page_offset_evidence: TOC '13.4 Register Summary 275' khớp pdf p.275
+- doc_id: ESP32_Low_Power_AppNote
+  kind: pdf
+  aliases:
+  - ESP32 Low Power Application Note
+  file: null
+  chip: esp32
+  title: ESP32 low-power application note (không có nguồn thật)
+  version: null
+  sha256: null
+  pages: null
+  page_offset: null
+  source_url: null
+  known_issues:
+  - simulated in agent v1, no real source
+- doc_id: STM32G474_Datasheet
+  kind: pdf
+  aliases:
+  - DS12288
+  - stm32g474re
+  - stm32g474re.pdf
+  - STM32G474xx Datasheet
+  - STM32G474 Datasheet
+  - STM32G4 Datasheet
+  file: pdfs/stm32g474re.pdf
+  chip: stm32g474
+  title: DS12288 Datasheet STM32G474xB/xC/xE
+  version: Rev 6
+  sha256: b018e20dbe34b63a43e49365518b186ef0e0e8e899deeabc1c9f53a3a10c1add
+  pages: 236
+  page_offset: 0
+  source_url: https://www.st.com/resource/en/datasheet/stm32g474re.pdf
+  known_issues: []
+  page_offset_evidence: chân trang '60/236' ở pdf p.60
+- doc_id: STM32G474_RM0440
+  kind: pdf
+  aliases:
+  - RM0440
+  - rm0440.pdf
+  - RM0440 Reference Manual
+  - STM32G474 Reference Manual
+  - STM32G4 Reference Manual
+  file: pdfs/rm0440-stm32g4-series-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+  chip: stm32g474
+  title: RM0440 Reference manual STM32G4 series
+  version: Rev 9
+  sha256: 7f8c15bc667c46614e2c5ad0341b9eaa20e8d417f21b819b9f2dde7dfe1ae564
+  pages: 2140
+  page_offset: 0
+  source_url: https://www.st.com/resource/en/reference_manual/rm0440-stm32g4-series-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+  known_issues: []
+  page_offset_evidence: chân trang '1000/2140' ở pdf p.1000
+- doc_id: nRF52840_PS
+  kind: pdf
+  aliases:
+  - nRF52840 Product Specification
+  - nRF52840_PS.pdf
+  - nRF52840 PS
+  file: pdfs/nRF52840_PS.pdf
+  chip: nrf52840
+  title: nRF52840 Product Specification
+  version: v1.11 (2024-10-01)
+  sha256: 6e5950cc7e8272d1803279b8cfe3a6ea2c48be46735db3bc3b0a351e3665ecdf
+  pages: 980
+  page_offset: 0
+  source_url: https://docs.nordicsemi.com/bundle/ps_nrf52840/page/keyfeatures_html5.html
+  known_issues: []
+  page_offset_evidence: chân trang 'v1.11 100' ở pdf p.100, '500' ở p.500
+- doc_id: FreeRTOS_Ref_Manual
+  kind: pdf
+  aliases:
+  - FreeRTOS_Reference_Manual_V8.2.1
+  - FreeRTOS Reference Manual
+  - FreeRTOS Ref Manual
+  - FreeRTOS Reference Manual V8.2.1
+  file: pdfs/FreeRTOS_Reference_Manual_V8.2.1.pdf
+  chip: freertos
+  title: The FreeRTOS Reference Manual
+  version: V8.2.1
+  sha256: 34c659d93840b90173f4e267ee74f564ecd9bfd9ff3e98383d505d7954de3fe2
+  pages: 302
+  page_offset: 0
+  source_url: https://www.freertos.org/Documentation/02-Kernel/07-Books-and-manual/01-RTOS_book
+  known_issues:
+  - agent v1 cites 'FreeRTOS v10.5.0' but the real PDF is V8.2.1
+  page_offset_evidence: số trang in '50'/'150' ở pdf p.50/p.150
+- doc_id: STM32G474_SVD
+  kind: svd
+  aliases:
+  - STM32G474xx.svd
+  file: svd/STM32G474xx.svd
+  chip: stm32g474
+  title: CMSIS-SVD STM32G474xx
+  version: '1.9'
+  sha256: acdd6403c3dd30bbebe9067b79ef21a8d5568cd701881eee99be861a1661f078
+  pages: null
+  page_offset: null
+  source_url: https://github.com/cmsis-svd/cmsis-svd-data/blob/main/data/STMicro/STM32G474xx.svd
+  known_issues:
+  - mirror cmsis-svd-data của gói SVD ST (không tải trực tiếp từ st.com)
+- doc_id: nRF52840_SVD
+  kind: svd
+  aliases:
+  - nrf52840.svd
+  file: svd/nrf52840.svd
+  chip: nrf52840
+  title: CMSIS-SVD nRF52840
+  version: '1'
+  sha256: 058bce5cc7167edbd2372f33387eeb4e4e08b147a3ff1e2c8ec56bccdda2ba92
+  pages: null
+  page_offset: null
+  source_url: https://github.com/cmsis-svd/cmsis-svd-data/blob/main/data/Nordic/nrf52840.svd
+  known_issues:
+  - mirror cmsis-svd-data của nRF MDK
+- doc_id: ESP32_SVD
+  kind: svd
+  aliases:
+  - esp32.svd
+  file: svd/esp32.svd
+  chip: esp32
+  title: CMSIS-SVD ESP32 (espressif/svd)
+  version: '16'
+  sha256: f80fb973c19896eb904c00efcead9242f0027deb0a297b7b427d6982172dfcac
+  pages: null
+  page_offset: null
+  source_url: https://github.com/espressif/svd/blob/main/svd/esp32.svd
+  known_issues: []
+- doc_id: STM32G4_CMSIS_Device_Headers
+  kind: header
+  aliases: []
+  chip: stm32g474
+  title: CMSIS device headers STM32G4 chính thức của ST (stm32g474xx.h, stm32g4xx.h, system_stm32g4xx.h)
+  version: v1.2.6
+  repo: https://github.com/STMicroelectronics/cmsis-device-g4
+  tag: v1.2.6
+  tag_object: aee7567d776ff002e319a4f19d62deb4cea72b75
+  commit: 25664ddc3a7624ae9627ae8c4c672073dc5b2539
+  license: Apache-2.0
+  license_file:
+    path: headers/cmsis-device-g4_v1.2.6/LICENSE.md
+    url: https://raw.githubusercontent.com/STMicroelectronics/cmsis-device-g4/v1.2.6/LICENSE.md
+    sha256: 44fd163ed2e04fe99f519f1093c2c39b21d9cc9371071de902ff0c2c8c3c57dc
+  files:
+  - path: headers/cmsis-device-g4_v1.2.6/Include/stm32g474xx.h
+    url: https://raw.githubusercontent.com/STMicroelectronics/cmsis-device-g4/v1.2.6/Include/stm32g474xx.h
+    sha256: e7e5851721452c415c627e233d0a617b72ba891718a4f12a495b20dee25d82b0
+    git_blob: e78fee6f57287c87634570c3c649821635b1c6ea
+  - path: headers/cmsis-device-g4_v1.2.6/Include/stm32g4xx.h
+    url: https://raw.githubusercontent.com/STMicroelectronics/cmsis-device-g4/v1.2.6/Include/stm32g4xx.h
+    sha256: 493603c55af538bc431713b4f9880b5e242447cea232ca7459d3ca59c71dd48d
+    git_blob: 2535cc2136f4a15d16557e4c6e233634f59a46ae
+  - path: headers/cmsis-device-g4_v1.2.6/Include/system_stm32g4xx.h
+    url: https://raw.githubusercontent.com/STMicroelectronics/cmsis-device-g4/v1.2.6/Include/system_stm32g4xx.h
+    sha256: 36304c07e9cee84064015ebd7ae517af6f466c466c1bbf5e342c57a296601db2
+    git_blob: ed341a8ef6b3428a8e8fe4b2292704975c44a245
+  file: null
+  sha256: null
+  pages: null
+  page_offset: null
+  source_url: https://github.com/STMicroelectronics/cmsis-device-g4/tree/v1.2.6
+  known_issues:
+  - 'D24: chỉ dùng để ĐỐI CHIẾU với header sinh từ SVD (eval/tools/check_header_parity.py); grader KHÔNG dùng header này (simulator cần ánh xạ về SVD/DB).'
+  - dữ liệu không tin cậy - chỉ đọc/parse/clang -fsyntax-only, không thực thi; file `file: null` để các bộ nạp PDF/SVD bỏ qua mục này.
+  - core_cm4.h (CMSIS-Core của ARM) không nằm trong repo ST; công cụ đối chiếu dựng stub tối thiểu.

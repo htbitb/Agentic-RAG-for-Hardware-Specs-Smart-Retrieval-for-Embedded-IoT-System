@@ -1,0 +1,154 @@
+# Snapshot — Agent P4 (S3@P4), đóng băng
+
+- **Ngày chụp:** 2026-10-23
+- **Nguồn:** `agent/` (gốc dự án)
+- **Lý do:** P4 (D32): runtime v3 (state machine có kế hoạch, checkpoint, ESCALATED) + Gate v3 (G1–G5) + 4 server (hw-knowledge, text-manual, hw-sandbox, board-state); chưa có HITL (P5), policy engine (P6), lesson memory (P7). Đánh giá với tên S3@P4; ablation A1–A4 là cấu hình khi chạy.
+- **Loại trừ:** `.env*`, `.venv*`, `logs/`, `data/memory.sqlite`, `data/board_state.sqlite`, `data/checkpoints.sqlite`, `data/traces/`, `workspace_out/`, `__pycache__/`, `.pytest_cache/`, `.DS_Store`. Không chứa bí mật. **Giữ** `data/hw_specs.sqlite` và các file chỉ mục.
+- **Cấu hình LLM/đường dẫn:** `config.py` đọc biến môi trường lúc import; snapshot không có `.env` → adapter nạp giá trị vào môi trường của tiến trình worker (không ghi/in giá trị).
+- **Known issue:** Gate chỉ kiểm theo requirement do agent ghi (plan/P4_reports/gate_review.md): requirement bị mất/ghi sai ⇒ 'Gate cho qua – grader trượt'.
+- **Known issue:** Guardrail đầu vào và hardware pre-check giữ nguyên v1 (quá bảo thủ với chân FT / nguồn 5 V của nRF — sửa ở P6).
+- **Known issue:** DRC-PWR-01 với STM32G474 luôn unknown (DB không có số dòng); simulator chưa chấm nguồn PLL/chờ RDY/AHB÷2/PUPDR chân 5 V.
+
+## SHA-256 các file dữ liệu
+
+```text
+5195f4f967febd1994e5f65cd6434532a522ad55420c2f6dfa186f998688357d  data/hw_specs.sqlite  (6,299,648 bytes)
+6cd86c23ffb958e8ff52ab46f78e64dcf458393cd51857ac89cf14d71fa9519a  data/text_index.npy  (14,719,616 bytes)
+ab5d9a192d41a98cf74712255e58e921cc814bee1c77bafbe48d6e42bb6c35c9  data/text_index.sqlite  (30,400,512 bytes)
+```
+
+## SHA-256 các file .py
+
+```text
+7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6  agent/__init__.py
+956ceab640513a8b502e31df406ce6bfb46d5b0731c5dd8aefc4f91ee9fdbd13  agent/approval.py
+49c713c6d54b2ba1d3138d793ea9e425d079530225a861895c10d11a5ca53774  agent/audit.py
+4ef8cd5267e6c5dc892c652d543817142d3d9a471f243cca4c1dbe1d4df3ffc7  agent/gate/__init__.py
+70c8267a8ad917e6340cbda03d19a5fc1292e10b69f4b249ded9ce293ab5ef26  agent/gate/codeblocks.py
+92bb2d8d723b7fd059a6880417e5f309faf9c856d35daf52f1496a7fcbf6a049  agent/gate/compile_gate.py
+dd8850744cd43d9255c7975f43c716b844f4a7346e421aacf56a287fbdd7a47e  agent/gate/drc_gate.py
+c329bf8131321ccb54c31c584a09e1ce5edcbb0a714ac58b467b230a3686cc16  agent/gate/functional.py
+e4dac944fe0d42e108d70579e794195ca6164f68446416a53b032b9f2f29ed91  agent/gate/provenance.py
+e384a32566f0e70193804229792c300256dfdd479ac37f4a520cc48714e483ee  agent/gate/safety.py
+87af12a6353164f660532dfd89747b02686a35f0155e9f55a56df2ce45cd8d91  agent/gate/types.py
+3e93d01745db70e246ff83a4eb554df62bc6d0ed40c1f013e394928aa08b5212  agent/guardrail.py
+c00c4e02e0a03f88eecf2641c1731304001efd20bd7317349d6ebb13db1e234e  agent/llm.py
+5cf25d8b19c1a95abdf8e7d32fba07b24602b76a8cba5f4a8a4d9120c4535ded  agent/memory.py
+fb0d085cefe67e50cd64f54e0321ad425a091ad7594d77662355ec77223c9079  agent/react_agent.py
+8161540295e719805f695a7dd32099ebab5166fd4448e5bd737bca877f6985aa  agent/runtime/__init__.py
+0857a6665c73d5d24a7ffc2cd70c75cd7a41ac9c0761fec097546e1fbfc20bd1  agent/runtime/checkpoint.py
+3c21bb4c065355f88f2860f58e6000a5d48b560d7461178eb231ae747b060a7c  agent/runtime/cli.py
+12b43aba97f7f543521a07c659ef68c6711af6e8f6361d08072e97d708f5d8b1  agent/runtime/control_tools.py
+86154ed81e9e3db6ff43d33655503a538f4f7892adcf05d2b3703b7b7336088f  agent/runtime/factory.py
+1a8bb755907418c0d3378acef185872643e6b9dd21b05b9bf2a3a253b5a415f6  agent/runtime/flags.py
+6085f206b9becdf38746b89f6bab27bc65af96d87168bc2c46edc75979bc63d9  agent/runtime/intake.py
+995ee4cf569ee31cd5ff4c3967f982d997750daf05f03d3de7c6579f7fc0a59b  agent/runtime/loop.py
+1b856b63d4e00f9f8567949e23f602e4d38b842026e602fdb07c4b1954758a8c  agent/runtime/state.py
+d9a935f5a4bdab55530e3082f0457e848cc47a8642e35bd38d73a06b9abad2e7  agent/runtime/summary.py
+b09c90013d2cf9be60a0991461984b265317119c1b1cad737863c4212f4dc52b  agent/runtime/trace.py
+dc059fe41d892ebe887111e7ab53ac8415871f690267f6785102fa03cb845778  agent/scripted.py
+91aeeed0ada1807f6d97f13d1631d6cb444e50f32346fe43c299f7740e54d6f1  agent/tools.py
+2b8b81504b64a16865ab15b3b92f4c0152e5e9d8b4cac23e5e650001b5bd2c23  agent/verifier.py
+4370eaba91f2ec906e2ecb1efc41409666b369a28b0e61af22eceeb99658022d  config.py
+a0f7b6c2b2e35cdd1c108a3dd429899927dde5b84fa709004683e7c04791b0ec  hwmodel/__init__.py
+878c873605f8a647134df98f9a5d537f1ac1c159b07337c1b53b783757e5ae15  hwmodel/board_state.py
+1c2cef679ec567638a2564ebb55dc01c5077959c0107d3f8ef811ff6b7e55b33  hwmodel/clock_tree.py
+4d490a8fd9e08790e7b671c3df9768f849848d99dc6ca530420c82bf1372e21d  hwmodel/codeparse.py
+5a8fc11a442fef13223241a008c6ba3af71b3c8101d4c5e32f7f25f99b45cbdb  hwmodel/compile_check.py
+e83327cc0b8ecca64ed0a2c2026929463af071305a4eed648cd6db68b64f6cc1  hwmodel/data.py
+b35349b4044883dbfbef114c2f5e4e4137f4e41093b8979522b5206e0caeaba6  hwmodel/drc.py
+5ddd8f14417758af3793e450ea7a1ca5ecabd12c2dc78d607f24e490b20890b4  hwmodel/errata.py
+181cb1cd367a24ab16e993f0d233b5ad1d38cd8fb82bd1e228d9f99048e5357c  hwmodel/header_gen.py
+39247794fb5a5ea453d62c3b50f314935d62c01926980297cdd1f91da8890312  hwmodel/periph/__init__.py
+ba88d9d13cbc5fee7096afc549ddbe2a3d9ce1a1d1161f20c30778dd9ccf7dd9  hwmodel/periph/gpio.py
+d2045c6aa0b2409d5dd9bf2ff6160d1b9c4a8ab0bb9032ec6757d78e467094af  hwmodel/periph/i2c.py
+8bc9628356555ef8fcf3e913e96276abe69d00e1f5377e4de13056c538d94b1a  hwmodel/periph/rcc.py
+370818268d337c375edcfbcabf05af69a9fca31db0bbccf38781fd2dab1921d3  hwmodel/periph/tim.py
+e74b3346d8f5f125bdebf5679e543adf1b49c5965c8e82a74754229f32136334  hwmodel/periph/usart.py
+4282f55136838fd80a67d1323099954ebc17bd46ecb3f5d4da8d5525470b454b  hwmodel/regmap.py
+4088ee63c249852e2c386cad4765fbb26229496dfecbd9774d48acc8b28ca7b7  hwmodel/sim.py
+eb2f6572de191484419d4246b6f0c6c3ec9bcd0f8ca42adbc1645c3a1abe03b8  hwmodel/solver.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ingestion/__init__.py
+53ffd0a4da70827c266d48a9164ce3e47f5417b0310bac8514f52de958c66753  ingestion/build_all.py
+14007759dda0bb16229a8b35891f285078ab75560fa8c3428ebe3f15ec6dd38d  ingestion/build_text_index.py
+a35b5c19d4ed854fad57453c910d544e3d6670ef3d3b0041883ae564b6008f75  ingestion/data_quality.py
+860482905f02929e357b410561598309c81b7d71f443898ae9695d910b7517de  ingestion/header_gen.py
+bd0bb935d41f7f0acc78bb85dae71b170c06275a13459dcd6783279c2d139cd6  ingestion/hwdb.py
+a5a168992fc0713286892a2475dd5eba6e1ec48ace7b5af536fe3eba029c5e53  ingestion/limits_curate.py
+87055fba96669b442f576a400aeae6b67662e8bdb02f4a2bdc38bd8040635f10  ingestion/pdf_chunker.py
+2768d33fcfe5301fd9f01ab977a1effa9f130700ac2323c10b329ebd156945e9  ingestion/pdfdocs.py
+19a26174b0bf6fea62fbe86cf100430e27437e8396acff6b389467fb308eff32  ingestion/pinout_extract.py
+56551263ae59ee369f3d8bba4cfbe42aff3f74bad73b793cc329551237ad4533  ingestion/register_pages.py
+b5b3b93f5a6fef8dc385c590fd4ac19d7598d22d21e20224796702836aa998e9  ingestion/svd_attrs.py
+9f88cba5eb565e64dc40f09ed0464b5c71666266c7d932a188dd5fed41cefe7d  ingestion/svd_ingest.py
+1af116cd74741b272b40108001d342bf5b555782611a61acba92c9f5e9f9631d  ingestion/text_index.py
+ff4aa8f46b0e3ae5fda1dd78dfa9f213a02619cc2090fc5addb3054e7d7ae2c6  ingestion/unit_normalizer.py
+4fade34d4d143ff8879b267e0da1c8246425eaaab25ad9e53da86166ef54cd01  mcp_servers/__init__.py
+05f86785459f5389467fe769b384dac048adf24fa092278b75a49b8edc51fafc  mcp_servers/board_state_server.py
+eb4eeb521bed4209d18d33902695d7af58f1dc85107102729bcf8c252e1da768  mcp_servers/hw_knowledge_server.py
+6d54d63d69efea7463ac31dff553b3269369b58238a5f1462c8580d104c9bef2  mcp_servers/hw_queries.py
+65247bc029852eebedb13e1be01f82288cafe77bf017d830801fa96bd2ac4afa  mcp_servers/hw_sandbox_server.py
+6229d224115eaaed0d3f1e9d39801a6c3041881dfd17f193c962ee923de6cfdd  mcp_servers/text_manual_server.py
+590c7e626b5e6da07f9a22c0662f17cab811a812de1701c8404b7158a769a904  tests/conftest.py
+b7c8f3fb59d880f81c078f02f31a94c3a7648264c4664caad01a9085ceea00c1  tests/hwmodel_helpers.py
+5adf373e6c47746b15b668e39cd36ae203fd346d82225336c26da9cc47d1ff44  tests/resume_probe.py
+e470ff261feac546fec3af62ce0a2437eddc4f3ede954f3c93bb5da11536fe5a  tests/runtime_fakes.py
+11ca9691a4f1a12cd629b853de0f4fa0fcdedc781460b2756b3f98d09f645228  tests/runtime_helpers.py
+d7677c9ee3e7eac483c44df3efeab5f87cec17ada27f884de3ccb4e2e8672fe6  tests/test_agent_data_path.py
+7df2da3a3cdde955137a1afc0662f9e73ed644b3b3715769e2cefdaba03cdb03  tests/test_board_state.py
+d59f6ee3714b1fd39cf004b10460f8fde91fabc51e9fd134dac3ddb39b53fca0  tests/test_board_state_server.py
+7ca0a1dd478444f274c6c8eac21b4dc8a9d1b0ba1ec3a6fb27c8e67819f3c59f  tests/test_build_all.py
+7b32fce1706b4cf06e3114be4b73e33965db2fa0759e700c69dc9da792cbd9ba  tests/test_data_quality.py
+da60716722849f000cfbef94dbcf582a83ba1ff3cbc418d0a9b66dff65f0c12c  tests/test_drc.py
+807267ea9195e3672402cd9d829a5c002fdc305b84947c61eb594bd527a79a95  tests/test_gate_codeblocks.py
+1b970ef5d2238fb4e4f5701abcd1f87739588343527372d6aa7583921d2bbfb2  tests/test_gate_compile.py
+99bd59ddb61f28751d8844f81923a69c6a986c605914fdce732153a8e5e6b70d  tests/test_gate_drc.py
+9b3432d930410fcbd11dd03461f1f171a4a09fee6f644390f0802eff9d10fa58  tests/test_gate_entry.py
+dc41774166175d70eb11a07fcd8c0d1d418dc0c18d13040f0529579b23148493  tests/test_gate_functional.py
+b6ee5e755edf5e9802f182939205c6ec1ac475d88f6ff894eaeb187e2474674f  tests/test_gate_provenance.py
+669fce53583aa98acb15594433b073927484210c18a8c4ca54ed837b26cdb662  tests/test_gate_safety.py
+1e1ca961c5b48cafbc83137a72d1c9cd7f78ac3a50d910b98bd07b39422ec888  tests/test_gate_support.py
+2c8c1930504401aa41075dd4ae7eebba8e40925e5bcfb3e76de415750e95a73f  tests/test_gate_types.py
+9f0c518bf94a1bfd34bedaed9261ab23066de21bb9956ec9116b863f26ad5560  tests/test_header_gen.py
+0d4847b0d8c5c1cda2b40e2ef6af984da2de70d746d2cf71e872092de1bea037  tests/test_hw_queries.py
+bd4cff8c270f13234249cee90eb44ff9818aeba7dc7c12f4f7cbec451c6c9938  tests/test_hw_sandbox_server.py
+2095cd133c7106b1f16b13318ace246e8600cb2ed18e72655b5f8d7ffdc4901a  tests/test_hwmodel_codeparse.py
+c26dab5665d53fe498cee37c4058aefbb1e3693478ba2e374987dc0e9285ecbe  tests/test_hwmodel_compile.py
+286826ae371659ccb7d774b1db02c480c66234aff448e5281b7827370c0facee  tests/test_hwmodel_golden_clock.py
+d8beed38e41662f1d04ab630f8a04775c04a1c49e25981f4fd866ac59122ebe6  tests/test_hwmodel_golden_pwm.py
+f86b12de45ff8569848605dfcd89200dafef77d643f2c14fd09b8fa644e0b940  tests/test_hwmodel_golden_usart_i2c.py
+0a71fd8f1cf08e731a45398d0787c4fc9f7dbcef128d8ee949b937bfcb461b56  tests/test_hwmodel_layout.py
+851b613005621b07c2e35bdf98727ae371e6e383773acfd8be41306c82b0264f  tests/test_hwmodel_regmap.py
+95226dbc2a77463ccccb70e4154a3849331b03e1f953990cfa0fe6698611a920  tests/test_hwmodel_solver.py
+137b9fc86941954ca165609cdd7ef45b9d76562c672c4fe9c42c899860be4f4f  tests/test_limits_curate.py
+e81a31c8870170f3cab3e34608ef5f4ec0022fcbf88febcd2686e3336113c03b  tests/test_no_network.py
+0544377634bfecb683d55491186bb1eaefa97456ab6c36b00d33313a83325871  tests/test_pdf_chunker.py
+d554b01c75ef30f46d298e0d2c453584dc9b81fe51f378d76993f678932ef041  tests/test_pdfdocs.py
+9a93798b0ecb15491ac3bc8dae107cb324a89dc10624d318ea0ed0388c288f55  tests/test_pinout_db.py
+521a9d53a6dbfb85053bc1e6beb24f07dc6591c5c6949fbfa28dcd503af29c0c  tests/test_pinout_esp_nrf.py
+1bfca4d1cba25c5da4b45b63b36a5301875b33076c49666de6cd5101b4141e87  tests/test_pinout_stm32.py
+bd164c5415551bc114e96185356b10caec07fd6de129aca0e70c31f4ae04c796  tests/test_register_pages_nrf_esp.py
+93094fe07bc359f1a9bf815b5bd285fb112fc92319d86d814a65b75ae64c9dec  tests/test_register_pages_st.py
+1c55d323a348f1ec2af04c0005cb2830872061c98a6dab19395c28497ff0d835  tests/test_runtime_escalation.py
+1b7a57ec3313e4cd4830869a03a077cc365937dce8ce0f9d998bca42e94da96c  tests/test_runtime_factory.py
+b3844a08c28c500962d4a9e33408c15af1840f9b00bedda4bc12e51934275f8c  tests/test_runtime_gate_integration.py
+c2f86d151fdc7eec514e820f9d9e6bd4cbd17882a21016630e448f44392ae1ac  tests/test_runtime_loop.py
+1e97ce11bdf5f389389ce45089d79ece7dd211dcc007dfcb41582b2b228f4d1f  tests/test_runtime_resume.py
+c417c5657195f3c9f3c4f31eab59f474a61d233cef0f6bc1f460f10158abac4a  tests/test_runtime_small_modules.py
+1294767669ee9b810b4f91db6140cfa3bdcc9a7f9e02bb7582f6eafd966efba6  tests/test_runtime_state.py
+eafac29aa830f1986cf748bb5cc33eb1b66b3718d45d0df66bc3ab0817923daf  tests/test_runtime_summary.py
+eea6f32eb9d6d0ff4c35aa56520399796ff4a9e0badf2e9792c0bd369a1cd1d8  tests/test_servers.py
+f811613f944ecdba011e0aabbb786e3a99899024d0b92845cee9db292de6a73c  tests/test_svd_attrs.py
+f3c07afc8e5705eaaf5770801b1f86a1047333c31dec1a4fb4d6a0cf6d5a4003  tests/test_svd_db.py
+6cb7dc76d169acee572625307e29de8d1410398ecd3452edc6516093aba8fda8  tests/test_svd_golden.py
+51b29484cadbec4a71a0450ce281ee69497aaadc905e3d1c08ed3d484e98eda4  tests/test_svd_parity.py
+153142bada125db13367b4743a37502b46e1931c65406031b6b1f922d4a5b52d  tests/test_svd_parser.py
+48fee7e3616b1839f1e57b12d830439f0e9eba2615079b1c87ad47975f4224bd  tests/test_text_index.py
+0592e86a6f1e9a7c8312fbf10af04ecb1260f893d9c17b5ee72384288bc85dbd  tests/test_tool_hub_p4.py
+7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6  ui/__init__.py
+48f071f2b01d093b668af57ed830632a04cc19f1c8005a74fff07308859134e2  ui/server.py
+```
+
+Checksum tổng (sha256 của đầu ra `find . -name '*.py' | sort | xargs shasum -a 256`, đường dẫn dạng `./...`; `eval.run.snapshot_checksum()` tái tạo đúng giá trị này): 5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6
+
+Checksum dữ liệu (sha256 của danh sách `sha256  ./đường-dẫn` các file *.sqlite, *.npy, sắp theo đường dẫn; `eval.run.snapshot_data_checksum()` tái tạo; manifest ghim và ép khớp khi --resume): 9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981

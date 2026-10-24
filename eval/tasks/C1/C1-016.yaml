@@ -1,0 +1,68 @@
+id: C1-016
+category: C1
+split: test
+difficulty: medium
+chips:
+- stm32g474
+tags:
+- register_bits
+turns:
+- user: Which bits of FDCAN1_CCCR make up the TEST field on the STM32G474?
+expected:
+  exact:
+    attribute: bits
+    kind: bits
+    value:
+    - 7
+    - 7
+    allowed:
+    - - 0
+      - 0
+    - - 1
+      - 1
+    - - 2
+      - 2
+    - - 3
+      - 3
+    - - 4
+      - 4
+    - - 5
+      - 5
+    - - 6
+      - 6
+    - - 8
+      - 8
+    - - 9
+      - 9
+    - - 12
+      - 12
+    - - 13
+      - 13
+    - - 14
+      - 14
+    - - 15
+      - 15
+  numeric_support:
+  - '0x40006400'
+  - '0x18'
+  - '0x40006418'
+  - '0x1'
+  cite_values:
+  - CCCR
+  - TEST
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: STM32G474xx.svd
+  peripheral: FDCAN1
+  register: CCCR
+  question_type: bits
+  template: bits.1
+  doc_hint: STM32G474_RM0440
+  doc_name: CCCR
+  field: TEST
+version: 1

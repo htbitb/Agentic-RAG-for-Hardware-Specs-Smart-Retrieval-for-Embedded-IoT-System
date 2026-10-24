@@ -1,0 +1,98 @@
+{
+  "created_at": "2026-10-21T12:07:54+00:00",
+  "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+  "model": "gemini-3.5-flash-lite",
+  "temperature": 0.0,
+  "price_in_per_m": 0.075,
+  "price_out_per_m": 0.3,
+  "api_key_set": true,
+  "corpus_manifest_sha256": "479edd2fd7e711d32e7204f67bb6b3ab276d1f377ffb71ac02d1dcb4a7309d83",
+  "snapshot_agent_v1_sha256": "02fa7559cfb61139b6d4b297bad0fb58c2bb858fe0b092790690e79801a024eb",
+  "native_rag_changelog_sha256": "c6e2beeb08df99e7815e57fc0cb01d63dd9f369424437185f98f31b8c3b76ee7",
+  "commit": null,
+  "seeds": 1,
+  "systems": [
+    "S0",
+    "S1",
+    "S2"
+  ],
+  "split": "dev",
+  "cache_mode": "record",
+  "n_tasks": 6,
+  "task_set_sha256": "aa5ad62a55a052c1e7f45906a6c9998125e42ab9f0641d47cc793426e9e10d58",
+  "python": "3.11.16",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "args": {
+    "systems": "S0,S1,S2",
+    "split": "dev",
+    "categories": null,
+    "suite": null,
+    "limit": 6,
+    "seeds": 1,
+    "workers": 2,
+    "cache": "record",
+    "timeout": 180,
+    "rps": 4.0,
+    "out": "eval/results/pilot",
+    "resume": null,
+    "yes": false,
+    "no_report": false,
+    "dry_run": false
+  },
+  "known_issues": [
+    "Agent v1 trích dẫn 'FreeRTOS v10.5.0' trong khi PDF corpus là FreeRTOS V8.2.1 (không sửa trong P0).",
+    "Dữ liệu Agent v1 là hằng số mô phỏng (3 chân, 11 thanh ghi, 8 đoạn văn); điểm thấp trên task sinh từ SVD là baseline hợp lệ.",
+    "Gemini bỏ qua `seed` và API có thể không xác định ngay cả ở temperature 0; mỗi seed được ghi nhận độc lập trong cache.",
+    "Task C1 review_status=auto; C2/C6/C7/C8 chưa có người duyệt độc lập."
+  ],
+  "suite": null,
+  "estimate": {
+    "runs": 18,
+    "llm_calls": 36,
+    "tokens_in": 79500,
+    "tokens_out": 6420,
+    "usd": 0.0079,
+    "per_system": {
+      "S0": {
+        "runs": 6,
+        "llm_calls": 6,
+        "tokens_in": 2100,
+        "tokens_out": 720,
+        "usd": 0.0004
+      },
+      "S1": {
+        "runs": 6,
+        "llm_calls": 6,
+        "tokens_in": 10200,
+        "tokens_out": 900,
+        "usd": 0.001
+      },
+      "S2": {
+        "runs": 6,
+        "llm_calls": 24,
+        "tokens_in": 67200,
+        "tokens_out": 4800,
+        "usd": 0.0065
+      }
+    },
+    "assumptions": {
+      "S0": {
+        "calls": 1,
+        "in": 350,
+        "out": 120
+      },
+      "S1": {
+        "calls": 1,
+        "in": 1700,
+        "out": 150
+      },
+      "S2": {
+        "calls": 4,
+        "in": 2800,
+        "out": 200
+      }
+    }
+  },
+  "finished_at": "2026-10-21T12:09:48+00:00",
+  "wall_seconds": 113.4
+}

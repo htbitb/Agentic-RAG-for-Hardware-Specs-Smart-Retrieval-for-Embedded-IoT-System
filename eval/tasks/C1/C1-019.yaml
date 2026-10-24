@@ -1,0 +1,42 @@
+id: C1-019
+category: C1
+split: test
+difficulty: medium
+chips:
+- esp32
+tags:
+- register_reset
+turns:
+- user: What is the reset value of RTC_CNTL_WDTWPROTECT_REG on the ESP32?
+expected:
+  exact:
+    attribute: reset
+    kind: hex
+    value: '0x50D83AA1'
+    allowed:
+    - '0x3FF48000'
+    - '0xA4'
+    - '0x3FF480A4'
+  numeric_support:
+  - '0x3FF48000'
+  - '0xA4'
+  - '0x3FF480A4'
+  - '0x50D83AA1'
+  cite_values:
+  - RTC_CNTL_WDTWPROTECT_REG
+  - '0x50D83AA1'
+graders:
+- exact
+- numeric_claims
+- citation
+review_status: auto
+provenance:
+  source: svd
+  svd: esp32.svd
+  peripheral: RTC_CNTL
+  register: WDTWPROTECT
+  question_type: reset
+  template: reset.1
+  doc_hint: ESP32_TRM
+  doc_name: RTC_CNTL_WDTWPROTECT_REG
+version: 1

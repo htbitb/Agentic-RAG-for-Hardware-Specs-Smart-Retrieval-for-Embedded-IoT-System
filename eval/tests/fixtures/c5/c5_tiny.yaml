@@ -1,0 +1,129 @@
+# Task C5 tí hon CHỈ dùng cho test của eval (schema, checklist, verify_tasks, oracle-info). Không phải task thật của bộ đánh giá.
+- id: C5-901
+  category: C5
+  split: dev
+  difficulty: hard
+  chips: [stm32g474]
+  tags: [system_goal, missing_info, pll]
+  turns:
+    - user: "Plan and implement the clock setup of my STM32G474 board: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz from the PLL fed by the external crystal (HSE). Break the work into at least 5 numbered steps, then give one complete bare-metal C code block that accesses registers the CMSIS way (no HAL or LL)."
+  human_policy:
+    approval: approve
+    choice: {prefer: "boost"}
+    clarify: {hse_hz: "The board has an 8 MHz crystal on HSE."}
+    max_answers: 3
+  hidden_info:
+    - id: hse_hz
+      keywords: ["HSE", "crystal", "oscillator", "external clock"]
+      required: true
+      value_patterns: ["\\b8\\s*MHz\\b"]
+  expected:
+    initial: reset
+    spec:
+      - {type: clock, sysclk_hz: 170000000, hclk_hz: 170000000, pclk1_hz: 170000000, pclk2_hz: 170000000, hse_hz: 8000000, tol_pct: 0.1}
+    checklist:
+      - {id: pll, type: pll, desc: "the PLL configuration gives SYSCLK = 170 MHz from the 8 MHz HSE", hse_hz: 8000000, sysclk_hz: 170000000, tol_pct: 0.1}
+      - {id: steps, type: bullets_min, desc: "the goal is broken into at least 5 steps", count: 5}
+      - {id: flash_ws, type: mentions, desc: "Flash latency of 4 wait states for 170 MHz", any_of: ["FLASH_ACR_LATENCY_4WS", "\\b4\\s*(?:WS|wait[- ]states?)\\b"]}
+      - {id: no_hsi_pll, type: forbids, desc: "the PLL is not fed by HSI16", patterns: ["RCC_PLLCFGR_PLLSRC_HSI\\b"]}
+  graders: [checklist, clarify, functional_sim]
+  review_status: verified
+  provenance:
+    reference_solution:
+      answer: |
+        Plan:
+        1. Enable the PWR clock and select boost mode (SYSCLK > 150 MHz).
+        2. Set the Flash latency to 4 wait states.
+        3. Start the HSE crystal and wait for HSERDY.
+        4. Configure the PLL from HSE: 8 MHz / M=2 = 4 MHz, x N=85 = 340 MHz VCO, / R=2 = 170 MHz.
+        5. Switch SYSCLK to the PLL through an AHB /2 step, then restore AHB /1.
+
+        ```c
+        #include "stm32g4xx.h"
+
+        int main(void)
+        {
+            RCC->APB1ENR1 |= RCC_APB1ENR1_PWREN;
+            (void)RCC->APB1ENR1;
+            PWR->CR5 &= ~PWR_CR5_R1MODE;
+            FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_4WS;
+
+            RCC->CR |= RCC_CR_HSEON;
+            while (!(RCC->CR & RCC_CR_HSERDY)) { }
+
+            RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSE | (1U << RCC_PLLCFGR_PLLM_Pos) | (85U << RCC_PLLCFGR_PLLN_Pos) | RCC_PLLCFGR_PLLREN;
+            RCC->CR |= RCC_CR_PLLON;
+            while (!(RCC->CR & RCC_CR_PLLRDY)) { }
+
+            RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_HPRE) | RCC_CFGR_HPRE_DIV2;
+            RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_SW) | RCC_CFGR_SW_PLL;
+            while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL) { }
+            for (volatile int i = 0; i < 100; i++) { }
+            RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_HPRE) | RCC_CFGR_HPRE_DIV1;
+
+            while (1) { }
+        }
+        ```
+    reference_calc: "HSE 8 MHz / M 2 = 4 MHz (2.66-16 MHz), x N 85 = 340 MHz VCO (96-344 MHz), / R 2 = 170 MHz; boost mode + 4 WS (RM0440 Table 9)."
+    wrong_variants:
+      - name: guessed_25mhz_crystal
+        answer: |
+          Assuming a 25 MHz crystal:
+          1. Enable PWR and boost mode.
+          2. Flash latency 4 wait states.
+          3. Start HSE.
+          4. PLL: M=5, N=68, R=2.
+          5. Switch to the PLL.
+
+          ```c
+          RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSE | (4U << RCC_PLLCFGR_PLLM_Pos) | (68U << RCC_PLLCFGR_PLLN_Pos) | RCC_PLLCFGR_PLLREN;
+          FLASH->ACR |= FLASH_ACR_LATENCY_4WS;
+          ```
+        must_fail: [pll]
+      - name: pll_on_hsi_three_steps
+        answer: |
+          1. Flash latency 4 WS.
+          2. PLL from HSI16: M=4, N=85, R=2.
+          3. Switch.
+
+          ```c
+          RCC->PLLCFGR = RCC_PLLCFGR_PLLSRC_HSI | (3U << RCC_PLLCFGR_PLLM_Pos) | (85U << RCC_PLLCFGR_PLLN_Pos) | RCC_PLLCFGR_PLLREN;
+          ```
+        must_fail: [pll, steps, no_hsi_pll]
+
+- id: C5-902
+  category: C5
+  split: test
+  difficulty: medium
+  chips: [stm32g474]
+  tags: [system_goal, complete_info]
+  turns:
+    - user: "My STM32G474 board has a 24 MHz HSE crystal. List at least 5 steps to run SYSCLK at 170 MHz from the PLL and state the PLLM, PLLN and PLLR values you use."
+  human_policy:
+    approval: approve
+    clarify: {}
+    max_answers: 3
+  expected:
+    checklist:
+      - {id: pll, type: pll, desc: "PLL gives 170 MHz from 24 MHz", hse_hz: 24000000, sysclk_hz: 170000000}
+      - {id: steps, type: bullets_min, desc: "at least 5 steps", count: 5}
+  graders: [checklist, clarify]
+  review_status: verified
+  provenance:
+    reference_solution:
+      answer: |
+        - Enable boost mode.
+        - Set 4 wait states.
+        - Start HSE (24 MHz).
+        - PLLM = 6, PLLN = 85, PLLR = 2: 24 / 6 = 4 MHz, x 85 = 340 MHz, / 2 = 170 MHz.
+        - Switch SYSCLK to the PLL.
+    reference_calc: "24 MHz / 6 = 4 MHz, x 85 = 340 MHz VCO, / 2 = 170 MHz."
+    wrong_variants:
+      - name: m_for_8mhz
+        answer: |
+          - Enable boost mode.
+          - Set 4 wait states.
+          - Start HSE.
+          - PLLM = 2, PLLN = 85, PLLR = 2.
+          - Switch SYSCLK to the PLL.
+        must_fail: [pll]
