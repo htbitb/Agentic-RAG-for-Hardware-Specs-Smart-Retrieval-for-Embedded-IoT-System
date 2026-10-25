@@ -96,9 +96,21 @@ class Handler(BaseHTTPRequestHandler):
             return self._runs_get(u)
         if u.path in ("/", "/index.html"):
             return self._send(200, (STATIC / "index.html").read_bytes(), "text/html")
+        if u.path in ("/demo_scenarios.json", "/api/demo_scenarios"):
+            p = STATIC / "demo_scenarios.json"
+            return self._send(200, p.read_bytes(), "application/json") if p.exists() else self._send(404, {"error": "demo_scenarios.json not found"})
+        if u.path == "/api/workspace":
+            files = []
+            if config.SANDBOX_DIR.exists():
+                for f in sorted(config.SANDBOX_DIR.iterdir()):
+                    if f.is_file() and not f.name.startswith("."):
+                        files.append({"name": f.name, "bytes": f.stat().st_size, "content": f.read_text(encoding="utf-8", errors="replace")[:20000]})
+            return self._send(200, {"dir": str(config.SANDBOX_DIR), "files": files})
         if u.path == "/api/info":
-            return self._send(200, {"llm": AGENT.llm.name, "tools": AGENT.hub.tool_names(),
-                                    "owners": AGENT.hub.owner, "permissions": PERMISSIONS,
+            all_tools = list(dict.fromkeys([*AGENT.hub.tool_names(), *PERMISSIONS.keys()]))
+            owners = {**{k: ("control" if v == "control" else ("local-guarded" if v == "irreversible-write" else "board-state" if k in ("get_board_state","get_power_budget","run_drc","diff","set_target","set_requirements","allocate_pin","release_pin","set_clock_config","add_device","connect","record_decision","rollback") else "hw-sandbox" if k in ("solve_timer_config","simulate_register_writes","analyze_c_code","compile_check") else "hw-knowledge")) for k, v in PERMISSIONS.items()}, **AGENT.hub.owner}
+            return self._send(200, {"llm": AGENT.llm.name, "tools": all_tools,
+                                    "owners": owners, "permissions": PERMISSIONS,
                                     "transport": AGENT.hub.transport})
         if u.path == "/api/audit":
             n = int(parse_qs(u.query).get("n", ["30"])[0])
@@ -107,7 +119,6 @@ class Handler(BaseHTTPRequestHandler):
             s = parse_qs(u.query).get("session", ["web"])[0][:64]
             return self._send(200, AGENT.episodic.history(s))
         self._send(404, {"error": "not found"})
-
     def do_POST(self):
         try:
             body = self._json()
@@ -138,6 +149,16 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(404, {"error": str(exc)})
             except ResumeError as exc:
                 return self._send(409, {"error": str(exc)})
+        if self.path == "/api/demo/write":
+            fn = str(body.get("filename", "")).strip()
+            content = str(body.get("content", ""))
+            return self._send(200, approval.write_approved(fn, content, session_id="demo-d2", approver="demo-engineer", action_id="i_d217474c"))
+        if self.path == "/api/demo/clear_file":
+            fn = Path(str(body.get("filename", "pwm_pa8.c"))).name
+            target = config.SANDBOX_DIR / fn
+            if target.exists() and target.is_file():
+                target.unlink()
+            return self._send(200, {"status": "cleared", "filename": fn})
         if self.path == "/api/approve":
             return self._send(200, approval.decide(str(body.get("action_id", "")), bool(body.get("approve")),
                                                    approver="web-user"))
