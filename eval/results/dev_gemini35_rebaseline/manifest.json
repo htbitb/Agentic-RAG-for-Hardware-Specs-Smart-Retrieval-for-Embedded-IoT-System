@@ -154,7 +154,8 @@
   "resumed_at": [
     "2026-11-01T12:49:06+00:00",
     "2026-11-02T13:42:37+00:00",
-    "2026-11-02T14:17:14+00:00"
+    "2026-11-02T14:17:14+00:00",
+    "2026-11-04T13:50:08+00:00"
   ],
   "resumes": [
     {
@@ -499,6 +500,130 @@
       "finished_at": "2026-11-02T14:28:06+00:00",
       "wall_seconds": 648.2,
       "stop_reason": "S3@P4: quota exhausted (server asks to wait 63134s) RateLimitError status=429: Error code: 429"
+    },
+    {
+      "args": {
+        "systems": "S0,S1,S2,S2D,S3@P4,S3@P5",
+        "ablations": "",
+        "split": "dev",
+        "categories": null,
+        "suite": null,
+        "limit": null,
+        "seeds": null,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 180,
+        "rps": 4.0,
+        "llm_rpm": 12.0,
+        "out": null,
+        "resume": "eval/results/dev_gemini35_rebaseline",
+        "yes": true,
+        "retry_infra": true,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-11-04T13:50:08+00:00",
+      "status": "stopped_fatal",
+      "cache_mode": "record",
+      "task_set_sha256": "e0106ddb3fd015252e3eb4de9ff53cbf89fbd3cf09bc03a1115d8d15796c8beb",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 756,
+        "llm_calls": 6962,
+        "tokens_in": 126734846,
+        "tokens_out": 1338210,
+        "usd": 9.9066,
+        "per_system": {
+          "S0": {
+            "runs": 126,
+            "llm_calls": 171,
+            "tokens_in": 662182,
+            "tokens_out": 55746,
+            "usd": 0.0664
+          },
+          "S1": {
+            "runs": 126,
+            "llm_calls": 171,
+            "tokens_in": 678015,
+            "tokens_out": 3420,
+            "usd": 0.0519
+          },
+          "S2": {
+            "runs": 126,
+            "llm_calls": 1103,
+            "tokens_in": 5033982,
+            "tokens_out": 38603,
+            "usd": 0.3891
+          },
+          "S2D": {
+            "runs": 126,
+            "llm_calls": 694,
+            "tokens_in": 5820837,
+            "tokens_out": 58318,
+            "usd": 0.4541
+          },
+          "S3@P4": {
+            "runs": 126,
+            "llm_calls": 2343,
+            "tokens_in": 55120384,
+            "tokens_out": 562248,
+            "usd": 4.3027
+          },
+          "S3@P5": {
+            "runs": 126,
+            "llm_calls": 2480,
+            "tokens_in": 59419446,
+            "tokens_out": 619875,
+            "usd": 4.6424
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-11-04T14:39:55+00:00",
+      "wall_seconds": 2984.5,
+      "stop_reason": "S3@P4: quota exhausted (server asks to wait 62414s) RateLimitError status=429: Error code: 429"
     }
   ],
   "scoring": {
