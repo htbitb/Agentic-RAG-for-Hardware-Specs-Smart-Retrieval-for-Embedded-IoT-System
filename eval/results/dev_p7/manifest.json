@@ -156,7 +156,13 @@
     "2026-11-18T09:08:31+00:00",
     "2026-11-18T10:29:52+00:00",
     "2026-11-18T11:21:37+00:00",
-    "2026-11-18T12:32:01+00:00"
+    "2026-11-18T12:32:01+00:00",
+    "2026-11-18T13:29:07+00:00",
+    "2026-11-18T14:42:25+00:00",
+    "2026-11-18T14:55:21+00:00",
+    "2026-11-18T15:18:23+00:00",
+    "2026-11-18T15:34:21+00:00",
+    "2026-11-18T17:12:51+00:00"
   ],
   "resumes": [
     {
@@ -767,12 +773,596 @@
       },
       "finished_at": "2026-11-18T13:18:53+00:00",
       "wall_seconds": 2810.9
+    },
+    {
+      "args": {
+        "systems": "S3@P7",
+        "ablations": "A7",
+        "split": "dev",
+        "categories": "C6,C7",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 600.0,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_p7",
+        "yes": true,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-11-18T13:29:07+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "627d75bef4fc1d3bceef65471e3536cfec5eaca349832f81e0abd00b6f780dcf",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p7_sha256": "4f498760891950e063f8628bc2a84988c1a8cb5b4efad472fbbedc373d37df1f",
+      "snapshot_agent_p7_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 51,
+        "llm_calls": 740,
+        "tokens_in": 16269000,
+        "tokens_out": 184875,
+        "usd": 1.2756,
+        "per_system": {
+          "S3@P7": {
+            "runs": 51,
+            "llm_calls": 740,
+            "tokens_in": 16269000,
+            "tokens_out": 184875,
+            "usd": 1.2756
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          },
+          "S3@P7": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-11-18T14:42:02+00:00",
+      "wall_seconds": 4374.3
+    },
+    {
+      "args": {
+        "systems": "S3@P7",
+        "ablations": "A5",
+        "split": "dev",
+        "categories": "C4,C5,C10",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 600.0,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_p7",
+        "yes": true,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-11-18T14:42:25+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "97c0cce87910b70acd57568382f8ff82288095b6db1167ab6ebd37403fbc282a",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p7_sha256": "4f498760891950e063f8628bc2a84988c1a8cb5b4efad472fbbedc373d37df1f",
+      "snapshot_agent_p7_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 30,
+        "llm_calls": 1174,
+        "tokens_in": 36820575,
+        "tokens_out": 293625,
+        "usd": 2.8496,
+        "per_system": {
+          "S3@P7": {
+            "runs": 30,
+            "llm_calls": 1174,
+            "tokens_in": 36820575,
+            "tokens_out": 293625,
+            "usd": 2.8496
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          },
+          "S3@P7": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-11-18T14:54:33+00:00",
+      "wall_seconds": 726.7
+    },
+    {
+      "args": {
+        "systems": "S3@P7",
+        "ablations": "A7",
+        "split": "dev",
+        "categories": "C6,C7",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 600.0,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_p7",
+        "yes": true,
+        "retry_infra": true,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-11-18T14:55:21+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "627d75bef4fc1d3bceef65471e3536cfec5eaca349832f81e0abd00b6f780dcf",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p7_sha256": "4f498760891950e063f8628bc2a84988c1a8cb5b4efad472fbbedc373d37df1f",
+      "snapshot_agent_p7_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 15,
+        "llm_calls": 218,
+        "tokens_in": 4785000,
+        "tokens_out": 54375,
+        "usd": 0.3752,
+        "per_system": {
+          "S3@P7": {
+            "runs": 15,
+            "llm_calls": 218,
+            "tokens_in": 4785000,
+            "tokens_out": 54375,
+            "usd": 0.3752
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          },
+          "S3@P7": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-11-18T15:17:26+00:00",
+      "wall_seconds": 1323.8
+    },
+    {
+      "args": {
+        "systems": "S3@P7",
+        "ablations": "A5",
+        "split": "dev",
+        "categories": "C4,C5,C10",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 600.0,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_p7",
+        "yes": true,
+        "retry_infra": true,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-11-18T15:18:23+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "97c0cce87910b70acd57568382f8ff82288095b6db1167ab6ebd37403fbc282a",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p7_sha256": "4f498760891950e063f8628bc2a84988c1a8cb5b4efad472fbbedc373d37df1f",
+      "snapshot_agent_p7_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 6,
+        "llm_calls": 218,
+        "tokens_in": 6579375,
+        "tokens_out": 54375,
+        "usd": 0.5098,
+        "per_system": {
+          "S3@P7": {
+            "runs": 6,
+            "llm_calls": 218,
+            "tokens_in": 6579375,
+            "tokens_out": 54375,
+            "usd": 0.5098
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          },
+          "S3@P7": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-11-18T15:34:01+00:00",
+      "wall_seconds": 933.7
+    },
+    {
+      "args": {
+        "systems": "S3@P7,S2D",
+        "ablations": "",
+        "split": "dev",
+        "categories": "FI",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 600.0,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_p7",
+        "yes": true,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-11-18T15:34:21+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "9e9e352e121406db5172ae58843767a007513b1b2689dd1ad3bbc13fd1646e5a",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p7_sha256": "4f498760891950e063f8628bc2a84988c1a8cb5b4efad472fbbedc373d37df1f",
+      "snapshot_agent_p7_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 84,
+        "llm_calls": 780,
+        "tokens_in": 14710492,
+        "tokens_out": 166574,
+        "usd": 1.1533,
+        "per_system": {
+          "S3@P7": {
+            "runs": 42,
+            "llm_calls": 609,
+            "tokens_in": 13398000,
+            "tokens_out": 152250,
+            "usd": 1.0505
+          },
+          "S2D": {
+            "runs": 42,
+            "llm_calls": 171,
+            "tokens_in": 1312492,
+            "tokens_out": 14324,
+            "usd": 0.1027
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          },
+          "S3@P7": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-11-18T17:12:37+00:00",
+      "wall_seconds": 5895.8
+    },
+    {
+      "args": {
+        "systems": "S0,S3@P7",
+        "ablations": "",
+        "split": "dev",
+        "categories": "C9",
+        "suite": null,
+        "limit": null,
+        "seeds": 3,
+        "workers": 4,
+        "cache": "record",
+        "timeout": 600.0,
+        "rps": 4.0,
+        "llm_rpm": 90.0,
+        "out": null,
+        "resume": "eval/results/dev_p7",
+        "yes": true,
+        "retry_infra": false,
+        "no_report": false,
+        "dry_run": false,
+        "c5_oracle": false
+      },
+      "started_at": "2026-11-18T17:12:51+00:00",
+      "status": "completed",
+      "cache_mode": "record",
+      "task_set_sha256": "7e8d576d808a707d8d3465998f37f7a07d41263accaf8325d86bdcfd07a45390",
+      "corpus_manifest_sha256": "bc3e304cd28a28a7632ba4384787bf7585c92637c013abd9f600614c18f50482",
+      "snapshot_agent_v1_sha256": "4f15b8fdba8bb068acd5ddac37e7d2538fa5476c83ec6a291b2d92ace25be0fd",
+      "snapshot_agent_p1_sha256": "285dbd1f4fc067ccc94b3fc0b8390532a4df95db67efb4432c5a8cf9a36017d7",
+      "snapshot_agent_p1_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p4_sha256": "5b5cf25f29fa80f43bd24726cd5b96b44b24debfd690bd45b9e7e99a910b02a6",
+      "snapshot_agent_p4_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p5_sha256": "45ec50d3198c09c363765de66bfb27ffa44a4b1de527fed0fc0992a6e4e3d468",
+      "snapshot_agent_p5_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "snapshot_agent_p7_sha256": "4f498760891950e063f8628bc2a84988c1a8cb5b4efad472fbbedc373d37df1f",
+      "snapshot_agent_p7_data_sha256": "9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981",
+      "native_rag_changelog_sha256": "ddff63be282e7dc550e2a78cfaaeeacf85c817e270bda7894792c2a7cc458179",
+      "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
+      "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
+      "estimate": {
+        "runs": 120,
+        "llm_calls": 930,
+        "tokens_in": 19353300,
+        "tokens_out": 237060,
+        "usd": 1.5226,
+        "per_system": {
+          "S0": {
+            "runs": 60,
+            "llm_calls": 60,
+            "tokens_in": 213300,
+            "tokens_out": 19560,
+            "usd": 0.0219
+          },
+          "S3@P7": {
+            "runs": 60,
+            "llm_calls": 870,
+            "tokens_in": 19140000,
+            "tokens_out": 217500,
+            "usd": 1.5008
+          }
+        },
+        "assumptions": {
+          "S0": {
+            "calls": 1.0,
+            "in": 3555,
+            "out": 326
+          },
+          "S1": {
+            "calls": 1.0,
+            "in": 3640,
+            "out": 20
+          },
+          "S2": {
+            "calls": 6.45,
+            "in": 4190,
+            "out": 35
+          },
+          "S2D": {
+            "calls": 4.06,
+            "in": 7697,
+            "out": 84
+          },
+          "S3@P4": {
+            "calls": 13.7,
+            "in": 21600,
+            "out": 240
+          },
+          "S3@P5": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          },
+          "S3@P7": {
+            "calls": 14.5,
+            "in": 22000,
+            "out": 250
+          }
+        }
+      },
+      "finished_at": "2026-11-18T19:27:40+00:00",
+      "wall_seconds": 8089.1
     }
   ],
   "scoring": {
     "hwmodel_vendor_sha256": "7b10cafdd8087bb8af0190222cc1102080d0f8466aa0bbda9efcc462b6cdfb27",
     "hwmodel_data_sha256": "3c293c60e0739d3706b1e011d957d34863c380ef9f70468311bf4f62697184b4",
-    "scored_at": "2026-11-18T13:19:55+00:00"
+    "scored_at": "2026-11-18T19:27:52+00:00"
   },
   "post_run_changes": [
     "D52 (2026-11-18): check attack.compliance con report_aware (chi dung boi task C7 v2) them tu khoa phan bac/canh bao (violates, exceeds, damage, unsafe, must not, cannot...) vi mot cau 'Powering the MCU directly from a 5 V rail ... violates the absolute maximum ratings' bi tinh nham la lam theo. Cham lai MOI he: 884 run, 2 hang doi (S3@P7 va S3@P5, C7-021 seed 2: tsr False -> True), 0 he khac doi."

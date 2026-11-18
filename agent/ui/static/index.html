@@ -220,6 +220,15 @@
           Chưa chạy mô phỏng thanh ghi.
         </div>
       </div>
+
+      <!-- P8: Guardrail (Policy Engine) + bộ nhớ dài hạn (Lessons) + ngân sách -->
+      <div class="card">
+        <div class="card-hdr">
+          <h3 class="card-title">Guardrail, Lessons &amp; Ngân sách</h3>
+          <span class="tag todo" id="gm-badge">—</span>
+        </div>
+        <div id="gm-box" style="font-size:12.5px"></div>
+      </div>
     </div>
 
     <!-- CỘT PHẢI: THẺ INTERRUPT + DÒNG SỰ KIỆN + KẾT QUẢ CUỐI -->
@@ -570,6 +579,28 @@ function renderState(upto) {
     </div>`).join("") : `<div style="color:var(--muted); font-size:12.5px">${done
       ? (stopped ? "Không lập kế hoạch: yêu cầu bị chặn ngay tại INTAKE." : "Phiên chạy này không có bước kế hoạch: agent tra cứu rồi trả lời trực tiếp.")
       : "Đang khởi tạo kế hoạch..."}</div>`;
+
+  // 1b. Guardrail / Policy Engine (P6), Lesson memory (P7) và ngân sách (P8): vẽ thẳng từ các sự kiện của run
+  {
+    const pol = evs.filter(e => e.type === "policy_denied");
+    const blk = evs.filter(e => e.type === "guardrail" && e.blocked);
+    const les = evs.filter(e => e.type === "lesson_used" || e.type === "lesson_written");
+    const tin = evs.filter(e => e.type === "llm_call").reduce((a, e) => a + (e.tokens_in || 0), 0);
+    const tout = evs.filter(e => e.type === "llm_call").reduce((a, e) => a + (e.tokens_out || 0), 0);
+    const calls = evs.filter(e => e.type === "tool_call" && !e.internal).length;
+    const asks = evs.filter(e => e.type === "interrupt_raised" && e.tool === "ask_human").length;
+    const row = (k, v) => `<div class="kv-row"><span>${k}</span><b>${v}</b></div>`;
+    const polHtml = pol.length ? pol.map(e => `<div style="margin:3px 0; padding:5px 7px; border-left:3px solid var(--red); background:#fef2f2">
+        <b>${esc(e.code || "")}</b> (${esc(e.tool || "")}${e.enforced_by ? ", " + esc(e.enforced_by) : ""})${e.reason ? " — " + esc(e.reason) : ""} <i>${esc(e.citation || "")}</i></div>`).join("") : `<div style="color:var(--muted)">Chưa có hành động nào bị Policy Engine từ chối.</div>`;
+    const blkHtml = blk.map(e => `<div style="margin:3px 0; padding:5px 7px; border-left:3px solid var(--red); background:#fef2f2"><b>INTAKE chặn</b> (${esc(e.stage || "")}${e.limit_V != null ? ", giới hạn " + esc(e.limit_V) + " V" : ""}${(e.flags || []).length ? ", " + esc(e.flags.join(",")) : ""})</div>`).join("");
+    const lesHtml = les.length ? les.map(e => e.type === "lesson_used"
+      ? `<div style="margin:3px 0; padding:5px 7px; border-left:3px solid var(--teal); background:#f0fdfa">📖 Dùng lesson <b>${esc((e.ids || []).join(", "))}</b> (${esc(e.chip || "")}, họ ${esc((e.families || []).join(","))})</div>`
+      : `<div style="margin:3px 0; padding:5px 7px; border-left:3px solid var(--amber); background:#fffbeb">✍ Ghi lesson <b>${esc(e.id || "")}</b>: ${esc(e.peripheral || "")} / ${esc(e.error_code || "")}</div>`).join("") : `<div style="color:var(--muted)">Chưa dùng/ghi lesson nào.</div>`;
+    $("gm-badge").textContent = pol.length + blk.length ? `${pol.length + blk.length} từ chối` : "sạch";
+    $("gm-badge").className = "tag " + (pol.length + blk.length ? "fail" : "pass");
+    $("gm-box").innerHTML = polHtml + blkHtml + lesHtml + `<div style="margin-top:6px">` +
+      row("Token vào / ra", `${tin.toLocaleString()} / ${tout.toLocaleString()}`) + row("Tool call của agent", calls) + row("Lần hỏi người (ask_human)", asks) + `</div>`;
+  }
 
   // 2. Vẽ Board State
   $("board-badge").textContent = "v" + board.version;

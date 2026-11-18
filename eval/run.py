@@ -571,6 +571,11 @@ def main(argv=None) -> int:
     unknown = set(systems) - set(SYSTEMS_ALL)
     if unknown:
         ap.error(f"hệ không hỗ trợ trong P0: {sorted(unknown)}")
+    if a.split == "test" and not a.dry_run:                   # P9: khoá grader/task/snapshot TRƯỚC khi chạy test (D38); sửa grader sau khi thấy đầu ra test phải báo cả hai số
+        from eval.tools import lock_graders
+        problems = lock_graders.verify()
+        if problems:
+            ap.error("split test bị từ chối: khoá grader/task/snapshot thiếu hoặc đã đổi (" + "; ".join(problems[:5]) + "). Chạy eval.tools.lock_graders --write sau khi chốt, hoặc ghi rõ lý do.")
     try:
         ablations = parse_ablations(a.ablations)
     except ValueError as exc:
