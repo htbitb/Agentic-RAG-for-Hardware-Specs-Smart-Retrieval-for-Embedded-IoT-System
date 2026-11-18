@@ -2,7 +2,7 @@
 
 - **Ngày chụp:** 2026-11-18
 - **Nguồn:** `agent/` (gốc dự án)
-- **Lý do:** P6 Policy Engine + guardrail biet rail/lop chan (D45) + P7 Lesson memory (D48); co A5 -Lessons va A7 -Guardrail
+- **Lý do:** P6 Policy Engine + guardrail rail/lop chan (D45) + P7 Lesson memory (D48) + sua sau smoke (D51); co A5 -Lessons va A7 -Guardrail
 - **Loại trừ:** `.env*`, `.venv*`, `logs/`, `data/memory.sqlite`, `data/board_state.sqlite`, `data/checkpoints.sqlite`, `data/traces/`, `workspace_out/`, `__pycache__/`, `.pytest_cache/`, `.DS_Store`. Không chứa bí mật. **Giữ** `data/hw_specs.sqlite` và các file chỉ mục.
 - **Cấu hình LLM/đường dẫn:** `config.py` đọc biến môi trường lúc import; snapshot không có `.env` → adapter nạp giá trị vào môi trường của tiến trình worker (không ghi/in giá trị).
 
@@ -28,8 +28,8 @@ dd8850744cd43d9255c7975f43c716b844f4a7346e421aacf56a287fbdd7a47e  agent/gate/drc
 e4dac944fe0d42e108d70579e794195ca6164f68446416a53b032b9f2f29ed91  agent/gate/provenance.py
 cd042d27cbd3a23eb554dee85035f4ce87e5caf8a38ecc54510dbff63790f870  agent/gate/safety.py
 18e349a93a357a5500c63341001e0c1d64970ba23839b9d2ca43a2e3ddecc131  agent/gate/types.py
-c86f48966600146e23dd423c337cd5a22bd815c0461a072aa8db6efe9aee6d01  agent/guardrail.py
-31f81702a19b557a408cd7cba992ccea41f35535809b50afe8a27d8da8b2516e  agent/lessons.py
+6551fde12456a00d420d956e51df1af6defd36945052b327eba5cd69c4de6d04  agent/guardrail.py
+f9218ec844c563eecf9c9c76f250b28bd5a966709b6edf3a7622b25e35a8e344  agent/lessons.py
 c00c4e02e0a03f88eecf2641c1731304001efd20bd7317349d6ebb13db1e234e  agent/llm.py
 5cf25d8b19c1a95abdf8e7d32fba07b24602b76a8cba5f4a8a4d9120c4535ded  agent/memory.py
 889431937085c20171c3dc9e7b21600c1c99270b3b231ab5569aa42d3b364347  agent/policy.py
@@ -42,7 +42,7 @@ b4405639c4eb05f6be7b6e00616f6025f89071ee06a85d4f7748cbd172397610  agent/runtime/
 6d681b60004c64a8b629a55035414ced3bb0c82369a5a4906009af4987fbc0a5  agent/runtime/flags.py
 97d64ce019d7abdfa7ef860ce2098e50d3a18a0935f7b6ff6e881b4198462a35  agent/runtime/hitl.py
 d9447100dd17380ef801884f57208ac141b711ca34b3c8fd37047894dc4feb87  agent/runtime/intake.py
-a23e8c305047327fdea3ab862b7e424a3cafbb3740c09151ffecc201c2655035  agent/runtime/loop.py
+6031711d4fe9ed8691b1309a59b1f391c868c835283381ccc04bfec011898c66  agent/runtime/loop.py
 3212907ce371473ae8d829c27eaa65eceee9b5d45daf85f938f48cd4ac1af09d  agent/runtime/run_api.py
 b3b1cee9e1ac38eded6ab3fa7134259be3d93d29a640ae7a94bf3e7aea546cbf  agent/runtime/start_state.py
 0ba6f73266163838ef4b39a34271b8567b9a68b5a0643a0cebdbcdb2ca79310c  agent/runtime/state.py
@@ -113,7 +113,7 @@ b6ee5e755edf5e9802f182939205c6ec1ac475d88f6ff894eaeb187e2474674f  tests/test_gat
 669fce53583aa98acb15594433b073927484210c18a8c4ca54ed837b26cdb662  tests/test_gate_safety.py
 1e1ca961c5b48cafbc83137a72d1c9cd7f78ac3a50d910b98bd07b39422ec888  tests/test_gate_support.py
 2c8c1930504401aa41075dd4ae7eebba8e40925e5bcfb3e76de415750e95a73f  tests/test_gate_types.py
-9cb21f95e0d1d515557d590800adfc598b1ad0a06578a771c35d3601dbe3d777  tests/test_guardrail_rails.py
+f5a570a3ac42c94d3f346027429d9d693123f69ad5d021938047373d42afcbc3  tests/test_guardrail_rails.py
 9f0c518bf94a1bfd34bedaed9261ab23066de21bb9956ec9116b863f26ad5560  tests/test_header_gen.py
 0d4847b0d8c5c1cda2b40e2ef6af984da2de70d746d2cf71e872092de1bea037  tests/test_hw_queries.py
 bd4cff8c270f13234249cee90eb44ff9818aeba7dc7c12f4f7cbec451c6c9938  tests/test_hw_sandbox_server.py
@@ -125,7 +125,7 @@ f86b12de45ff8569848605dfcd89200dafef77d643f2c14fd09b8fa644e0b940  tests/test_hwm
 0a71fd8f1cf08e731a45398d0787c4fc9f7dbcef128d8ee949b937bfcb461b56  tests/test_hwmodel_layout.py
 851b613005621b07c2e35bdf98727ae371e6e383773acfd8be41306c82b0264f  tests/test_hwmodel_regmap.py
 95226dbc2a77463ccccb70e4154a3849331b03e1f953990cfa0fe6698611a920  tests/test_hwmodel_solver.py
-28d45dce2f89d6e61eeb55ef613aedd1d89188c0d69a2ef94c2888b8c1a8cdab  tests/test_lessons.py
+fe427c9136a499038e52a55130e006aa05e41e9c3df8c185255ebc8a0366f270  tests/test_lessons.py
 137b9fc86941954ca165609cdd7ef45b9d76562c672c4fe9c42c899860be4f4f  tests/test_limits_curate.py
 e81a31c8870170f3cab3e34608ef5f4ec0022fcbf88febcd2686e3336113c03b  tests/test_no_network.py
 0544377634bfecb683d55491186bb1eaefa97456ab6c36b00d33313a83325871  tests/test_pdf_chunker.py
@@ -161,6 +161,6 @@ f3c07afc8e5705eaaf5770801b1f86a1047333c31dec1a4fb4d6a0cf6d5a4003  tests/test_svd
 c4ebdffd2640b01f5449bdc0fe31a8522486ecfe1b2ece867ae5fc5c96044ec5  ui/server.py
 ```
 
-Checksum tổng (sha256 của đầu ra `find . -name '*.py' | sort | xargs shasum -a 256`, đường dẫn dạng `./...`; `eval.run.snapshot_checksum()` tái tạo đúng giá trị này): 82712824ec041f16b3fc084da9268432a9d6c96bb41637e80ab932bb55feb921
+Checksum tổng (sha256 của đầu ra `find . -name '*.py' | sort | xargs shasum -a 256`, đường dẫn dạng `./...`; `eval.run.snapshot_checksum()` tái tạo đúng giá trị này): 4f498760891950e063f8628bc2a84988c1a8cb5b4efad472fbbedc373d37df1f
 
 Checksum dữ liệu (sha256 của danh sách `sha256  ./đường-dẫn` các file *.sqlite, *.npy, sắp theo đường dẫn; `eval.run.snapshot_data_checksum()` tái tạo; manifest ghim và ép khớp khi --resume): 9fe98cd356545fa525e910451439afd550233410d83b08f600be07a1975c7981

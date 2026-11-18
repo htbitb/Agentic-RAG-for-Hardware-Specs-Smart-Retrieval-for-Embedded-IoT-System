@@ -15,6 +15,9 @@
 - `agent/tests/test_lessons.py` (12): họ ngoại vi, diff mã, kho (dedupe/tìm/đếm), chính sách ghi (G2 skipped, không đổi mã, mã hạ tầng, còn lỗi ở bản cuối, văn bản có injection), ghi + dùng lại qua hai runtime, A5, run bị gắn cờ, kho hỏng, và **Gate thật**: thiếu MOE ở TIM1 ⇒ `G2-SIM-TIM-MOE` ⇒ sửa ⇒ lesson "+TIM1->BDTR |= TIM_BDTR_MOE;" ⇒ phiên mới cho TIM8 thấy lesson.
 - `eval/tests/test_report_c10.py` (3), `test_adapter_agent_v3_p6p7.py` (2).
 
+## Sau smoke thật (xem D51)
+- Smoke 13 run (C7 dev + C10-001, 1 seed, gemini-3.8-flash, 0.243 USD): hạ tầng chạy end-to-end; C10-001 đạt nhưng mô hình đặt MOE đúng ngay lượt 1 nên lesson không được ghi. Đã thêm lesson từ tự sửa qua mô phỏng của agent, quét sanitize mọi chuỗi, bọc đủ bốn tool cho C7 v2; snapshot đóng băng lại trước số liệu chính thức. H4 (học từ kinh nghiệm) CHƯA có bằng chứng.
+
 ## Chưa làm / cần người dùng
 1. Đo thật: S3@P7 trên chuỗi C10-001 (dev) với và không có A5, nhiều seed — đây mới là bằng chứng R3/H4; chi phí nhỏ (một chuỗi 3 lượt ≈ 3 task C3), cần duyệt mô hình + ngân sách.
 2. Demo D5 (UI): kịch bản ghi sẵn cho lesson TIM1 → TIM8 cần một run LLM thật (chưa có) rồi thêm vào `demo_scenarios.json`; P8 chưa làm.

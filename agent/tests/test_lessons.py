@@ -197,3 +197,68 @@ def test_with_the_real_gate_a_moe_fix_on_tim1_becomes_a_lesson_that_reaches_a_fr
     rt2._lesson_store = store
     rt2.ask(START_TEXT + " Configure PWM 10 kHz duty 40% on PC6 with TIM8 of the STM32G474. CMSIS register code.", session_id=sid())
     assert len(seen["lessons"]) == 1 and "TIM_BDTR_MOE" in seen["lessons"][0] and "G2-SIM-TIM-MOE" in seen["lessons"][0]
+
+
+# ---------------------------------------------------------------- lesson từ lần mô phỏng CỦA AGENT (tự sửa phổ biến nhất)
+BAD_OPS = [{"op": "write", "reg": "RCC_APB2ENR", "value": 0x2000}, {"op": "write", "reg": "TIM8_PSC", "value": 16}, {"op": "write", "reg": "TIM8_CR1", "value": 1}]
+GOOD_OPS = BAD_OPS[:2] + [{"op": "write", "reg": "TIM8_BDTR", "value": 0x8000}] + BAD_OPS[2:]
+
+
+def sim(ops, violations=()):
+    return {"tool": "simulate_register_writes", "args": {"chip": "stm32g474", "ops": ops}, "result": {"ok": not violations, "violations": list(violations), "effects": []}}
+
+
+MOE = {"code": "SIM-TIM-MOE", "severity": "error", "peripheral": "TIM8", "msg": "TIM8 is an advanced-type timer: BDTR.MOE = 0 so OC1 is disabled (RM Table 282 p.1261)"}
+
+
+def test_a_violation_fixed_between_two_agent_simulations_becomes_a_register_level_lesson():
+    got = lsn.lessons_from_sims([sim(BAD_OPS, [MOE]), sim(GOOD_OPS)], "stm32g474", "run1")
+    assert len(got) == 1 and (got[0]["peripheral"], got[0]["error_code"]) == ("TIM8", "SIM-TIM-MOE") and got[0]["fix"] == "+write TIM8_BDTR value=0x8000"
+    assert lsn.family(got[0]["peripheral"]) == "TIM-ADV" and "BDTR.MOE" in got[0]["trigger_pattern"]
+
+
+@pytest.mark.parametrize("obs", [
+    [sim(BAD_OPS, [MOE])],                                                         # chưa có lần mô phỏng sạch sau đó
+    [sim(BAD_OPS, [MOE]), sim(BAD_OPS, [MOE])],                                    # lần cuối vẫn lỗi
+    [sim(GOOD_OPS), sim(GOOD_OPS)],                                                # không có lỗi nào để học
+    [sim(BAD_OPS, [{**MOE, "severity": "warning"}]), sim(GOOD_OPS)],               # chỉ cảnh báo
+    [sim(BAD_OPS, [MOE]), sim(BAD_OPS)],                                           # hết lỗi mà không đổi thao tác nào => không có fix để ghi
+    [sim(BAD_OPS, [{**MOE, "peripheral": None}]), sim(GOOD_OPS)],                  # không biết ngoại vi
+    [{"tool": "simulate_register_writes", "args": {"ops": BAD_OPS}, "result": {"error": "boom"}}, sim(GOOD_OPS)],
+])
+def test_no_sim_lesson_without_a_confirmed_clean_final_simulation_and_a_real_change(obs):
+    assert lsn.lessons_from_sims(obs, "stm32g474", "r") == []
+
+
+def test_the_same_incident_seen_by_the_gate_and_by_the_simulator_is_written_once():
+    bad = {"id": "d1", "text": CODE_BAD, "passed": False, "gate": fail("G2-" + "SIM-TIM-MOE", gate="G2", where="code block 1, line 5").to_dict()}
+    good = {"id": "d2", "text": CODE_GOOD, "passed": True, "gate": ok().to_dict()}
+    got = lsn.lessons_from_run([bad, good], "stm32g474", "r", [sim(BAD_OPS, [MOE]), sim(GOOD_OPS)])
+    assert [l["error_code"] for l in got] == ["G2-SIM-TIM-MOE"]
+    only_sim = lsn.lessons_from_run([{"id": "d", "text": CODE_GOOD, "passed": True, "gate": ok().to_dict()}], "stm32g474", "r", [sim(BAD_OPS, [MOE]), sim(GOOD_OPS)])
+    assert [l["error_code"] for l in only_sim] == ["SIM-TIM-MOE"]
+
+
+def test_with_the_real_simulator_an_agent_side_moe_fix_is_learned_and_reaches_a_fresh_tim20_session(tmp_path):
+    from agent.scripted import ScriptedPolicy
+
+    store = lsn.LessonStore(tmp_path / "l.sqlite")
+    def ops(moe):
+        o = [{"op": "set_bits", "reg": "RCC_AHB2ENR", "mask": 1 << 1}, {"op": "set_bits", "reg": "RCC_APB2ENR", "mask": 1 << 20},
+             {"op": "modify", "reg": "GPIOB_MODER", "mask": 0b11 << 4, "value": 0b10 << 4}, {"op": "modify", "reg": "GPIOB_AFRL", "mask": 0xF << 8, "value": 3 << 8},
+             {"op": "write", "reg": "TIM20_PSC", "value": 169}, {"op": "write", "reg": "TIM20_ARR", "value": 199}, {"op": "write", "reg": "TIM20_CCR1", "value": 50},
+             {"op": "write", "reg": "TIM20_CCMR1", "value": 0x68}, {"op": "write", "reg": "TIM20_CCER", "value": 1}]
+        return o + ([{"op": "set_bits", "reg": "TIM20_BDTR", "mask": 0x8000}] if moe else []) + [{"op": "set_bits", "reg": "TIM20_CR1", "mask": 1}]
+    steps = [tool("simulate_register_writes", chip="stm32g474", ops=ops(False), initial="sysclk_170mhz_pll_hsi16_apb_div1"),
+             tool("simulate_register_writes", chip="stm32g474", ops=ops(True), initial="sysclk_170mhz_pll_hsi16_apb_div1"), say("The PWM code is ready.")]
+    rt = build(tmp_path, steps, gate=FakeGate([ok()]))
+    rt._lesson_store = store
+    out = rt.ask("Configure PWM on TIM20 of the STM32G474.", session_id=sid())
+    rows = store.all()
+    assert out["status"] == "answered" and len(rows) == 1 and (rows[0]["peripheral"], rows[0]["error_code"]) == ("TIM20", "SIM-TIM-MOE")
+    assert rows[0]["fix"] == "+set_bits TIM20_BDTR mask=0x8000" and of(out, "lesson_written")[0]["id"] == rows[0]["id"]
+    seen = {}
+    rt2 = build(tmp_path, [lambda m, t: (seen.setdefault("l", [x["content"] for x in m if x["role"] == "system" and x["content"].startswith("LESSONS")]), say("ok"))[1]])
+    rt2._lesson_store = store
+    rt2.ask("Configure PWM on TIM8 of the STM32G474.", session_id=sid())
+    assert len(seen["l"]) == 1 and "TIM20_BDTR" in seen["l"][0] and "SIM-TIM-MOE" in seen["l"][0]

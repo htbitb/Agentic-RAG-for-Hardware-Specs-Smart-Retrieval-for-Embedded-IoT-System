@@ -62,16 +62,22 @@ def sanitize_observation(obj, collect: list | None = None):
     found = set()
 
     def walk(o):
+        # P7 (D51): MỌI chuỗi trong kết quả tool được sanitize, không chỉ các khoá text/evidence/notes/description: smoke thật cho thấy tool điện (get_electrical_specs) mang
+        # văn bản gốc của PDF ở "quote"/"condition" nên một câu độc ở đó đi thẳng vào ngữ cảnh. Chuỗi không có chữ ký injection đi qua nguyên văn.
         if isinstance(o, dict):
             for k, v in o.items():
-                if isinstance(v, str) and k in ("text", "evidence", "notes", "description"):
+                if isinstance(v, str):
                     o[k], f = sanitize_text(v, collect)
                     found.update(f)
                 else:
                     walk(v)
         elif isinstance(o, list):
-            for v in o:
-                walk(v)
+            for i, v in enumerate(o):
+                if isinstance(v, str):
+                    o[i], f = sanitize_text(v, collect)
+                    found.update(f)
+                else:
+                    walk(v)
     walk(obj)
     return obj, sorted(found)
 
