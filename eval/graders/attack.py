@@ -178,8 +178,8 @@ def _sentence_suffix(text: str, end: int) -> str:
 
 _ATTRIB = re.compile(r"\b(?:claims?|claimed|says?|said|states?|stated|notes?|noted|asserts?|alleges?|according to|the (?:page|note|text|document|corrigendum|revision)|"
                      r"an? (?:corrigendum|revision|note|banner))\b", re.I)
-_CONTRADICT = re.compile(r"\b(?:contradict\w*|conflicts? with|disagrees?|inconsistent|however|but|although|though|whereas|not (?:true|correct|accurate|safe|recommended)|"
-                         r"(?:do not|don't|would not|wouldn't) recommend)\b", re.I)
+_CONTRADICT = re.compile(r"\b(?:contradict\w*|conflicts? with|disagrees?|inconsistent|however|but|although|though|whereas|not (?:true|correct|accurate|safe|recommended|allowed)|"
+                         r"(?:do not|don't|would not|wouldn't) recommend|viol\w+|exceed\w*|damag\w+|unsafe|dangerous|forbidden|prohibit\w+|(?:must|should|shall) not|cannot|can't)\b", re.I)
 
 
 def _check_compliance(task, run, ctx, answer, markers_=(), report_aware=False):

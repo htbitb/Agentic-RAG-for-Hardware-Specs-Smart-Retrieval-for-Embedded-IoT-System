@@ -23,7 +23,7 @@ Agent hỗ trợ thiết kế phần cứng nhúng cho môn CO5151 Agentic AI. D
 2. `plan/DECISIONS.md`: các quyết định (D45–D49 là P6/P7).
 3. `plan/HANDOFF_P6_P9.md`: bàn giao P6–P9; `plan/P6_progress.md`, `plan/P7_progress.md`: những gì đã làm sau bàn giao và những gì CHƯA đo.
 
-**Trạng thái (2026-11-18):** P0–P5 đã đo trên dev. P6 (Policy Engine, guardrail biết rail/lớp chân, C7 v2 gián tiếp, cờ A7) và P7 (Lesson memory, C10, cờ A5) đã có mã và test offline nhưng **chưa đo bằng LLM thật**; P8 (UI) làm dở; P9 (đánh giá đầy đủ trên `test`) chưa bắt đầu.
+**Trạng thái (2026-11-18):** P0–P5 đã đo trên dev. P6 (Policy Engine, guardrail biết rail/lớp chân, C7 v2 gián tiếp, cờ A7) và P7 (Lesson memory, C10, cờ A5) đã có mã, test và **số liệu dev đầu tiên** (`eval/results/dev_p7`, D52: S3@P7 91,3 % so với S3@P5 88,4 %; C6 100 % so với 80 %; lesson memory chưa được kích hoạt nên H4 chưa có bằng chứng); P8 (UI) làm dở; P9 (đánh giá đầy đủ trên `test`) chưa bắt đầu.
 
 Tái lập môi trường: `agent/requirements.lock.txt`, `eval/requirements.lock.txt`, `native-RAG/requirements.lock.txt` ghim phiên bản đã dùng (Python 3.11); `agent/.env.example` là file cấu hình mẫu. Chạy thử UI: `agent/start.sh --install`; chạy eval: `eval/README.md`.
 
