@@ -11,7 +11,7 @@ from eval.tests.test_run import CFG, ORIG, RESUME, FakeAdapter, mk
 
 # ------------------------------------------------------------------ đăng ký hệ
 def test_s3_p4_is_registered_with_the_measured_cost_assumptions_but_is_not_a_default_system():
-    assert R.SYSTEMS_ALL == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5"]
+    assert R.SYSTEMS_ALL == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5", "S3@P7"]
     assert R.ASSUMPTIONS["S3@P4"] == {"calls": 13.7, "in": 21600, "out": 240}          # đo ở pilot P4 (38 run dev, 1 seed)
     assert R.DEFAULT_SYSTEMS == ["S0", "S1", "S2", "S2D"]                      # chạy không --systems vẫn đúng như trước P4
 
@@ -170,8 +170,8 @@ def test_ablations_are_only_valid_with_s3_p4(capsys, monkeypatch):
 
 def test_unknown_ablation_code_is_a_usage_error(capsys, monkeypatch):
     with pytest.raises(SystemExit) as e:
-        _dry(capsys, monkeypatch, "--systems", "S3@P4", "--ablations", "A7")
-    assert e.value.code == 2 and "A7" in capsys.readouterr().err
+        _dry(capsys, monkeypatch, "--systems", "S3@P4", "--ablations", "A8")
+    assert e.value.code == 2 and "A8" in capsys.readouterr().err
 
 
 def test_the_default_systems_do_not_include_s3_p4(capsys, monkeypatch):

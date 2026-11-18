@@ -81,6 +81,10 @@ def main() -> int:
             raise
 
     client.chat.completions.create = tracked
+    ic = None
+    if init.get("tool_rules"):                    # P6: hook ở tầng kết quả tool (C7 v2 injection gián tiếp); không đụng corpus hay snapshot
+        im = load_cache_module(init["interceptor_module"])
+        ic = im.install(agent.hub, init["tool_rules"])
     emit({"ready": True, "llm": agent.llm.name})
 
     sandbox = Path(os.environ["SANDBOX_DIR"])
@@ -100,7 +104,7 @@ def main() -> int:
         emit({"answer": res["answer"], "status": res["status"], "agent_trace": res["trace"],
               "verification": res["verification"], "observations": res["observations"],
               "pending_actions": res["pending_actions"], "metrics": res["metrics"], "llm_calls": state["calls"],
-              "flags": state["flags"], "files": files})
+              "flags": state["flags"], "files": files, "tool_events": ic.drain() if ic else []})
     return 0
 
 

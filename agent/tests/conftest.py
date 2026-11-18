@@ -21,6 +21,7 @@ os.environ.setdefault("BOARD_STATE_DB", os.path.join(_TMP, "board_state.sqlite")
 os.environ.setdefault("AGENT_CHECKPOINT_DB", os.path.join(_TMP, "checkpoints.sqlite"))
 os.environ.setdefault("AUDIT_LOG", os.path.join(_TMP, "audit.jsonl"))
 os.environ.setdefault("SANDBOX_DIR", os.path.join(_TMP, "sandbox"))
+os.environ.setdefault("LESSONS_DB", os.path.join(_TMP, "lessons.sqlite"))
 for _k in ("LLM_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY"):
     os.environ[_k] = ""                 # ép rỗng (không setdefault): khoá trong shell cũng không được lọt vào test
 

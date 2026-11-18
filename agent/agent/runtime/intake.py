@@ -25,6 +25,13 @@ def hardware_check(hub, question: str, chips: list, ent: dict, emit, observe=Non
              ok="error" not in res, error=res.get("error"), summary=json.dumps(res, ensure_ascii=False, default=str)[:400], security_flags=res.get("security_flags"),
              internal=True)
         facts = res.get("results", [])
+        if req["target"] == "pin" and guardrail.named_pins(question):             # P6 (D45): pin cụ thể => giữ ở lớp của CHÂN đó (TT/FT_c/FT...), tra bằng bảng chân (chỉ đọc)
+            def lookup(pin, _chip=chip):
+                r = hub.call("query_pin_alternate_function", {"chip": _chip, "pin": pin}, internal=True)
+                emit("tool_call", tool="query_pin_alternate_function", server=hub.owner.get("query_pin_alternate_function"), permission="read-only", args={"chip": _chip, "pin": pin},
+                     ok="error" not in r, error=r.get("error"), summary=json.dumps({k: r.get(k) for k in ("pin", "io_structure", "is_5v_tolerant")}, default=str), security_flags=None, internal=True)
+                return r
+            req = guardrail.with_pin_classes(req, question, lookup)
         v = guardrail.evaluate_hw(req, facts, vdd=ent["vdds"].get(chip, 3.3))
         emit("guardrail", stage="hardware_safety", verdict=v["verdict"], limit_V=v["limit"], request=req, blocked=v["verdict"] == "refuse", flags=[])
         audit.log("hardware_safety_check", chip=chip, request=req, verdict=v["verdict"], limit=v["limit"])

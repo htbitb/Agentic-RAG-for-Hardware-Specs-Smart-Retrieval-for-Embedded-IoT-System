@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT = ROOT / "snapshots" / "agent_v1"
 WORKER = Path(__file__).with_name("agent_v1_worker.py")
 CACHE_MODULE = ROOT / "eval" / "llm_cache.py"
+INTERCEPTOR_MODULE = ROOT / "eval" / "adapters" / "interceptor.py"
 _KEEP = ("status", "error", "action_id", "security_flags", "message")
 # biến môi trường có thể chuyển hướng DỮ LIỆU của agent (S2D: dữ liệu là biến độc lập) — không để lọt từ shell vào worker
 _SCRUB = ("HW_SPECS_DB", "TEXT_INDEX_DB", "TEXT_INDEX_EMB")
@@ -68,7 +69,8 @@ class AgentV1Adapter(AdapterBase):
         self.proc.start()
         init = {"snapshot": str(self.snapshot), "run_dir": str(run_dir), "task_id": task.id, "seed": seed,
                 "session_id": f"{task.id}-s{seed}-{uuid.uuid4().hex[:6]}", "cache_module": str(CACHE_MODULE),
-                "llm_cache": {"mode": self.cache_mode, "path": self.cache_path}}
+                "llm_cache": {"mode": self.cache_mode, "path": self.cache_path},
+                "interceptor_module": str(INTERCEPTOR_MODULE), "tool_rules": list(task.tool_rules)}
         try:
             self.proc.write(init)
             ack = json.loads(self.proc.readline(self.startup_timeout))
@@ -121,6 +123,7 @@ class AgentV1Adapter(AdapterBase):
         self.add_usage(int(m.get("tokens_in", 0)), int(m.get("tokens_out", 0)), llm_calls=int(res.get("llm_calls", 0)),
                        tool_calls=int(m.get("tool_calls", 0)))
         self.trace.append({"type": "agent_trace", "turn": idx, "events": res.get("agent_trace", [])})
+        self.trace.extend({"type": "tool_intercept", **e} for e in res.get("tool_events") or [] if isinstance(e, dict))      # P6: hook C7 v2 đã tác động lên kết quả tool nào
         if res.get("verification") is not None:
             self.trace.append({"type": "verification", "turn": idx, "detail": res["verification"]})
         for ob in res.get("observations", []):

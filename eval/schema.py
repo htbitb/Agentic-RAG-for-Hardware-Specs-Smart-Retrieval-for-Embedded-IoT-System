@@ -10,7 +10,7 @@ import yaml
 
 from eval.textnorm import qty_unit
 
-CATEGORIES = {"C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "FI"}
+CATEGORIES = {"C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "FI"}      # C10 (P7): đường cong học của Lesson memory (chuỗi lượt, mỗi lượt một phiên mới)
 SPLITS = {"dev", "test"}
 REVIEW_STATUSES = {"auto", "verified", "needs_human"}
 GRADERS = {"exact", "keyfacts", "numeric_claims", "citation", "safety", "attack", "abstain", "functional_sim", "compile", "final_state", "conflict_detected",
@@ -210,6 +210,19 @@ def grounded_pass(row: dict) -> bool | None:
     return bool(row["tsr_pass"]) and (cit.get("details") or {}).get("valid", 0) >= 1
 
 
+TOOL_RULE_KINDS = ("inject_text", "raise", "corrupt_number")      # phải khớp eval/adapters/interceptor.KINDS (có test)
+
+
+def _check_tool_rules(tid: str, rules) -> None:
+    if not isinstance(rules, list):
+        raise ValueError(f"{tid}: tool_rules must be a list")
+    for r in rules:
+        if not isinstance(r, dict) or not isinstance(r.get("tool"), str) or not r["tool"] or r.get("kind") not in TOOL_RULE_KINDS:
+            raise ValueError(f"{tid}: each tool rule needs a 'tool' and a 'kind' in {list(TOOL_RULE_KINDS)}, got {r!r}")
+        if r["kind"] == "inject_text" and (not isinstance(r.get("payload"), str) or not r["payload"].strip()):
+            raise ValueError(f"{tid}: inject_text needs a non-empty string 'payload'")
+
+
 @dataclass
 class Task:
     id: str
@@ -227,6 +240,8 @@ class Task:
     version: int = 1
     human_policy: dict = field(default_factory=dict)   # C5: người dùng mô phỏng (approval / choice / clarify / max_answers)
     hidden_info: list = field(default_factory=list)    # C5: thông tin bắt buộc KHÔNG có trong đề [{id, keywords, required, value_patterns}]
+    fresh_sessions: bool = False                       # P7: mỗi lượt chạy trong MỘT PHIÊN MỚI (không chia sẻ lịch sử/Board State) nhưng chung Lesson memory của run: đo học từ kinh nghiệm, không phải từ lịch sử hội thoại
+    tool_rules: list = field(default_factory=list)     # P6/P9: hook ở tầng kết quả tool (eval/adapters/interceptor.py): C7 v2 injection GIÁN TIẾP (inject_text); P9 tiêm lỗi (raise, corrupt_number)
 
     def __post_init__(self):
         if self.category not in CATEGORIES:
@@ -253,6 +268,7 @@ class Task:
                 if set(item) - allowed:
                     raise ValueError(f"{self.id}: unknown spec key(s) {sorted(set(item) - allowed)} in a {item['type']} item")
             _check_hse(self.id, self.expected)
+        _check_tool_rules(self.id, self.tool_rules)
         _check_human_policy(self.id, self.human_policy, {h.get("id") for h in self.hidden_info if isinstance(h, dict)}
                             if isinstance(self.hidden_info, list) else set())
         _check_hidden_info(self.id, self.hidden_info, self.human_policy.get("clarify") or {})
@@ -280,7 +296,12 @@ class Task:
         return cls(**d)
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        if not d.get("tool_rules"):
+            d.pop("tool_rules", None)          # task cũ không có hook: giữ nguyên dạng tuần tự hoá (và task_set_sha256 của các manifest đã có)
+        if not d.get("fresh_sessions"):
+            d.pop("fresh_sessions", None)
+        return d
 
 
 def is_hitl_task(task: Task) -> bool:

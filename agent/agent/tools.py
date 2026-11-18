@@ -60,6 +60,7 @@ class ToolHub:
         self._props: dict[str, set] = {}              # tên tool -> tham số hợp lệ (để bỏ tham số lạ do mô hình tự thêm, vd run_drc(reason=...))
         self.owner: dict[str, str] = {}
         self.stats = {"calls": 0, "agent_calls": 0, "errors": 0, "retries": 0}
+        self.removed: list[str] = []                  # P6: câu bị guardrail xoá khỏi observation (không bao giờ đưa cho mô hình); runtime lấy bằng drain_removed() cho taint tracking
         if transport == "stdio":
             try:
                 import mcp  # noqa: F401
@@ -177,7 +178,9 @@ class ToolHub:
                     break
                 self.stats["retries"] += 1
                 time.sleep(0.2 * attempt)
-        result, flags = sanitize_observation(result) if self.sanitize else (result, [])
+        frags: list[str] = []
+        result, flags = sanitize_observation(result, frags) if self.sanitize else (result, [])
+        self.removed.extend(frags)
         if ignored and isinstance(result, dict):
             result["ignored_arguments"] = ignored
         if flags:
@@ -203,6 +206,11 @@ class ToolHub:
             return json.loads(text)
         except json.JSONDecodeError:
             return {"error": "malformed tool output", "raw": text[:500]}
+
+    def drain_removed(self) -> list[str]:
+        """Các câu bị gắn cờ injection đã bị xoá khỏi observation kể từ lần gọi trước (và xoá bộ đệm)."""
+        out, self.removed = self.removed, []
+        return out
 
     def raw_call(self, name, args):
         """Baseline-only access (e.g. naive_search) without agent bookkeeping."""

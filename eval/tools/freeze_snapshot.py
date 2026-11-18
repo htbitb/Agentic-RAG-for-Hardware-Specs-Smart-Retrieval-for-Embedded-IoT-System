@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 EXCLUDE_DIRS = {"logs", "workspace_out", "__pycache__", ".pytest_cache"}
-STATE_FILES = ("memory.sqlite", "board_state.sqlite", "checkpoints.sqlite")      # chỉ bị loại khi nằm trực tiếp trong data/
+STATE_FILES = ("memory.sqlite", "board_state.sqlite", "checkpoints.sqlite", "lessons.sqlite")      # chỉ bị loại khi nằm trực tiếp trong data/
 SQLITE_SIDECARS = ("", "-wal", "-shm", "-journal")
 
 

@@ -46,6 +46,7 @@ def main() -> int:
     os.environ["AUDIT_LOG"] = str(run_dir / "audit.jsonl")
     os.environ["SANDBOX_DIR"] = str(run_dir / "workspace_out")
     os.environ["BOARD_STATE_DB"] = str(run_dir / "board_state.sqlite")
+    os.environ["LESSONS_DB"] = str(run_dir / "lessons.sqlite")      # P7: mỗi run một bộ nhớ lesson TRỐNG (D48: học từ dev không lọt vào test); các lượt của một task dùng chung nó
     os.environ.pop("BOARD_STATE_PROJECT", None)  # runtime tự truyền project_id
     os.environ["AGENT_CHECKPOINT_DB"] = str(checkpoint_db)
     os.environ["AGENT_TRACE_DIR"] = str(trace_dir)
@@ -140,6 +141,10 @@ def main() -> int:
             raise
 
     client.chat.completions.create = tracked
+    ic = None
+    if init.get("tool_rules"):                    # P6: hook ở tầng kết quả tool (C7 v2 injection gián tiếp / P9 tiêm lỗi); không đụng corpus hay snapshot
+        im = load_cache_module(init["interceptor_module"])
+        ic = im.install(rt.hub, init["tool_rules"])
     emit({"ready": True, "llm": getattr(llm, "name", None)})
 
     sandbox = Path(os.environ["SANDBOX_DIR"])
@@ -157,7 +162,7 @@ def main() -> int:
                     emit({"resume_error": str(exc), "answer": "", "status": "error", "events": [], "usage": {}, "llm_calls": 0, "flags": []})
                     continue
             else:
-                res = rt.ask(req["user"], session_id=init["session_id"], seed=init["seed"])
+                res = rt.ask(req["user"], session_id=req.get("session") or init["session_id"], seed=init["seed"])
         except Exception as exc:                  # lỗi bất ngờ của chính runtime -> lỗi hệ, không phải hạ tầng (cờ hạ tầng của wrapper vẫn được giữ)
             flags = list(dict.fromkeys([*state["flags"], f"error:{type(exc).__name__}: {str(exc)[:200]}"]))
             emit({"answer": "", "status": "error", "events": [], "usage": {}, "plan": [], "board_state": None, "gate": None, "escalation": None,
@@ -165,7 +170,7 @@ def main() -> int:
             continue
         files = {p.name: p.read_text(encoding="utf-8", errors="replace")[:4000] for p in sandbox.glob("*") if p.is_file()} if sandbox.is_dir() else {}
         files.update(res.get("files") or {})
-        emit({**res, "files": files, "llm_calls": state["calls"], "flags": state["flags"]})
+        emit({**res, "files": files, "llm_calls": state["calls"], "flags": state["flags"], "tool_events": ic.drain() if ic else []})
     try:
         rt.close()
     except Exception:

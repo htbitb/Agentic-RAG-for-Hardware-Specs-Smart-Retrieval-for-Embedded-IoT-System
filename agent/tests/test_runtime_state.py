@@ -17,7 +17,7 @@ def test_new_state_has_the_fields_of_the_brief():
     s = make_state()
     assert (s.run_id, s.project_id, s.goal, s.turn, s.status) == ("r1", "p1", "PWM 20 kHz on PA8", 0, "INTAKE")
     assert s.messages == [] and s.plan == [] and s.artifacts == [] and s.iteration_counters == {}
-    assert set(s.budgets) == {"steps", "tokens", "usd", "wall_s", "ask_human"}
+    assert set(s.budgets) == {"steps", "tokens", "usd", "wall_s", "ask_human", "files"}
     assert set(s.used) >= {"steps", "tokens_in", "tokens_out", "usd", "wall_s", "llm_calls", "tool_calls"}
 
 

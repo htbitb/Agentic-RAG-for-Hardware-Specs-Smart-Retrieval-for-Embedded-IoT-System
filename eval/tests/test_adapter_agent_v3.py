@@ -175,7 +175,7 @@ def init_of(a, **kw):
 def test_init_line_carries_snapshot_absolute_run_dir_ids_cache_ablations_and_budgets(tmp_path):
     a = AgentV3Adapter(CFG, cmd=[sys.executable, "-c", STUB], work_dir=tmp_path, cache_mode="record", cache_path=tmp_path / "c.sqlite")
     init = init_of(a)["init"]
-    assert set(init) == {"snapshot", "run_dir", "task_id", "seed", "session_id", "cache_module", "llm_cache", "ablations", "budgets"}
+    assert set(init) == {"snapshot", "run_dir", "task_id", "seed", "session_id", "cache_module", "llm_cache", "ablations", "budgets", "interceptor_module", "tool_rules"}
     assert init["run_dir"].startswith("/") and init["task_id"] == "C4-007" and init["seed"] == 3 and init["session_id"].startswith("C4-007-s3-")
     assert init["llm_cache"] == {"mode": "record", "path": str(tmp_path / "c.sqlite")} and init["cache_module"].endswith("eval/llm_cache.py")
     assert init["snapshot"].endswith("snapshots/agent_p4") and init["ablations"] == [] and init["budgets"] is None
@@ -193,7 +193,7 @@ def test_ablations_and_budgets_are_passed_to_the_worker_and_label_the_result(tmp
 
 
 def test_variant_is_derived_from_the_ablation_codes_when_not_given(tmp_path):
-    assert ABLATION_VARIANTS == {"A1": "-Planner", "A2": "-BoardState", "A3": "-Sandbox", "A4": "-Reflection", "A6": "-HITL"}
+    assert ABLATION_VARIANTS == {"A1": "-Planner", "A2": "-BoardState", "A3": "-Sandbox", "A4": "-Reflection", "A5": "-Lessons", "A6": "-HITL", "A7": "-Guardrail"}
     assert AgentV3Adapter(CFG, ablations=["A2"]).variant == "-BoardState"
     assert AgentV3Adapter(CFG, ablations=["A1", "A4"]).variant == "-Planner+-Reflection"
     assert AgentV3Adapter(CFG).variant == "" and AgentV3Adapter(CFG, variant="x").variant == "x"

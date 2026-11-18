@@ -1,0 +1,13 @@
+# Runtime (agent + MCP servers)
+openai>=1.40.0
+mcp>=1.2.0,<2          # code dùng mcp.server.fastmcp.FastMCP (đổi tên ở mcp 2.x)
+python-dotenv>=1.0.0
+numpy>=1.26
+pyyaml>=6.0
+pycparser>=3.0       # P2: hwmodel.codeparse (analyze_c_code); 3.x không còn PLY
+
+# Ingestion (P1: SVD -> SQLite, PDF -> tables/chunks, hybrid text index) and tests
+sentence-transformers>=3.0
+pypdf>=4.0
+pdfplumber>=0.11
+pytest>=8.0

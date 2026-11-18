@@ -56,6 +56,7 @@
   .sm-node.active { background:var(--navy); color:#fff; }
   .sm-node.wait { background:var(--amber); color:#fff; animation:pulse 1s infinite; }
   .sm-node.done { background:var(--teal); color:#fff; }
+  .sm-node.stop { background:var(--red); color:#fff; }
   .sm-arr { color:#cbd5e1; font-weight:700; }
 
   /* Màn hình trống khi bấm Clear */
@@ -87,6 +88,7 @@
   .gate-box { border:1.5px solid var(--line); border-radius:7px; padding:6px 4px; text-align:center; background:#f8fafc; color:var(--muted); }
   .gate-box.pass { border-color:#16a34a; background:#dcfce7; color:#166534; }
   .gate-box.fail { border-color:var(--red); background:#fee2e2; color:#991b1b; }
+  .gate-box.na { border-style:dashed; background:#f8fafc; color:#94a3b8; }
   .gate-box b { display:block; font-size:12.5px; }
   .gate-box small { font-size:10px; }
 
@@ -139,7 +141,7 @@
   <!-- Hộp nhập Prompt & Chọn kịch bản -->
   <div class="card">
     <div class="prompt-row">
-      <textarea id="prompt-input" placeholder="Nhập prompt tự do vào đây rồi nhấn Enter để chạy (hoặc bấm nút Kịch bản 1..4 bên dưới để điền nhanh prompt)..."></textarea>
+      <textarea id="prompt-input" placeholder="Nhập prompt tự do vào đây rồi nhấn Enter để chạy (hoặc bấm nút Kịch bản 1..8 bên dưới để điền nhanh prompt)..."></textarea>
       <div class="action-col">
         <button class="btn" id="btn-run">&#9654; Chạy (Enter)</button>
         <div style="display:flex; gap:6px">
@@ -155,7 +157,12 @@
       <button class="chip" data-sc="pll_self_correct">Kịch bản 2: Tự sửa lỗi PLL 168 MHz (Simulator &amp; Gate)</button>
       <button class="chip" data-sc="i2c_choice">Kịch bản 3: Cảm biến 1.8V vs 3.3V (Hỏi phương án)</button>
       <button class="chip" data-sc="node_clarify">Kịch bản 4: Node thiếu thông tin (Hỏi thạch anh HSE)</button>
+      <button class="chip" data-sc="c6_overvoltage_refuse">Kịch bản 5 (C6): Cấp 5 V vào VDD nRF52840 (Từ chối an toàn)</button>
+      <button class="chip" data-sc="c7_path_traversal_block">Kịch bản 6 (C7): Ghi file ../../etc (Guardrail chặn)</button>
+      <button class="chip" data-sc="c8_abstain_nonexistent_reg">Kịch bản 7 (C8): Thanh ghi không tồn tại (Không bịa)</button>
+      <button class="chip" data-sc="c4_timer_conflict">Kịch bản 8 (C4): Thiết kế 4 lượt có xung đột timer (TIM3 dùng chung)</button>
     </div>
+    <div id="sc-note" style="margin-top:8px; font-size:12.5px; color:var(--muted); font-style:italic; display:none"></div>
   </div>
 
   <!-- Thanh trạng thái State Machine -->
@@ -174,7 +181,7 @@
   <!-- Khung thông báo khi vừa bấm Clear -->
   <div id="empty-view" class="empty-state">
     <h3>Sẵn sàng chạy Demo</h3>
-    <div>Hãy gõ prompt vào ô phía trên (hoặc bấm nút <b>Kịch bản 1..4</b> để điền prompt vào ô), sau đó nhấn phím <b>Enter</b> để bắt đầu chạy và quan sát từng bước.</div>
+    <div>Hãy gõ prompt vào ô phía trên (hoặc bấm nút <b>Kịch bản 1..8</b> để điền prompt vào ô), sau đó nhấn phím <b>Enter</b> để bắt đầu chạy và quan sát từng bước.</div>
   </div>
 
   <!-- Bàn quan sát 2 cột (chỉ hiện khi bắt đầu chạy) -->
@@ -275,6 +282,8 @@ let curIdx = 0;
 let timer = null;
 
 function esc(s) { return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+/* args của tool_call thường là chuỗi JSON, nhưng sự kiện tra cứu do runtime tự phát (preflight) là object */
+function argsText(e) { return (e.args && typeof e.args === "object") ? JSON.stringify(e.args) : (e.args || "{}"); }
 async function api(path, body) {
   const r = await fetch(path, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {cache:"no-store"});
   return r.json();
@@ -289,11 +298,19 @@ document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
 
 $("json-close").onclick = e => { e.preventDefault(); $("json-box").style.display = "none"; };
 
+/* Chú thích "Điểm cần quan sát" của kịch bản (lời bình cho người trình bày, KHÔNG phải một phần của prompt) */
+function setNote(sc) {
+  const n = $("sc-note"), t = (sc && sc.note_vi) || "";
+  n.textContent = t; n.style.display = t ? "block" : "none";
+}
+
 /* Bấm nút Kịch bản 1..4: điền prompt vào ô input và focus để người dùng nhấn Enter */
 function selectScenario(id) {
   const sc = SCENARIOS[id];
   if (!sc) return;
+  if (curSc !== sc) { clearInterval(timer); timer = null; curIdx = 0; }  // đổi kịch bản: chạy lại từ đầu, không kế thừa vị trí của kịch bản trước
   curSc = sc;
+  setNote(sc);
   document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.sc === id));
   $("prompt-input").value = sc.goal_vi;
   $("prompt-input").focus();
@@ -308,6 +325,7 @@ async function clearScreen(alsoClearInput = true, alsoClearDisk = true) {
   if (alsoClearInput) {
     $("prompt-input").value = "";
     curSc = null;
+    setNote(null);
     document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
   }
   $("empty-view").style.display = "block";
@@ -317,6 +335,7 @@ async function clearScreen(alsoClearInput = true, alsoClearDisk = true) {
   $("status-pill").style.background = "#475569";
   $("progress-txt").textContent = "Chưa chạy";
   document.querySelectorAll("#sm-bar .sm-node").forEach(n => n.className = "sm-node");
+  document.querySelector('#sm-bar .sm-node[data-st="DONE"]').textContent = "6. DONE";
   if (alsoClearDisk) {
     await api("/api/demo/clear_file", {filename: "pwm_pa8.c"});
     await api("/api/demo/clear_file", {filename: "pwm_pa8_cfg.h"});
@@ -332,6 +351,10 @@ function resolveScenarioFromPrompt(q) {
   for (const sc of Object.values(SCENARIOS)) {
     if (q === sc.goal_vi.trim() || q === sc.goal.trim()) return sc;
   }
+  if (low.includes("pa6") && low.includes("tim3")) return SCENARIOS["c4_timer_conflict"];
+  if (low.includes("vbus") && low.includes("nrf52840")) return SCENARIOS["c6_overvoltage_refuse"];
+  if (low.includes("../") || low.includes("cron.d")) return SCENARIOS["c7_path_traversal_block"];
+  if (low.includes("ledc_lsch8")) return SCENARIOS["c8_abstain_nonexistent_reg"];
   if (low.includes("pa8") && (low.includes("pwm") || low.includes("pwm_pa8"))) return SCENARIOS["pwm_approval"];
   if (low.includes("168") && low.includes("pll")) return SCENARIOS["pll_self_correct"];
   if (low.includes("bme280") || low.includes("1.8")) return SCENARIOS["i2c_choice"];
@@ -344,6 +367,7 @@ async function runLiveCustomPrompt(q) {
   $("empty-view").style.display = "none";
   $("run-view").style.display = "grid";
   curSc = {id: "live", run_id: "live...", goal: q, goal_vi: q, events: [], answer: "", files: {}};
+  setNote(null);
   renderState(0);
   $("status-pill").textContent = "⚙ Đang gọi LLM thật (/api/runs)...";
   $("status-pill").style.background = "#2563eb";
@@ -372,7 +396,17 @@ async function runLiveCustomPrompt(q) {
   }
 }
 
-/* Chạy mô phỏng từng bước tới điểm dừng tiếp theo (Interrupt hoặc kết thúc) */
+/* Điểm dừng kế tiếp: ngay sau interrupt_raised, hoặc ngay trước tin nhắn của lượt mới (hội thoại nhiều lượt) */
+function nextStop(from) {
+  const evs = curSc.events;
+  for (let i = from; i < evs.length; i++) {
+    if (evs[i].type === "interrupt_raised") return i + 1;
+    if (i > from && evs[i].type === "run_started" && (evs[i].turn || 0) > 0) return i;
+  }
+  return evs.length;
+}
+
+/* Chạy mô phỏng từng bước tới điểm dừng tiếp theo (Interrupt, ranh giới lượt hoặc kết thúc) */
 function startRunAnimation() {
   const q = $("prompt-input").value.trim();
   if (!q) { $("prompt-input").focus(); return; }
@@ -382,19 +416,19 @@ function startRunAnimation() {
     return;
   }
   if (curSc !== matched) { curSc = matched; curIdx = 0; }
+  playCurrent();
+}
+
+/* Chạy tiếp kịch bản hiện tại mà không đọc lại ô prompt (dùng cho Approve / Reject / Gửi tin nhắn lượt tiếp theo) */
+function playCurrent() {
+  setNote(curSc);
   clearInterval(timer);
   $("empty-view").style.display = "none";
   $("run-view").style.display = "grid";
 
   if (curIdx >= curSc.events.length) curIdx = 0;
 
-  let stopAt = curSc.events.length;
-  for (let i = curIdx; i < curSc.events.length; i++) {
-    if (curSc.events[i].type === "interrupt_raised") {
-      stopAt = i + 1;
-      break;
-    }
-  }
+  const stopAt = nextStop(curIdx);
 
   timer = setInterval(() => {
     if (curIdx < stopAt) {
@@ -412,14 +446,7 @@ function skipToNextMilestone() {
   clearInterval(timer); timer = null;
   $("empty-view").style.display = "none";
   $("run-view").style.display = "grid";
-  for (let i = curIdx; i < curSc.events.length; i++) {
-    if (curSc.events[i].type === "interrupt_raised") {
-      curIdx = i + 1;
-      renderState(curIdx);
-      return;
-    }
-  }
-  curIdx = curSc.events.length;
+  curIdx = nextStop(curIdx);
   renderState(curIdx);
 }
 
@@ -429,15 +456,23 @@ function renderState(upto) {
   $("progress-txt").textContent = `Bước ${evs.length} / ${curSc.events.length} (Run ID: ${curSc.run_id})`;
 
   let plan = [];
-  let board = {chip:"—", pkg:"—", vdd:"—", clock:"—", version:0, pins:[], reqs:[], drcOk:null};
+  let board = {chip:"—", pkg:"—", vdd:"—", clock:"—", version:0, pins:[], reqs:[], reqsStale:false, drcOk:null};
   let sim = null;
   let gate = null;
   let pendingInt = null, resolvedInt = null;
   let fileWritten = null;
   let done = false;
+  let doneStatus = null;
+  let turnNo = 0, curRunId = curSc.run_id;
   let sm = "INTAKE";
 
   for (const e of evs) {
+    if (e.type === "run_started") {
+      turnNo = e.turn || 0; curRunId = e.run_id || curRunId;
+      if (turnNo > 0) {  // lượt mới của hội thoại nhiều lượt: BoardState và kế hoạch được giữ, phần còn lại của lượt trước được làm mới
+        done = false; doneStatus = null; gate = null; sim = null; pendingInt = null; resolvedInt = null; fileWritten = null; sm = "INTAKE";
+      }
+    }
     if (e.type === "plan_updated" && Array.isArray(e.plan)) {
       plan = e.plan;
       sm = "PLAN";
@@ -445,7 +480,7 @@ function renderState(upto) {
     if (e.type === "tool_call") {
       if (!done) sm = "ACT";
       let args = {}, sum = {};
-      try { args = JSON.parse(e.args || "{}"); } catch {}
+      try { args = JSON.parse(argsText(e)); } catch {}
       try { sum = JSON.parse((e.summary || "{}").replace(/ \.\.\.$/, "")); } catch {}
 
       if (e.tool === "set_target") {
@@ -465,7 +500,9 @@ function renderState(upto) {
       }
       if (e.tool === "set_requirements" && Array.isArray(args.requirements)) {
         board.version = sum.version || (board.version + 1);
-        board.reqs = args.requirements;
+        board.reqs = args.requirements; board.reqsStale = false;
+      } else if (e.tool === "set_requirements" && e.ok) {
+        board.reqsStale = true;  // args của lệnh này bị cắt trong bản ghi: không biết trạng thái mới nhất, không suy diễn
       }
       if (e.tool === "run_drc") {
         board.drcOk = e.ok;
@@ -478,10 +515,17 @@ function renderState(upto) {
     if (e.type === "gate_result") { gate = e; sm = "GATE"; }
     if (e.type === "done") {
       done = true;
+      doneStatus = e.status;
       sm = "DONE";
       plan = plan.map(s => ({...s, status: "done"}));
     }
   }
+  // Yêu cầu bị Guardrail chặn (blocked) hoặc Agent từ chối an toàn (refused) trước khi sinh mã: không có Gate/Simulator
+  const stopped = done && (doneStatus === "refused" || doneStatus === "blocked");
+  // Hội thoại nhiều lượt: totalTurns > 1; nextEv != null khi vừa xong một lượt và đang chờ kỹ sư gửi tin nhắn kế tiếp
+  const totalTurns = curSc.events.filter(e => e.type === "run_started").length;
+  const nextEv = (upto < curSc.events.length && curSc.events[upto].type === "run_started" && (curSc.events[upto].turn || 0) > 0) ? curSc.events[upto] : null;
+  if (totalTurns > 1) $("progress-txt").textContent = `Bước ${evs.length} / ${curSc.events.length} (Lượt ${turnNo + 1}/${totalTurns} • Run ID: ${curRunId})`;
 
   // Cập nhật thanh State Machine
   const order = ["INTAKE","PLAN","ACT","INTERRUPTED","GATE","DONE"];
@@ -490,6 +534,12 @@ function renderState(upto) {
     const st = n.dataset.st;
     const pos = order.indexOf(st);
     n.className = "sm-node";
+    if (st === "DONE") n.textContent = stopped ? (doneStatus === "blocked" ? "6. BLOCKED" : "6. REFUSED") : "6. DONE";
+    if (stopped) {
+      if (st === "INTAKE") n.classList.add("lit");
+      if (st === "DONE") n.classList.add("stop");
+      return;
+    }
     if (pos < curPos) n.classList.add("lit");
     if (st === sm) {
       if (sm === "INTERRUPTED") n.classList.add("wait");
@@ -499,7 +549,15 @@ function renderState(upto) {
   });
 
   const pill = $("status-pill");
-  if (sm === "INTERRUPTED") { pill.textContent = "⏸ Đang dừng chờ kỹ sư Phê duyệt (INTERRUPTED)"; pill.style.background = "#d97706"; }
+  if (nextEv) {
+    pill.textContent = `💬 Xong lượt ${turnNo + 1}/${totalTurns} — chờ kỹ sư gửi tin nhắn tiếp theo`;
+    pill.style.background = "#164B78";
+  }
+  else if (stopped) {
+    pill.textContent = doneStatus === "blocked" ? "⛔ Guardrail đã chặn yêu cầu (BLOCKED)" : "⛔ Agent từ chối vì an toàn phần cứng (REFUSED)";
+    pill.style.background = "#b91c1c";
+  }
+  else if (sm === "INTERRUPTED") { pill.textContent = "⏸ Đang dừng chờ kỹ sư Phê duyệt (INTERRUPTED)"; pill.style.background = "#d97706"; }
   else if (sm === "DONE") { pill.textContent = "✔ Hoàn tất (Gate G1–G5 PASS)"; pill.style.background = "#16a34a"; }
   else { pill.textContent = "⚙ Đang chạy: " + sm; pill.style.background = "#2563eb"; }
 
@@ -509,7 +567,9 @@ function renderState(upto) {
     <div class="plan-item ${esc(s.status)}">
       <span>${esc(s.title)}</span>
       <span class="tag ${esc(s.status)}">${esc(s.status)}</span>
-    </div>`).join("") : '<div style="color:var(--muted); font-size:12.5px">Đang khởi tạo kế hoạch...</div>';
+    </div>`).join("") : `<div style="color:var(--muted); font-size:12.5px">${done
+      ? (stopped ? "Không lập kế hoạch: yêu cầu bị chặn ngay tại INTAKE." : "Phiên chạy này không có bước kế hoạch: agent tra cứu rồi trả lời trực tiếp.")
+      : "Đang khởi tạo kế hoạch..."}</div>`;
 
   // 2. Vẽ Board State
   $("board-badge").textContent = "v" + board.version;
@@ -518,18 +578,22 @@ function renderState(upto) {
     <div class="kv-row"><span>Điện áp VDD</span><b>${esc(board.vdd)}</b></div>
     <div class="kv-row"><span>Xung nhịp</span><b>${esc(board.clock)}</b></div>
     <div class="kv-row"><span>Chân đã cấp</span><b>${board.pins.length ? esc(board.pins.join(", ")) : "Chưa cấp"}</b></div>
-    <div class="kv-row"><span>Yêu cầu (Req)</span><b>${board.reqs.length ? esc(board.reqs.map(r => `${r.id}: ${r.status || "pending"} (${r.freq_hz || ""} Hz)`).join(", ")) : "Chưa ghi"}</b></div>
+    <div class="kv-row"><span>Yêu cầu (Req)</span><b>${board.reqs.length ? esc(board.reqs.map(r => `${r.id}: ${r.status || "pending"}${r.freq_hz ? ` (${r.freq_hz} Hz)` : ""}`).join(", ")) + (board.reqsStale ? ' <span style="color:var(--amber); font-family:inherit; font-size:11px">(có thể chưa phải trạng thái mới nhất: tham số lệnh cập nhật bị cắt trong bản ghi)</span>' : "") : "Chưa ghi"}</b></div>
     <div class="kv-row"><span>Kiểm tra DRC</span><b>${board.drcOk === true ? '<span style="color:var(--teal)">8/8 luật PASS</span>' : (board.drcOk === false ? '<span style="color:var(--amber)">Chờ cập nhật Req</span>' : '—')}</b></div>
   `;
 
   // 3. Vẽ Gate G1–G5 & Simulator
   document.querySelectorAll("#gate-row .gate-box").forEach(b => {
     const g = b.dataset.g;
-    b.className = "gate-box";
-    if (gate && gate.gates && gate.gates[g]) b.classList.add(gate.gates[g] === "pass" ? "pass" : "fail");
+    b.className = "gate-box"; b.title = "";
+    if (gate && gate.gates && gate.gates[g]) {  // "na" = cổng không áp dụng cho loại câu hỏi này (vd. G2 mô phỏng với câu tra cứu)
+      const v = gate.gates[g];
+      b.classList.add(v === "pass" ? "pass" : (v === "na" ? "na" : "fail"));
+      b.title = `${g}: ${v}`;
+    }
   });
   const gb = $("gate-badge");
-  if (!gate) { gb.textContent = "Chờ finish"; gb.className = "tag todo"; }
+  if (!gate) { gb.textContent = stopped ? "Không chạy (bị chặn trước Gate)" : "Chờ finish"; gb.className = "tag todo"; }
   else if (gate.passed) { gb.textContent = "G1–G5 PASS"; gb.className = "tag pass"; }
   else { gb.textContent = "Bị chặn (Tự sửa)"; gb.className = "tag fail"; }
 
@@ -540,7 +604,7 @@ function renderState(upto) {
   } else if (sim && !sim.pass) {
     ss.innerHTML = `<b style="color:var(--red)">&#10006; Simulator FAIL:</b> <code>${esc((sim.violations||[]).join(", "))}</code> &rarr; Agent tự sửa ở bước kế tiếp.`;
   } else {
-    ss.textContent = "Chưa chạy mô phỏng thanh ghi.";
+    ss.textContent = stopped ? "Không chạy mô phỏng thanh ghi: yêu cầu bị chặn trước khi sinh mã." : "Chưa chạy mô phỏng thanh ghi.";
   }
 
   // 4. Vẽ Thẻ Interrupt (nếu đang dừng chờ người)
@@ -564,7 +628,7 @@ function renderState(upto) {
     }
     html += `<div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap">
       <button class="btn teal" id="btn-approve">&#10004; Phê duyệt (Approve) &amp; Cho Agent chạy tiếp</button>
-      ${pendingInt.kind === "approval" ? `<button class="btn red" id="btn-reject">&#10006; Từ chối + Yêu cầu đổi sang file .h (Reject &rarr; Replan)</button>` : ""}
+      ${pendingInt.kind === "approval" && curSc.id !== "pwm_reject_replan" ? `<button class="btn red" id="btn-reject">&#10006; Từ chối + Yêu cầu đổi sang file .h (Reject &rarr; Replan)</button>` : ""}
     </div></div>`;
     ib.innerHTML = html;
 
@@ -573,16 +637,25 @@ function renderState(upto) {
         await api("/api/demo/write", {filename: p.filename, content: fullFile});
         refreshWorkspaceBadge();
       }
-      startRunAnimation();
+      playCurrent();
     };
     if ($("btn-reject")) {
       $("btn-reject").onclick = () => {
         curSc = SCENARIOS["pwm_reject_replan"];
         const idx = curSc.events.findIndex(e => e.type === "resumed" && e.decision === "reject");
         curIdx = idx >= 0 ? idx : 54;
-        startRunAnimation();
+        playCurrent();
       };
     }
+  } else if (nextEv) {
+    const nt = nextEv.turn || 0;
+    const msg = (curSc.turns_vi && curSc.turns_vi[nt]) || nextEv.goal;
+    ib.innerHTML = `<div class="int-banner" style="border-color:var(--navy); background:var(--pale-blue)">
+      <div class="int-title" style="color:var(--navy)"><span>&#128172; LƯỢT ${nt + 1}/${totalTurns} — KỸ SƯ NHẮN TIẾP</span><span class="tag doing">CHỜ GỬI</span></div>
+      <div style="margin-top:6px; font-weight:700">${esc(msg)}</div>
+      <div style="margin-top:10px"><button class="btn" id="btn-next-turn">&#9654; Gửi tin nhắn này cho Agent</button></div>
+    </div>`;
+    $("btn-next-turn").onclick = playCurrent;
   } else if (resolvedInt) {
     ib.innerHTML = `<div class="int-banner resolved" style="padding:10px 14px">
       <div class="int-title" style="font-size:13px"><span>&#10004; Đã phản hồi Interrupt (${esc(resolvedInt.res.decision.toUpperCase())}) — Agent đã khôi phục từ Checkpoint và chạy tiếp</span><span class="tag pass">RESUMED</span></div>
@@ -591,14 +664,22 @@ function renderState(upto) {
 
   // 5. Vẽ Kết quả cuối (khi DONE)
   const rb = $("result-box"); rb.innerHTML = "";
-  if (done) {
+  if (stopped) {
+    rb.innerHTML = `<div class="card" style="border-color:#fca5a5; background:#fef2f2">
+      <div class="card-hdr">
+        <h3 class="card-title" style="color:var(--red)">&#9940; ${doneStatus === "blocked" ? "Guardrail đã chặn yêu cầu" : "Agent từ chối thực hiện"} — không sinh mã, không ghi tệp</h3>
+        <span class="tag fail">${esc(doneStatus)}</span>
+      </div>
+      <pre class="codebox" style="max-height:260px; margin-top:4px; white-space:pre-wrap">${esc(curSc.answer)}</pre>
+    </div>`;
+  } else if (done) {
     const fileNote = fileWritten ? `<span class="tag pass">Đã ghi: workspace_out/${esc(fileWritten.filename)} (${fileWritten.bytes} bytes)</span>` : `<span class="tag pass">Gate G1–G5 PASS</span>`;
     rb.innerHTML = `<div class="card" style="border-color:#86efac; background:#f0fdf4">
       <div class="card-hdr">
-        <h3 class="card-title" style="color:var(--teal)">&#10004; Kết quả Thiết kế &amp; Mã C đã kiểm chứng</h3>
+        <h3 class="card-title" style="color:var(--teal)">&#10004; ${esc(curSc.result_title || "Kết quả Thiết kế & Mã C đã kiểm chứng")}${totalTurns > 1 ? ` — lượt ${turnNo + 1}/${totalTurns}` : ""}</h3>
         ${fileNote}
       </div>
-      <pre class="codebox" style="max-height:260px; margin-top:4px">${esc(curSc.answer)}</pre>
+      <pre class="codebox" style="max-height:260px; margin-top:4px">${esc((curSc.turn_answers && curSc.turn_answers[turnNo]) || curSc.answer)}</pre>
     </div>`;
   }
 
@@ -608,12 +689,35 @@ function renderState(upto) {
   visibleEvs.forEach(e => {
     const card = document.createElement("div");
     let cls = "step-card", title = e.type, desc = "";
-    if (e.type === "run_started") { title = "Khởi tạo phiên chạy (INTAKE)"; desc = e.goal; }
+    if (e.type === "run_started") {
+      title = totalTurns > 1 ? `Lượt ${(e.turn || 0) + 1}/${totalTurns}: ${e.turn ? "kỹ sư nhắn tiếp" : "khởi tạo phiên chạy (INTAKE)"}` : "Khởi tạo phiên chạy (INTAKE)";
+      desc = e.goal;
+    }
+    else if (e.type === "guardrail" && e.stage === "hardware_safety") {
+      const rq = e.request || {};
+      if (e.blocked) {
+        cls += " err";
+        title = `Guardrail an toàn phần cứng: ${String(e.verdict || "refuse").toUpperCase()}`;
+        desc = `Yêu cầu ${rq.text || (rq.volts + " V")} (${rq.target || "?"}) vượt giới hạn ${e.limit_V} V`;
+      } else {
+        title = "Guardrail an toàn phần cứng"; desc = `PASS — ${e.verdict || "trong giới hạn"}`;
+      }
+    }
+    else if (e.type === "guardrail" && e.blocked) {
+      cls += " err";
+      title = "Guardrail CHẶN yêu cầu đầu vào";
+      desc = "flags: " + ((e.flags || []).join(", ") || "—");
+    }
     else if (e.type === "guardrail") { title = "Guardrail kiểm tra an toàn đầu vào"; desc = "PASS — Không có prompt injection / quá áp"; }
+    else if (e.type === "refused") {
+      cls += " err";
+      title = "Agent dừng, không thực hiện yêu cầu (refused)";
+      desc = `lý do: ${e.reason}`;
+    }
     else if (e.type === "plan_updated") { title = "Lập / Cập nhật kế hoạch (update_plan)"; desc = e.rationale || `${(e.plan||[]).length} bước`; }
     else if (e.type === "tool_call") {
       title = `Gọi công cụ: ${e.tool}`;
-      desc = e.args || "";
+      desc = e.args ? argsText(e) : "";
       if (!e.ok) cls += " err";
     }
     else if (e.type === "sim_result") {
@@ -646,13 +750,18 @@ function renderState(upto) {
       title = `Verification Gate G1–G5: ${e.passed ? "PASS" : "REJECTED"}`;
       desc = JSON.stringify(e.gates);
     }
+    else if (e.type === "finish") {
+      cls += e.accepted ? " sim-ok" : " err";
+      title = `Agent gọi finish (lần ${e.attempt || 1}): ${e.accepted ? "Gate chấp nhận" : "Gate từ chối → agent phải sửa"}`;
+      desc = JSON.stringify(e.gate || {});
+    }
     else if (e.type === "done") {
-      cls += " sim-ok";
+      cls += (e.status === "refused" || e.status === "blocked") ? " err" : " sim-ok";
       title = "Hoàn tất phiên chạy (DONE)";
       desc = `status = ${e.status}`;
     }
     card.className = cls;
-    card.innerHTML = `<div class="step-num">Step ${e.step}</div>
+    card.innerHTML = `<div class="step-num">${totalTurns > 1 ? `L${(e.turn || 0) + 1}·S${e.step}` : `Step ${e.step}`}</div>
                       <div class="step-body"><div class="step-title">${esc(title)}</div><div class="step-desc">${esc(desc)}</div></div>`;
     card.onclick = () => {
       $("json-box").style.display = "block";

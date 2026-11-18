@@ -16,6 +16,7 @@ S2D_SOURCE = ROOT / "snapshots" / "agent_p1" / "agent" / "llm.py"      # S2D = v
 S3P4_SOURCE = ROOT / "snapshots" / "agent_p4" / "agent" / "prompts" / "system_v3.md"      # S3@P4: prompt là tệp markdown của snapshot agent_p4
 
 S3P5_SOURCE = Path(os.environ.get("EVAL_SNAPSHOT_P5") or ROOT / "snapshots" / "agent_p5") / "agent" / "prompts" / "system_v3.md"      # S3@P5 (EVAL_SNAPSHOT_P5 chỉ cho lượt pilot)
+S3P7_SOURCE = Path(os.environ.get("EVAL_SNAPSHOT_P7") or ROOT / "snapshots" / "agent_p7") / "agent" / "prompts" / "system_v3.md"      # S3@P7 (EVAL_SNAPSHOT_P7 chỉ cho lượt pilot)
 
 
 # Prompt hệ thống của S0 (Direct LLM). Đặt ở đây (không import openai) để chấm điểm không cần client LLM.
@@ -42,4 +43,6 @@ def load_system_prompts() -> dict[str, str]:
         out["S3@P4"] = S3P4_SOURCE.read_text(encoding="utf-8")
     if S3P5_SOURCE.is_file():
         out["S3@P5"] = S3P5_SOURCE.read_text(encoding="utf-8")
+    if S3P7_SOURCE.is_file():
+        out["S3@P7"] = S3P7_SOURCE.read_text(encoding="utf-8")
     return out
