@@ -120,7 +120,7 @@ class AgentRuntime:
             return
         try:
             board = self._board_state()
-            for item in lsn.lessons_from_run(state.artifacts, self._infer_chip(state, board), state.run_id):
+            for item in lsn.lessons_from_run(state.artifacts, self._infer_chip(state, board), state.run_id, state.observations):
                 row = self._lessons().add(**item)
                 if row:
                     state.used["lessons_written"] = state.used.get("lessons_written", 0) + 1

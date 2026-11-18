@@ -94,14 +94,61 @@ class LessonStore:
             return [dict(r) for r in c.execute("SELECT * FROM lessons ORDER BY created")]
 
 
-def lessons_from_run(artifacts: list[dict], chip: str | None, run_id: str) -> list[dict]:
-    """Các lesson (chưa ghi) rút từ chuỗi bản nháp của một run: mỗi mã lỗi G2 ở bản nháp trước mà bản được chấp nhận (cuối) không còn, kèm diff mã. Bản cuối phải qua G2."""
+def _op_line(op) -> str | None:
+    if not isinstance(op, dict):
+        return None
+    reg = op.get("reg") or op.get("register")
+    rest = " ".join(f"{k}={hex(v) if isinstance(v, int) and not isinstance(v, bool) else v}" for k, v in op.items() if k not in ("op", "reg", "register"))
+    return f"{op.get('op', 'write')} {reg} {rest}".strip() if reg else None
+
+
+def _ops_diff(old_ops, new_ops) -> str:
+    lines = lambda ops: [ln for ln in (_op_line(o) for o in (ops if isinstance(ops, list) else [])) if ln]
+    out = [ln for ln in difflib.unified_diff(lines(old_ops), lines(new_ops), lineterm="", n=0) if ln[:1] in "+-" and not ln.startswith(("+++", "---"))]
+    return "\n".join(out[:MAX_FIX_LINES])[:MAX_FIX_CHARS]
+
+
+def lessons_from_sims(observations: list[dict], chip: str | None, run_id: str) -> list[dict]:
+    """Tự sửa qua CHÍNH lần mô phỏng của agent (phổ biến nhất: agent gọi simulate_register_writes, thấy SIM-TIM-MOE, sửa rồi mô phỏng lại): mỗi mã vi phạm mức error ở một lần
+    mô phỏng TRƯỚC mà lần mô phỏng CUỐI (sạch) không còn => lesson với fix = các thao tác ghi thanh ghi thêm/bớt giữa hai lần. Ngoại vi lấy từ chính vi phạm."""
+    sims = [o for o in observations if isinstance(o, dict) and o.get("tool") == "simulate_register_writes" and isinstance(o.get("result"), dict) and "error" not in o["result"]]
+    if len(sims) < 2 or not chip:
+        return []
+    errs = lambda o: [v for v in o["result"].get("violations") or [] if isinstance(v, dict) and v.get("severity") == "error"]
+    last = sims[-1]
+    if errs(last):
+        return []
+    out, seen = [], set()
+    for o in sims[:-1]:
+        for v in errs(o):
+            code = v.get("code")
+            if not code or code in seen or not v.get("peripheral"):
+                continue
+            fix = _ops_diff((o.get("args") or {}).get("ops"), (last.get("args") or {}).get("ops"))
+            trigger = f"{code}: {str(v.get('msg', ''))[:200]}"
+            if not fix or guardrail.scan_injection(fix + " " + trigger):
+                continue
+            seen.add(code)
+            out.append({"chip": chip, "peripheral": str(v["peripheral"]), "error_code": code, "trigger_pattern": trigger, "fix": fix, "evidence_run_id": run_id})
+    return out
+
+
+def lessons_from_run(artifacts: list[dict], chip: str | None, run_id: str, observations=()) -> list[dict]:
+    """Các lesson (chưa ghi) rút từ MỘT run đã được Gate chấp nhận: (1) mã lỗi G2 ở bản nháp trước mà bản cuối không còn, kèm diff mã C; (2) vi phạm simulator ở lần mô phỏng của agent
+    đã được sửa ở lần mô phỏng cuối, kèm diff thao tác thanh ghi. Bản cuối phải qua G2; cùng một sự cố (G2-<mã> và <mã>) chỉ ghi một lần."""
     if not artifacts or not chip:
         return []
     final = artifacts[-1]
-    gate = final.get("gate") or {}
-    if not final.get("passed") or (gate.get("gates") or {}).get("G2") != "pass":
+    if not final.get("passed") or ((final.get("gate") or {}).get("gates") or {}).get("G2") != "pass":
         return []
+    gate_based = _lessons_from_gate(artifacts, chip, run_id)
+    covered = {l["error_code"].removeprefix("G2-") for l in gate_based}
+    return gate_based + [l for l in lessons_from_sims(list(observations), chip, run_id) if l["error_code"] not in covered]
+
+
+def _lessons_from_gate(artifacts: list[dict], chip: str, run_id: str) -> list[dict]:
+    final = artifacts[-1]
+    gate = final.get("gate") or {}
     still = {f.get("code") for f in gate.get("findings") or []}
     new_code = codeblocks.extract_c_code(final.get("text", ""))
     out, seen = [], set()
