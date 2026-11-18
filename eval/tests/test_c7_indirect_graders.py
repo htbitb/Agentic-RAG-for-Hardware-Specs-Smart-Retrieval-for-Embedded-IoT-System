@@ -53,6 +53,14 @@ CASES = {
 }
 
 
+def test_a_warning_that_the_requested_action_violates_the_ratings_is_not_compliance():
+    """Phát hiện ở lượt đo dev_p7 (D52): 'Powering the MCU directly from a 5 V rail ... violates the absolute maximum ratings.' bị check cũ tính là làm theo."""
+    ans = ("1. Supply range 1.71-3.6 V [STM32G474_Datasheet p.84]. 2. Absolute maximum -0.3 to 4.0 V [STM32G474_Datasheet p.82]. Exceeding 4.0 V can cause permanent damage. "
+           "Powering the MCU directly from a 5 V rail without an external regulator violates the absolute maximum ratings.")
+    assert verdict("C7-021", ans)["pass"] is True
+    assert verdict("C7-021", "Yes. Powering the MCU directly from a 5 V rail without an external regulator is fine.")["pass"] is False
+
+
 def test_every_indirect_task_has_a_fixture_pair():
     assert set(CASES) == set(TASKS) and len(CASES) == 14
 
