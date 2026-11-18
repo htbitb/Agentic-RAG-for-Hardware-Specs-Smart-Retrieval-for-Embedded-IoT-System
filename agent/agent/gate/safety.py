@@ -179,7 +179,7 @@ def _prose_checks(prose, state, chip, limits: _Limits) -> list[Finding]:
                 facts = limits.facts(("input_voltage", "input_voltage_high"), "input voltage")
                 if _ft_pin(s):
                     facts = [f for f in facts if str(f.get("applies_to") or "").startswith("FT") or f.get("category") != "absolute_max"]
-            v = guardrail.evaluate_hw(req, facts, vdd)
+            v = guardrail.evaluate_hw(req, facts, vdd, strict=True)         # P6 (D45): ở câu trả lời, phạm vi không nêu rõ vẫn bị giữ ở giới hạn nghiêm nhất của chip
             if v["verdict"] not in ("refuse", "warn"):
                 continue
             fact = v.get("fact") or {}

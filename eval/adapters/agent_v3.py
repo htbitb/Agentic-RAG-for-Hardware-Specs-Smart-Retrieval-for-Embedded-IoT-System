@@ -18,13 +18,15 @@ from eval.schema import Task, TurnResult
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT_P4 = ROOT / "snapshots" / "agent_p4"
 SNAPSHOT_P5 = ROOT / "snapshots" / "agent_p5"
+SNAPSHOT_P7 = ROOT / "snapshots" / "agent_p7"
 SNAPSHOT = SNAPSHOT_P4
 WORKER = Path(__file__).with_name("agent_v3_worker.py")
 CACHE_MODULE = ROOT / "eval" / "llm_cache.py"
-ABLATION_VARIANTS = {"A1": "-Planner", "A2": "-BoardState", "A3": "-Sandbox", "A4": "-Reflection", "A6": "-HITL"}
+INTERCEPTOR_MODULE = ROOT / "eval" / "adapters" / "interceptor.py"
+ABLATION_VARIANTS = {"A1": "-Planner", "A2": "-BoardState", "A3": "-Sandbox", "A4": "-Reflection", "A5": "-Lessons", "A6": "-HITL", "A7": "-Guardrail"}
 # biến môi trường có thể chuyển hướng DỮ LIỆU hoặc TRẠNG THÁI của agent — không để lọt từ shell vào worker (worker tự đặt các biến *_DB/AGENT_* của run);
 # tiền tố bị lọc cả họ: một AGENT_ABLATIONS lạc trong shell sẽ âm thầm đổi hệ đo thành một biến thể ablation
-_SCRUB = ("HW_SPECS_DB", "BOARD_STATE_DB", "BOARD_STATE_PROJECT", "HWMODEL_DATA_DIR", "MEMORY_DB", "AUDIT_LOG", "SANDBOX_DIR")
+_SCRUB = ("HW_SPECS_DB", "BOARD_STATE_DB", "BOARD_STATE_PROJECT", "HWMODEL_DATA_DIR", "MEMORY_DB", "AUDIT_LOG", "SANDBOX_DIR", "LESSONS_DB")
 _SCRUB_PREFIXES = ("TEXT_INDEX_", "AGENT_")
 
 
@@ -80,9 +82,12 @@ class AgentV3Adapter(AdapterBase):
             env["LLM_API_KEY"] = "replay-only-no-network"          # replay không gọi API; chỉ để runtime không rơi về SimulatedLLM
         self.proc = JsonlProcess(self.cmd, env, cwd=run_dir, log_path=run_dir / "worker.log")
         self.proc.start()
+        sid = f"{task.id}-s{seed}" + ("" if self.deterministic_session else f"-{uuid.uuid4().hex[:6]}")
+        self._session_id, self._fresh_sessions, self._n_sent = sid, bool(task.fresh_sessions), 0
         init = {"snapshot": str(self.snapshot), "run_dir": str(run_dir), "task_id": task.id, "seed": seed,
-                "session_id": f"{task.id}-s{seed}" + ("" if self.deterministic_session else f"-{uuid.uuid4().hex[:6]}"), "cache_module": str(CACHE_MODULE),
-                "llm_cache": {"mode": self.cache_mode, "path": self.cache_path}, "ablations": list(self.ablations), "budgets": self.budgets}
+                "session_id": sid, "cache_module": str(CACHE_MODULE),
+                "llm_cache": {"mode": self.cache_mode, "path": self.cache_path}, "ablations": list(self.ablations), "budgets": self.budgets,
+                "interceptor_module": str(INTERCEPTOR_MODULE), "tool_rules": list(task.tool_rules)}
         try:
             self.proc.write(init)
             ack = json.loads(self.proc.readline(self.startup_timeout))
@@ -117,6 +122,9 @@ class AgentV3Adapter(AdapterBase):
 
     # ----------------------------------------------------------------------- turn
     def send(self, user_msg: str) -> TurnResult:
+        n, self._n_sent = self._n_sent, self._n_sent + 1
+        if getattr(self, "_fresh_sessions", False):                  # P7: phiên mới mỗi lượt (không lịch sử/Board State chung), Lesson memory của run vẫn chung
+            return self._request({"user": user_msg, "session": f"{self._session_id}-t{n}"})
         return self._request({"user": user_msg})
 
     def resume(self, interrupt_id: str, decision: str, payload: dict | None = None) -> TurnResult:
@@ -127,6 +135,9 @@ class AgentV3Adapter(AdapterBase):
         return self._request({"resume": {"run_id": self._run_id, "interrupt_id": interrupt_id, "decision": decision, "payload": payload or {}}})
 
     _run_id: str | None = None
+    _session_id: str = ""
+    _fresh_sessions: bool = False
+    _n_sent: int = 0
 
     def _request(self, req: dict) -> TurnResult:
         if self._dead or self.proc is None:
@@ -155,6 +166,7 @@ class AgentV3Adapter(AdapterBase):
         seen.update(tokens_in=int(u.get("tokens_in", 0)), tokens_out=int(u.get("tokens_out", 0)), tool_calls=int(u.get("tool_calls", 0)))
         self.add_usage(max(d_in, 0), max(d_out, 0), llm_calls=int(res.get("llm_calls", 0)), tool_calls=max(d_tool, 0))
         self.trace.extend(e for e in res.get("events") or [] if isinstance(e, dict))
+        self.trace.extend({"type": "tool_intercept", **e} for e in res.get("tool_events") or [] if isinstance(e, dict))      # P6: hook C7 v2 / P9 đã tác động lên kết quả tool nào
         self._board_state = res.get("board_state")
         self.files.update(res.get("files") or {})
         flags = res.get("flags") or []

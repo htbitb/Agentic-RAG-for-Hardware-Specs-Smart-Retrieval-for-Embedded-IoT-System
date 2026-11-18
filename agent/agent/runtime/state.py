@@ -25,6 +25,7 @@ class Budgets:
     usd: float = 0.50          # theo giá cấu hình (config.PRICE_*); giá thật của gateway chưa biết, nên đây chủ yếu là lưới an toàn
     wall_s: float = 600.0      # giây hoạt động (không tính thời gian chờ giữa các lần resume, chờ người trả lời hay chờ hạ tầng LLM); phải nhỏ hơn timeout của adapter (900 s)
     ask_human: int = 3         # số lần `ask_human` tối đa mỗi run (P5; chống lạm dụng việc hỏi, plan §4 W7)
+    files: int = 3             # số file ghi (write_config_file đã được duyệt và ghi) tối đa mỗi run (P6, plan §4 W8 mục 3; policy WRITE_QUOTA)
 
     @classmethod
     def from_overrides(cls, overrides: dict | None) -> "Budgets":
@@ -64,6 +65,7 @@ class AgentState:
     pending_interrupt: dict | None = None                        # P5: {id, kind, tool, tool_call_id, question, why_needed, options, payload} khi status == INTERRUPTED
     interrupts: list = field(default_factory=list)               # lịch sử interrupt của run: {id, kind, status: pending|resolved, decision, ...}
     human_answers: list = field(default_factory=list)            # câu trả lời của người (clarify/choice): bằng chứng loại (c) cho Gate
+    policy: dict = field(default_factory=dict)                   # P6: trạng thái Policy Engine {taint: [câu bị gắn cờ], flagged_calls, denied: {mã: số lần}} (policy.new_state())
     escalation_asked: bool = False                               # đã mời ask_human khi leo thang (một lần mỗi run)
     invite_open: bool = False                                    # đang chờ agent phản hồi lời mời ask_human của lần leo thang đầu
     notices: list = field(default_factory=list)                  # tin nhắn runtime chờ chèn vào hội thoại sau khi các tool call của lô đã có kết quả

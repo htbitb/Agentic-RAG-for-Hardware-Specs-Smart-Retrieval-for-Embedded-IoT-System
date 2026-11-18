@@ -57,7 +57,7 @@ def s2d_rows():
 
 # ------------------------------------------------------------------ đăng ký hệ
 def test_s3_p4_is_registered_before_the_generic_s3_with_its_title_and_pairs():
-    assert report.SYSTEM_ORDER == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5", "S3"]
+    assert report.SYSTEM_ORDER == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5", "S3@P7", "S3"]
     assert report.SYSTEM_TITLES["S3@P4"] == "S3@P4 (Agent v3, runtime+Gate P4)"
     assert ("S3@P4", "S2D") in report.PAIRS and ("S3@P4", "S0") in report.PAIRS
 

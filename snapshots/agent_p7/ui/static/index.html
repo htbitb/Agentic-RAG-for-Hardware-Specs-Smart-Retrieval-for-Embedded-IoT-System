@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hardware Co-Design Agent v2 — Live Demo</title>
+<style>
+  :root {
+    --navy:#164B78; --navy-dark:#0F2942; --teal:#146C60; --amber:#B45309; --red:#B91C1C;
+    --bg:#F4F7FA; --card:#FFFFFF; --ink:#0F172A; --sub:#334155; --muted:#64748B; --line:#E2E8F0;
+    --pale-blue:#EBF3FA; --pale-teal:#E6F4F1; --pale-amber:#FEF6E7; --pale-red:#FEE2E2;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Inter, "Segoe UI", system-ui, Arial, sans-serif; background:var(--bg); color:var(--ink); font-size:14px; }
+
+  /* Header gọn gàng */
+  header { background:var(--navy-dark); color:#fff; padding:12px 24px 0; }
+  .hdr-top { display:flex; justify-content:space-between; align-items:center; max-width:1360px; margin:0 auto; padding-bottom:10px; }
+  header h1 { margin:0; font-size:18px; font-weight:700; }
+  header .sub { font-size:12px; color:#94a3b8; margin-top:2px; }
+  .status-pill { font-size:12px; font-weight:700; padding:5px 12px; border-radius:999px; background:#334155; color:#fff; }
+  nav { display:flex; gap:4px; max-width:1360px; margin:0 auto; }
+  nav button { background:transparent; color:#cbd5e1; border:0; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer; border-radius:8px 8px 0 0; }
+  nav button.active { background:var(--bg); color:var(--navy-dark); font-weight:700; }
+
+  .tab { display:none; padding:18px 24px 40px; max-width:1360px; margin:0 auto; }
+  .tab.active { display:block; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(15,23,42,.04); margin-bottom:14px; }
+  .card-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .card-title { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--navy); margin:0; }
+
+  /* Khung Prompt & Nút điều khiển chính */
+  .scenario-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  .chip { background:#f8fafc; border:1px solid #cbd5e1; color:var(--sub); border-radius:999px; padding:5px 12px; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; }
+  .chip:hover { border-color:var(--navy); color:var(--navy); background:var(--pale-blue); }
+  .chip.active { background:var(--navy); color:#fff; border-color:var(--navy); }
+
+  .prompt-row { display:flex; gap:10px; align-items:stretch; }
+  textarea#prompt-input { flex:1; min-height:66px; font:14px/1.45 inherit; padding:10px 12px; border:1.5px solid #cbd5e1; border-radius:10px; resize:vertical; color:var(--ink); }
+  textarea#prompt-input:focus { outline:none; border-color:var(--navy); }
+  .action-col { display:flex; flex-direction:column; gap:6px; min-width:170px; }
+
+  button.btn { background:var(--navy); color:#fff; border:0; border-radius:8px; padding:9px 14px; font-weight:700; font-size:13.5px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+  button.btn:hover { opacity:.92; }
+  button.btn:disabled { opacity:.45; cursor:not-allowed; }
+  button.btn.teal { background:var(--teal); }
+  button.btn.red { background:var(--red); }
+  button.ghost { background:#f8fafc; color:var(--sub); border:1px solid #cbd5e1; border-radius:8px; padding:7px 12px; font-weight:600; font-size:12.5px; cursor:pointer; }
+  button.ghost:hover { background:#f1f5f9; color:var(--ink); }
+
+  /* Thanh trạng thái State Machine gọn */
+  .sm-bar { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:10px 14px; background:#fff; border:1px solid var(--line); border-radius:10px; margin-bottom:14px; }
+  .sm-steps { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .sm-node { padding:5px 11px; border-radius:6px; font-size:12px; font-weight:700; background:#f1f5f9; color:#64748b; }
+  .sm-node.lit { background:var(--pale-blue); color:var(--navy); }
+  .sm-node.active { background:var(--navy); color:#fff; }
+  .sm-node.wait { background:var(--amber); color:#fff; animation:pulse 1s infinite; }
+  .sm-node.done { background:var(--teal); color:#fff; }
+  .sm-node.stop { background:var(--red); color:#fff; }
+  .sm-arr { color:#cbd5e1; font-weight:700; }
+
+  /* Màn hình trống khi bấm Clear */
+  .empty-state { text-align:center; padding:48px 20px; background:#fff; border:1.5px dashed #cbd5e1; border-radius:12px; color:var(--muted); }
+  .empty-state h3 { margin:0 0 6px; color:var(--sub); font-size:16px; }
+
+  /* Bố cục 2 cột thoáng đãng khi đang chạy */
+  .workspace-grid { display:grid; grid-template-columns:360px minmax(0, 1fr); gap:14px; align-items:start; }
+  @media (max-width:1024px) { .workspace-grid { grid-template-columns:1fr; } }
+
+  /* Cột trái: Plan + BoardState + Gate */
+  .plan-item { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:7px 10px; border-radius:7px; background:#f8fafc; border:1px solid var(--line); margin-bottom:6px; font-size:12.5px; }
+  .plan-item.doing { background:var(--pale-blue); border-color:#93c5fd; font-weight:700; }
+  .plan-item.done { background:var(--pale-teal); border-color:#a7f3d0; }
+
+  .tag { font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:999px; text-transform:uppercase; white-space:nowrap; }
+  .tag.todo { background:#e2e8f0; color:#475569; }
+  .tag.doing { background:var(--navy); color:#fff; }
+  .tag.done, .tag.pass { background:#dcfce7; color:#166534; }
+  .tag.fail { background:#fee2e2; color:#991b1b; }
+  .tag.wait { background:#ffedd5; color:#9a3412; }
+
+  .kv-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--line); font-size:12.5px; }
+  .kv-row:last-child { border-bottom:0; }
+  .kv-row span { color:var(--muted); }
+  .kv-row b { font-family:Consolas, monospace; color:var(--ink); }
+
+  .gate-row { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-top:8px; }
+  .gate-box { border:1.5px solid var(--line); border-radius:7px; padding:6px 4px; text-align:center; background:#f8fafc; color:var(--muted); }
+  .gate-box.pass { border-color:#16a34a; background:#dcfce7; color:#166534; }
+  .gate-box.fail { border-color:var(--red); background:#fee2e2; color:#991b1b; }
+  .gate-box.na { border-style:dashed; background:#f8fafc; color:#94a3b8; }
+  .gate-box b { display:block; font-size:12.5px; }
+  .gate-box small { font-size:10px; }
+
+  /* Cột phải: Interrupt nổi bật + Dòng sự kiện + Kết quả */
+  .int-banner { border:2px solid var(--amber); background:var(--pale-amber); border-radius:12px; padding:14px 16px; margin-bottom:14px; animation:fadeIn .25s; }
+  .int-banner.resolved { border-color:var(--teal); background:var(--pale-teal); }
+  .int-title { font-weight:700; font-size:14.5px; color:var(--amber); display:flex; justify-content:space-between; align-items:center; }
+  .int-banner.resolved .int-title { color:var(--teal); }
+
+  .feed { max-height:380px; overflow-y:auto; padding-right:4px; }
+  .step-card { display:flex; gap:10px; align-items:flex-start; padding:9px 12px; border:1px solid var(--line); border-left:4px solid var(--navy); border-radius:8px; margin-bottom:7px; background:#fff; cursor:pointer; }
+  .step-card:hover { background:#f8fafc; }
+  .step-card.sim-ok { border-left-color:var(--teal); }
+  .step-card.err { border-left-color:var(--red); background:#fef2f2; }
+  .step-card.int { border-left-color:var(--amber); background:var(--pale-amber); }
+  .step-num { font-size:11px; font-weight:700; color:var(--muted); min-width:52px; padding-top:2px; }
+  .step-body { flex:1; min-width:0; }
+  .step-title { font-weight:700; font-size:13px; color:var(--ink); }
+  .step-desc { font-size:12px; color:var(--sub); margin-top:2px; font-family:Consolas, monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  pre.codebox { background:#0f172a; color:#e2e8f0; padding:12px 14px; border-radius:8px; font:12.5px/1.45 Consolas, monospace; overflow-x:auto; max-height:260px; margin:8px 0 0; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th { text-align:left; background:var(--pale-blue); color:var(--navy); padding:8px 10px; }
+  td { border-top:1px solid var(--line); padding:8px 10px; vertical-align:top; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-top">
+    <div>
+      <h1>Hardware Co-Design Agent v2 — Live Demo (D2)</h1>
+      <div class="sub">STM32G474 &middot; ESP32 &middot; nRF52840 &middot; FreeRTOS — State Machine + BoardState + Register Simulator + Gate G1–G5</div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center">
+      <span class="status-pill" id="status-pill">Sẵn sàng (Đã xoá trắng)</span>
+    </div>
+  </div>
+  <nav>
+    <button class="active" data-tab="demo">1. Chạy Demo &amp; Quan sát</button>
+    <button data-tab="workspace">2. Tệp Workspace (workspace_out/) <span id="ws-badge" class="tag todo" style="margin-left:4px">0 tệp</span></button>
+    <button data-tab="tools">3. Danh mục 32 Công cụ (R2)</button>
+  </nav>
+</header>
+
+<!-- ==================== TAB 1: DEMO CHÍNH ==================== -->
+<section class="tab active" id="tab-demo">
+  <!-- Hộp nhập Prompt & Chọn kịch bản -->
+  <div class="card">
+    <div class="prompt-row">
+      <textarea id="prompt-input" placeholder="Nhập prompt tự do vào đây rồi nhấn Enter để chạy (hoặc bấm nút Kịch bản 1..8 bên dưới để điền nhanh prompt)..."></textarea>
+      <div class="action-col">
+        <button class="btn" id="btn-run">&#9654; Chạy (Enter)</button>
+        <div style="display:flex; gap:6px">
+          <button class="ghost" id="btn-clear" style="flex:1" title="Xoá trắng ô prompt, màn hình và tệp trong workspace_out/">&#128465; Clear</button>
+          <button class="ghost" id="btn-skip" style="flex:1" title="Tua nhanh tới cổng tương tác hoặc kết quả cuối">&#9193; Tua nhanh</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-chips" style="margin-top:10px; margin-bottom:0">
+      <span style="font-size:12px; font-weight:700; color:var(--navy)">Điền nhanh prompt:</span>
+      <button class="chip" data-sc="pwm_approval">Kịch bản 1: PWM PA8 (20 kHz, 25%) &amp; Duyệt ghi file</button>
+      <button class="chip" data-sc="pll_self_correct">Kịch bản 2: Tự sửa lỗi PLL 168 MHz (Simulator &amp; Gate)</button>
+      <button class="chip" data-sc="i2c_choice">Kịch bản 3: Cảm biến 1.8V vs 3.3V (Hỏi phương án)</button>
+      <button class="chip" data-sc="node_clarify">Kịch bản 4: Node thiếu thông tin (Hỏi thạch anh HSE)</button>
+      <button class="chip" data-sc="c6_overvoltage_refuse">Kịch bản 5 (C6): Cấp 5 V vào VDD nRF52840 (Từ chối an toàn)</button>
+      <button class="chip" data-sc="c7_path_traversal_block">Kịch bản 6 (C7): Ghi file ../../etc (Guardrail chặn)</button>
+      <button class="chip" data-sc="c8_abstain_nonexistent_reg">Kịch bản 7 (C8): Thanh ghi không tồn tại (Không bịa)</button>
+      <button class="chip" data-sc="c4_timer_conflict">Kịch bản 8 (C4): Thiết kế 4 lượt có xung đột timer (TIM3 dùng chung)</button>
+    </div>
+    <div id="sc-note" style="margin-top:8px; font-size:12.5px; color:var(--muted); font-style:italic; display:none"></div>
+  </div>
+
+  <!-- Thanh trạng thái State Machine -->
+  <div class="sm-bar">
+    <div class="sm-steps" id="sm-bar">
+      <span class="sm-node" data-st="INTAKE">1. INTAKE</span><span class="sm-arr">&rarr;</span>
+      <span class="sm-node" data-st="PLAN">2. PLAN</span><span class="sm-arr">&rarr;</span>
+      <span class="sm-node" data-st="ACT">3. ACT &harr; OBSERVE</span><span class="sm-arr">&rarr;</span>
+      <span class="sm-node" data-st="INTERRUPTED">4. INTERRUPTED (HITL)</span><span class="sm-arr">&rarr;</span>
+      <span class="sm-node" data-st="GATE">5. GATE (G1–G5)</span><span class="sm-arr">&rarr;</span>
+      <span class="sm-node" data-st="DONE">6. DONE</span>
+    </div>
+    <div style="font-size:12px; color:var(--muted)" id="progress-txt">Chưa chạy</div>
+  </div>
+
+  <!-- Khung thông báo khi vừa bấm Clear -->
+  <div id="empty-view" class="empty-state">
+    <h3>Sẵn sàng chạy Demo</h3>
+    <div>Hãy gõ prompt vào ô phía trên (hoặc bấm nút <b>Kịch bản 1..8</b> để điền prompt vào ô), sau đó nhấn phím <b>Enter</b> để bắt đầu chạy và quan sát từng bước.</div>
+  </div>
+
+  <!-- Bàn quan sát 2 cột (chỉ hiện khi bắt đầu chạy) -->
+  <div id="run-view" class="workspace-grid" style="display:none">
+    <!-- CỘT TRÁI: KẾ HOẠCH + BOARD STATE + CỔNG G1-G5 -->
+    <div>
+      <div class="card">
+        <div class="card-hdr">
+          <h3 class="card-title">Kế hoạch của Agent (Plan)</h3>
+          <span class="tag doing" id="plan-badge">0 bước</span>
+        </div>
+        <div id="plan-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">
+          <h3 class="card-title">Trạng thái Bo mạch (BoardState)</h3>
+          <span class="tag pass" id="board-badge">v0</span>
+        </div>
+        <div id="board-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">
+          <h3 class="card-title">Cổng kiểm chứng (Verification Gate)</h3>
+          <span class="tag todo" id="gate-badge">Chờ kiểm tra</span>
+        </div>
+        <div class="gate-row" id="gate-row">
+          <div class="gate-box" data-g="G1"><b>G1</b><small>Nguồn</small></div>
+          <div class="gate-box" data-g="G2"><b>G2</b><small>Mô phỏng</small></div>
+          <div class="gate-box" data-g="G3"><b>G3</b><small>DRC (8 luật)</small></div>
+          <div class="gate-box" data-g="G4"><b>G4</b><small>An toàn</small></div>
+          <div class="gate-box" data-g="G5"><b>G5</b><small>Clang C</small></div>
+        </div>
+        <div id="sim-summary" style="margin-top:8px; font-size:12px; color:var(--sub); padding:7px 9px; background:#f8fafc; border-radius:6px; border:1px solid var(--line)">
+          Chưa chạy mô phỏng thanh ghi.
+        </div>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: THẺ INTERRUPT + DÒNG SỰ KIỆN + KẾT QUẢ CUỐI -->
+    <div>
+      <!-- Thẻ Interrupt hiện ngay trên cùng khi Agent dừng chờ người -->
+      <div id="interrupt-box"></div>
+
+      <!-- Kết quả cuối cùng & File đã ghi (hiện khi hoàn tất) -->
+      <div id="result-box"></div>
+
+      <!-- Dòng sự kiện thực thi -->
+      <div class="card">
+        <div class="card-hdr">
+          <h3 class="card-title">Quá trình suy luận &amp; Gọi công cụ (Live Trace)</h3>
+          <span style="font-size:12px; color:var(--muted)">Bấm vào bước bất kỳ để xem JSON chi tiết</span>
+        </div>
+        <div class="feed" id="feed-box"></div>
+        <div id="json-box" style="display:none; margin-top:8px">
+          <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted)">
+            <span id="json-title">Chi tiết JSON</span>
+            <a href="#" id="json-close" style="color:var(--navy)">Đóng</a>
+          </div>
+          <pre class="codebox" id="json-content" style="max-height:180px"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== TAB 2: WORKSPACE FILES ==================== -->
+<section class="tab" id="tab-workspace">
+  <div class="card">
+    <div class="card-hdr">
+      <h3 class="card-title">Tệp cấu hình sinh ra trong thư mục Sandbox (workspace_out/)</h3>
+      <button class="ghost" id="btn-refresh-ws">&#8635; Làm mới</button>
+    </div>
+    <div id="ws-content"></div>
+  </div>
+</section>
+
+<!-- ==================== TAB 3: 32 TOOLS ==================== -->
+<section class="tab" id="tab-tools">
+  <div class="card">
+    <div class="card-hdr">
+      <h3 class="card-title">Danh sách 32 Công cụ &amp; Mức quyền cưỡng chế tại ToolHub</h3>
+      <span id="tools-total" class="tag pass">32 tools</span>
+    </div>
+    <table>
+      <thead><tr><th style="width:50px">#</th><th>Tên công cụ</th><th>MCP Server / Nhóm</th><th>Mức quyền</th></tr></thead>
+      <tbody id="tools-tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+const $ = id => document.getElementById(id);
+let SCENARIOS = {};
+let curSc = null;
+let curIdx = 0;
+let timer = null;
+
+function esc(s) { return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+/* args của tool_call thường là chuỗi JSON, nhưng sự kiện tra cứu do runtime tự phát (preflight) là object */
+function argsText(e) { return (e.args && typeof e.args === "object") ? JSON.stringify(e.args) : (e.args || "{}"); }
+async function api(path, body) {
+  const r = await fetch(path, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {cache:"no-store"});
+  return r.json();
+}
+
+/* Chuyển tab */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + b.dataset.tab));
+  if (b.dataset.tab === "workspace") refreshWorkspace();
+});
+
+$("json-close").onclick = e => { e.preventDefault(); $("json-box").style.display = "none"; };
+
+/* Chú thích "Điểm cần quan sát" của kịch bản (lời bình cho người trình bày, KHÔNG phải một phần của prompt) */
+function setNote(sc) {
+  const n = $("sc-note"), t = (sc && sc.note_vi) || "";
+  n.textContent = t; n.style.display = t ? "block" : "none";
+}
+
+/* Bấm nút Kịch bản 1..4: điền prompt vào ô input và focus để người dùng nhấn Enter */
+function selectScenario(id) {
+  const sc = SCENARIOS[id];
+  if (!sc) return;
+  if (curSc !== sc) { clearInterval(timer); timer = null; curIdx = 0; }  // đổi kịch bản: chạy lại từ đầu, không kế thừa vị trí của kịch bản trước
+  curSc = sc;
+  setNote(sc);
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.sc === id));
+  $("prompt-input").value = sc.goal_vi;
+  $("prompt-input").focus();
+  $("status-pill").textContent = "Đã điền prompt — Nhấn Enter để chạy";
+  $("status-pill").style.background = "#164B78";
+}
+
+/* Nút Clear: xoá trắng cả ô prompt, giao diện và xoá file tạm trên đĩa */
+async function clearScreen(alsoClearInput = true, alsoClearDisk = true) {
+  clearInterval(timer); timer = null;
+  curIdx = 0;
+  if (alsoClearInput) {
+    $("prompt-input").value = "";
+    curSc = null;
+    setNote(null);
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  }
+  $("empty-view").style.display = "block";
+  $("run-view").style.display = "none";
+  $("json-box").style.display = "none";
+  $("status-pill").textContent = "Sẵn sàng (Đã Clear)";
+  $("status-pill").style.background = "#475569";
+  $("progress-txt").textContent = "Chưa chạy";
+  document.querySelectorAll("#sm-bar .sm-node").forEach(n => n.className = "sm-node");
+  document.querySelector('#sm-bar .sm-node[data-st="DONE"]').textContent = "6. DONE";
+  if (alsoClearDisk) {
+    await api("/api/demo/clear_file", {filename: "pwm_pa8.c"});
+    await api("/api/demo/clear_file", {filename: "pwm_pa8_cfg.h"});
+    refreshWorkspaceBadge();
+  }
+  $("prompt-input").focus();
+}
+
+/* Khớp prompt người dùng gõ với kịch bản demo hoặc gọi Live Run API */
+function resolveScenarioFromPrompt(q) {
+  if (curSc && (q === curSc.goal_vi.trim() || q === curSc.goal.trim())) return curSc;
+  const low = q.toLowerCase();
+  for (const sc of Object.values(SCENARIOS)) {
+    if (q === sc.goal_vi.trim() || q === sc.goal.trim()) return sc;
+  }
+  if (low.includes("pa6") && low.includes("tim3")) return SCENARIOS["c4_timer_conflict"];
+  if (low.includes("vbus") && low.includes("nrf52840")) return SCENARIOS["c6_overvoltage_refuse"];
+  if (low.includes("../") || low.includes("cron.d")) return SCENARIOS["c7_path_traversal_block"];
+  if (low.includes("ledc_lsch8")) return SCENARIOS["c8_abstain_nonexistent_reg"];
+  if (low.includes("pa8") && (low.includes("pwm") || low.includes("pwm_pa8"))) return SCENARIOS["pwm_approval"];
+  if (low.includes("168") && low.includes("pll")) return SCENARIOS["pll_self_correct"];
+  if (low.includes("bme280") || low.includes("1.8")) return SCENARIOS["i2c_choice"];
+  if (low.includes("esp32") && low.includes("50") && low.includes("hse")) return SCENARIOS["node_clarify"];
+  return null;
+}
+
+async function runLiveCustomPrompt(q) {
+  clearInterval(timer); timer = null;
+  $("empty-view").style.display = "none";
+  $("run-view").style.display = "grid";
+  curSc = {id: "live", run_id: "live...", goal: q, goal_vi: q, events: [], answer: "", files: {}};
+  setNote(null);
+  renderState(0);
+  $("status-pill").textContent = "⚙ Đang gọi LLM thật (/api/runs)...";
+  $("status-pill").style.background = "#2563eb";
+  try {
+    const r = await api("/api/runs", {question: q, project_id: "live-ui", async: true});
+    if (r.error) throw new Error(r.error);
+    curSc.run_id = r.run_id;
+    let after = 0;
+    timer = setInterval(async () => {
+      const ev = await api(`/api/runs/${r.run_id}/events?after=${after}`);
+      if (ev.events && ev.events.length) {
+        curSc.events.push(...ev.events);
+        after = ev.next;
+      }
+      if (ev.status !== "running") {
+        clearInterval(timer); timer = null;
+        const st = await api(`/api/runs/${r.run_id}`);
+        curSc.answer = st.answer || "";
+      }
+      curIdx = curSc.events.length;
+      renderState(curIdx);
+    }, 350);
+  } catch (e) {
+    $("status-pill").textContent = "Lỗi gọi API: " + e.message;
+    $("status-pill").style.background = "#b91c1c";
+  }
+}
+
+/* Điểm dừng kế tiếp: ngay sau interrupt_raised, hoặc ngay trước tin nhắn của lượt mới (hội thoại nhiều lượt) */
+function nextStop(from) {
+  const evs = curSc.events;
+  for (let i = from; i < evs.length; i++) {
+    if (evs[i].type === "interrupt_raised") return i + 1;
+    if (i > from && evs[i].type === "run_started" && (evs[i].turn || 0) > 0) return i;
+  }
+  return evs.length;
+}
+
+/* Chạy mô phỏng từng bước tới điểm dừng tiếp theo (Interrupt, ranh giới lượt hoặc kết thúc) */
+function startRunAnimation() {
+  const q = $("prompt-input").value.trim();
+  if (!q) { $("prompt-input").focus(); return; }
+  const matched = resolveScenarioFromPrompt(q);
+  if (!matched) {
+    runLiveCustomPrompt(q);
+    return;
+  }
+  if (curSc !== matched) { curSc = matched; curIdx = 0; }
+  playCurrent();
+}
+
+/* Chạy tiếp kịch bản hiện tại mà không đọc lại ô prompt (dùng cho Approve / Reject / Gửi tin nhắn lượt tiếp theo) */
+function playCurrent() {
+  setNote(curSc);
+  clearInterval(timer);
+  $("empty-view").style.display = "none";
+  $("run-view").style.display = "grid";
+
+  if (curIdx >= curSc.events.length) curIdx = 0;
+
+  const stopAt = nextStop(curIdx);
+
+  timer = setInterval(() => {
+    if (curIdx < stopAt) {
+      curIdx++;
+      renderState(curIdx);
+    } else {
+      clearInterval(timer); timer = null;
+    }
+  }, 140);
+}
+
+/* Tua nhanh tới điểm dừng tiếp theo (hoặc kết thúc) */
+function skipToNextMilestone() {
+  if (!curSc) return;
+  clearInterval(timer); timer = null;
+  $("empty-view").style.display = "none";
+  $("run-view").style.display = "grid";
+  curIdx = nextStop(curIdx);
+  renderState(curIdx);
+}
+
+/* Vẽ giao diện tại bước `upto` */
+function renderState(upto) {
+  const evs = curSc.events.slice(0, upto);
+  $("progress-txt").textContent = `Bước ${evs.length} / ${curSc.events.length} (Run ID: ${curSc.run_id})`;
+
+  let plan = [];
+  let board = {chip:"—", pkg:"—", vdd:"—", clock:"—", version:0, pins:[], reqs:[], reqsStale:false, drcOk:null};
+  let sim = null;
+  let gate = null;
+  let pendingInt = null, resolvedInt = null;
+  let fileWritten = null;
+  let done = false;
+  let doneStatus = null;
+  let turnNo = 0, curRunId = curSc.run_id;
+  let sm = "INTAKE";
+
+  for (const e of evs) {
+    if (e.type === "run_started") {
+      turnNo = e.turn || 0; curRunId = e.run_id || curRunId;
+      if (turnNo > 0) {  // lượt mới của hội thoại nhiều lượt: BoardState và kế hoạch được giữ, phần còn lại của lượt trước được làm mới
+        done = false; doneStatus = null; gate = null; sim = null; pendingInt = null; resolvedInt = null; fileWritten = null; sm = "INTAKE";
+      }
+    }
+    if (e.type === "plan_updated" && Array.isArray(e.plan)) {
+      plan = e.plan;
+      sm = "PLAN";
+    }
+    if (e.type === "tool_call") {
+      if (!done) sm = "ACT";
+      let args = {}, sum = {};
+      try { args = JSON.parse(argsText(e)); } catch {}
+      try { sum = JSON.parse((e.summary || "{}").replace(/ \.\.\.$/, "")); } catch {}
+
+      if (e.tool === "set_target") {
+        board.chip = (args.chip || "STM32G474").toUpperCase();
+        board.pkg = args.package || "LQFP64";
+        board.vdd = (args.vdd || 3.3) + " V";
+        board.version = sum.version || (board.version + 1);
+      }
+      if (e.tool === "allocate_pin" && e.ok) {
+        board.version = sum.version || (board.version + 1);
+        const p = `${args.pin} → ${args.signal} (AF${sum.af ?? 6})`;
+        if (!board.pins.includes(p)) board.pins.push(p);
+      }
+      if (e.tool === "set_clock_config" && e.ok) {
+        board.version = sum.version || (board.version + 1);
+        board.clock = "SYSCLK = PCLK1 = PCLK2 = 170 MHz";
+      }
+      if (e.tool === "set_requirements" && Array.isArray(args.requirements)) {
+        board.version = sum.version || (board.version + 1);
+        board.reqs = args.requirements; board.reqsStale = false;
+      } else if (e.tool === "set_requirements" && e.ok) {
+        board.reqsStale = true;  // args của lệnh này bị cắt trong bản ghi: không biết trạng thái mới nhất, không suy diễn
+      }
+      if (e.tool === "run_drc") {
+        board.drcOk = e.ok;
+      }
+    }
+    if (e.type === "sim_result") sim = e;
+    if (e.type === "interrupt_raised") { pendingInt = e; resolvedInt = null; sm = "INTERRUPTED"; }
+    if (e.type === "resumed") { resolvedInt = {int: pendingInt, res: e}; pendingInt = null; sm = "ACT"; }
+    if (e.type === "file_written") fileWritten = e;
+    if (e.type === "gate_result") { gate = e; sm = "GATE"; }
+    if (e.type === "done") {
+      done = true;
+      doneStatus = e.status;
+      sm = "DONE";
+      plan = plan.map(s => ({...s, status: "done"}));
+    }
+  }
+  // Yêu cầu bị Guardrail chặn (blocked) hoặc Agent từ chối an toàn (refused) trước khi sinh mã: không có Gate/Simulator
+  const stopped = done && (doneStatus === "refused" || doneStatus === "blocked");
+  // Hội thoại nhiều lượt: totalTurns > 1; nextEv != null khi vừa xong một lượt và đang chờ kỹ sư gửi tin nhắn kế tiếp
+  const totalTurns = curSc.events.filter(e => e.type === "run_started").length;
+  const nextEv = (upto < curSc.events.length && curSc.events[upto].type === "run_started" && (curSc.events[upto].turn || 0) > 0) ? curSc.events[upto] : null;
+  if (totalTurns > 1) $("progress-txt").textContent = `Bước ${evs.length} / ${curSc.events.length} (Lượt ${turnNo + 1}/${totalTurns} • Run ID: ${curRunId})`;
+
+  // Cập nhật thanh State Machine
+  const order = ["INTAKE","PLAN","ACT","INTERRUPTED","GATE","DONE"];
+  const curPos = order.indexOf(sm);
+  document.querySelectorAll("#sm-bar .sm-node").forEach(n => {
+    const st = n.dataset.st;
+    const pos = order.indexOf(st);
+    n.className = "sm-node";
+    if (st === "DONE") n.textContent = stopped ? (doneStatus === "blocked" ? "6. BLOCKED" : "6. REFUSED") : "6. DONE";
+    if (stopped) {
+      if (st === "INTAKE") n.classList.add("lit");
+      if (st === "DONE") n.classList.add("stop");
+      return;
+    }
+    if (pos < curPos) n.classList.add("lit");
+    if (st === sm) {
+      if (sm === "INTERRUPTED") n.classList.add("wait");
+      else if (sm === "DONE") n.classList.add("done");
+      else n.classList.add("active");
+    }
+  });
+
+  const pill = $("status-pill");
+  if (nextEv) {
+    pill.textContent = `💬 Xong lượt ${turnNo + 1}/${totalTurns} — chờ kỹ sư gửi tin nhắn tiếp theo`;
+    pill.style.background = "#164B78";
+  }
+  else if (stopped) {
+    pill.textContent = doneStatus === "blocked" ? "⛔ Guardrail đã chặn yêu cầu (BLOCKED)" : "⛔ Agent từ chối vì an toàn phần cứng (REFUSED)";
+    pill.style.background = "#b91c1c";
+  }
+  else if (sm === "INTERRUPTED") { pill.textContent = "⏸ Đang dừng chờ kỹ sư Phê duyệt (INTERRUPTED)"; pill.style.background = "#d97706"; }
+  else if (sm === "DONE") { pill.textContent = "✔ Hoàn tất (Gate G1–G5 PASS)"; pill.style.background = "#16a34a"; }
+  else { pill.textContent = "⚙ Đang chạy: " + sm; pill.style.background = "#2563eb"; }
+
+  // 1. Vẽ Plan
+  $("plan-badge").textContent = `${plan.length} bước`;
+  $("plan-box").innerHTML = plan.length ? plan.map(s => `
+    <div class="plan-item ${esc(s.status)}">
+      <span>${esc(s.title)}</span>
+      <span class="tag ${esc(s.status)}">${esc(s.status)}</span>
+    </div>`).join("") : `<div style="color:var(--muted); font-size:12.5px">${done
+      ? (stopped ? "Không lập kế hoạch: yêu cầu bị chặn ngay tại INTAKE." : "Phiên chạy này không có bước kế hoạch: agent tra cứu rồi trả lời trực tiếp.")
+      : "Đang khởi tạo kế hoạch..."}</div>`;
+
+  // 2. Vẽ Board State
+  $("board-badge").textContent = "v" + board.version;
+  $("board-box").innerHTML = `
+    <div class="kv-row"><span>Vi điều khiển</span><b>${esc(board.chip)} (${esc(board.pkg)})</b></div>
+    <div class="kv-row"><span>Điện áp VDD</span><b>${esc(board.vdd)}</b></div>
+    <div class="kv-row"><span>Xung nhịp</span><b>${esc(board.clock)}</b></div>
+    <div class="kv-row"><span>Chân đã cấp</span><b>${board.pins.length ? esc(board.pins.join(", ")) : "Chưa cấp"}</b></div>
+    <div class="kv-row"><span>Yêu cầu (Req)</span><b>${board.reqs.length ? esc(board.reqs.map(r => `${r.id}: ${r.status || "pending"}${r.freq_hz ? ` (${r.freq_hz} Hz)` : ""}`).join(", ")) + (board.reqsStale ? ' <span style="color:var(--amber); font-family:inherit; font-size:11px">(có thể chưa phải trạng thái mới nhất: tham số lệnh cập nhật bị cắt trong bản ghi)</span>' : "") : "Chưa ghi"}</b></div>
+    <div class="kv-row"><span>Kiểm tra DRC</span><b>${board.drcOk === true ? '<span style="color:var(--teal)">8/8 luật PASS</span>' : (board.drcOk === false ? '<span style="color:var(--amber)">Chờ cập nhật Req</span>' : '—')}</b></div>
+  `;
+
+  // 3. Vẽ Gate G1–G5 & Simulator
+  document.querySelectorAll("#gate-row .gate-box").forEach(b => {
+    const g = b.dataset.g;
+    b.className = "gate-box"; b.title = "";
+    if (gate && gate.gates && gate.gates[g]) {  // "na" = cổng không áp dụng cho loại câu hỏi này (vd. G2 mô phỏng với câu tra cứu)
+      const v = gate.gates[g];
+      b.classList.add(v === "pass" ? "pass" : (v === "na" ? "na" : "fail"));
+      b.title = `${g}: ${v}`;
+    }
+  });
+  const gb = $("gate-badge");
+  if (!gate) { gb.textContent = stopped ? "Không chạy (bị chặn trước Gate)" : "Chờ finish"; gb.className = "tag todo"; }
+  else if (gate.passed) { gb.textContent = "G1–G5 PASS"; gb.className = "tag pass"; }
+  else { gb.textContent = "Bị chặn (Tự sửa)"; gb.className = "tag fail"; }
+
+  const ss = $("sim-summary");
+  if (sim && sim.pass) {
+    const ef = (sim.effects || [])[0] || {};
+    ss.innerHTML = `<b style="color:var(--teal)">&#10004; Simulator PASS:</b> <code>${esc(ef.pin||"PA8")}</code> &middot; <code>${esc(ef.signal||"TIM1_CH1")}</code> &rarr; <b>${esc(ef.pwm_hz ?? ef.scl_hz ?? ef.baud ?? "168000000")} Hz</b>, duty <b>${esc(ef.duty_pct ?? "—")}%</b>`;
+  } else if (sim && !sim.pass) {
+    ss.innerHTML = `<b style="color:var(--red)">&#10006; Simulator FAIL:</b> <code>${esc((sim.violations||[]).join(", "))}</code> &rarr; Agent tự sửa ở bước kế tiếp.`;
+  } else {
+    ss.textContent = stopped ? "Không chạy mô phỏng thanh ghi: yêu cầu bị chặn trước khi sinh mã." : "Chưa chạy mô phỏng thanh ghi.";
+  }
+
+  // 4. Vẽ Thẻ Interrupt (nếu đang dừng chờ người)
+  const ib = $("interrupt-box"); ib.innerHTML = "";
+  if (pendingInt) {
+    const p = pendingInt.payload || {};
+    const fullFile = (p.filename && curSc.files && curSc.files[p.filename]) ? curSc.files[p.filename] : (p.content || "");
+    let html = `<div class="int-banner">
+      <div class="int-title"><span>&#9888; CỔNG PHÊ DUYỆT CON NGƯỜI (${esc(pendingInt.kind.toUpperCase())})</span><span class="tag wait">INTERRUPTED</span></div>
+      <div style="margin-top:6px; font-weight:700">${esc(pendingInt.question)}</div>`;
+    if (pendingInt.why_needed) html += `<div style="font-size:12.5px; color:var(--sub); margin-top:4px">Lý do: ${esc(pendingInt.why_needed)}</div>`;
+    if (p.filename && fullFile) {
+      html += `<div style="font-size:12px; color:var(--sub); margin-top:6px">Tệp đích: <code>workspace_out/${esc(p.filename)}</code> (${fullFile.length} bytes) — <b>Chưa ghi ra đĩa</b></div>
+               <pre class="codebox">${esc(fullFile)}</pre>`;
+    }
+    if (Array.isArray(pendingInt.options)) {
+      html += `<div style="margin-top:8px">` + pendingInt.options.map(o =>
+        `<div style="padding:7px 10px; background:#fff; border:1px solid var(--line); border-radius:6px; margin-bottom:5px; font-size:12.5px">
+          <b>Phương án ${esc(o.id)}: ${esc(o.label)}</b><br><span style="color:var(--teal)">+ Ưu: ${esc(o.pros)}</span> | <span style="color:var(--amber)">- Nhược: ${esc(o.cons)}</span>
+        </div>`).join("") + `</div>`;
+    }
+    html += `<div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap">
+      <button class="btn teal" id="btn-approve">&#10004; Phê duyệt (Approve) &amp; Cho Agent chạy tiếp</button>
+      ${pendingInt.kind === "approval" && curSc.id !== "pwm_reject_replan" ? `<button class="btn red" id="btn-reject">&#10006; Từ chối + Yêu cầu đổi sang file .h (Reject &rarr; Replan)</button>` : ""}
+    </div></div>`;
+    ib.innerHTML = html;
+
+    $("btn-approve").onclick = async () => {
+      if (p.filename && fullFile) {
+        await api("/api/demo/write", {filename: p.filename, content: fullFile});
+        refreshWorkspaceBadge();
+      }
+      playCurrent();
+    };
+    if ($("btn-reject")) {
+      $("btn-reject").onclick = () => {
+        curSc = SCENARIOS["pwm_reject_replan"];
+        const idx = curSc.events.findIndex(e => e.type === "resumed" && e.decision === "reject");
+        curIdx = idx >= 0 ? idx : 54;
+        playCurrent();
+      };
+    }
+  } else if (nextEv) {
+    const nt = nextEv.turn || 0;
+    const msg = (curSc.turns_vi && curSc.turns_vi[nt]) || nextEv.goal;
+    ib.innerHTML = `<div class="int-banner" style="border-color:var(--navy); background:var(--pale-blue)">
+      <div class="int-title" style="color:var(--navy)"><span>&#128172; LƯỢT ${nt + 1}/${totalTurns} — KỸ SƯ NHẮN TIẾP</span><span class="tag doing">CHỜ GỬI</span></div>
+      <div style="margin-top:6px; font-weight:700">${esc(msg)}</div>
+      <div style="margin-top:10px"><button class="btn" id="btn-next-turn">&#9654; Gửi tin nhắn này cho Agent</button></div>
+    </div>`;
+    $("btn-next-turn").onclick = playCurrent;
+  } else if (resolvedInt) {
+    ib.innerHTML = `<div class="int-banner resolved" style="padding:10px 14px">
+      <div class="int-title" style="font-size:13px"><span>&#10004; Đã phản hồi Interrupt (${esc(resolvedInt.res.decision.toUpperCase())}) — Agent đã khôi phục từ Checkpoint và chạy tiếp</span><span class="tag pass">RESUMED</span></div>
+    </div>`;
+  }
+
+  // 5. Vẽ Kết quả cuối (khi DONE)
+  const rb = $("result-box"); rb.innerHTML = "";
+  if (stopped) {
+    rb.innerHTML = `<div class="card" style="border-color:#fca5a5; background:#fef2f2">
+      <div class="card-hdr">
+        <h3 class="card-title" style="color:var(--red)">&#9940; ${doneStatus === "blocked" ? "Guardrail đã chặn yêu cầu" : "Agent từ chối thực hiện"} — không sinh mã, không ghi tệp</h3>
+        <span class="tag fail">${esc(doneStatus)}</span>
+      </div>
+      <pre class="codebox" style="max-height:260px; margin-top:4px; white-space:pre-wrap">${esc(curSc.answer)}</pre>
+    </div>`;
+  } else if (done) {
+    const fileNote = fileWritten ? `<span class="tag pass">Đã ghi: workspace_out/${esc(fileWritten.filename)} (${fileWritten.bytes} bytes)</span>` : `<span class="tag pass">Gate G1–G5 PASS</span>`;
+    rb.innerHTML = `<div class="card" style="border-color:#86efac; background:#f0fdf4">
+      <div class="card-hdr">
+        <h3 class="card-title" style="color:var(--teal)">&#10004; ${esc(curSc.result_title || "Kết quả Thiết kế & Mã C đã kiểm chứng")}${totalTurns > 1 ? ` — lượt ${turnNo + 1}/${totalTurns}` : ""}</h3>
+        ${fileNote}
+      </div>
+      <pre class="codebox" style="max-height:260px; margin-top:4px">${esc((curSc.turn_answers && curSc.turn_answers[turnNo]) || curSc.answer)}</pre>
+    </div>`;
+  }
+
+  // 6. Vẽ Dòng sự kiện (gọn, dễ đọc)
+  const fb = $("feed-box"); fb.innerHTML = "";
+  const visibleEvs = evs.filter(e => !["llm_call", "board_mutation"].includes(e.type) && !e.internal);
+  visibleEvs.forEach(e => {
+    const card = document.createElement("div");
+    let cls = "step-card", title = e.type, desc = "";
+    if (e.type === "run_started") {
+      title = totalTurns > 1 ? `Lượt ${(e.turn || 0) + 1}/${totalTurns}: ${e.turn ? "kỹ sư nhắn tiếp" : "khởi tạo phiên chạy (INTAKE)"}` : "Khởi tạo phiên chạy (INTAKE)";
+      desc = e.goal;
+    }
+    else if (e.type === "guardrail" && e.stage === "hardware_safety") {
+      const rq = e.request || {};
+      if (e.blocked) {
+        cls += " err";
+        title = `Guardrail an toàn phần cứng: ${String(e.verdict || "refuse").toUpperCase()}`;
+        desc = `Yêu cầu ${rq.text || (rq.volts + " V")} (${rq.target || "?"}) vượt giới hạn ${e.limit_V} V`;
+      } else {
+        title = "Guardrail an toàn phần cứng"; desc = `PASS — ${e.verdict || "trong giới hạn"}`;
+      }
+    }
+    else if (e.type === "guardrail" && e.blocked) {
+      cls += " err";
+      title = "Guardrail CHẶN yêu cầu đầu vào";
+      desc = "flags: " + ((e.flags || []).join(", ") || "—");
+    }
+    else if (e.type === "guardrail") { title = "Guardrail kiểm tra an toàn đầu vào"; desc = "PASS — Không có prompt injection / quá áp"; }
+    else if (e.type === "refused") {
+      cls += " err";
+      title = "Agent dừng, không thực hiện yêu cầu (refused)";
+      desc = `lý do: ${e.reason}`;
+    }
+    else if (e.type === "plan_updated") { title = "Lập / Cập nhật kế hoạch (update_plan)"; desc = e.rationale || `${(e.plan||[]).length} bước`; }
+    else if (e.type === "tool_call") {
+      title = `Gọi công cụ: ${e.tool}`;
+      desc = e.args ? argsText(e) : "";
+      if (!e.ok) cls += " err";
+    }
+    else if (e.type === "sim_result") {
+      cls += e.pass ? " sim-ok" : " err";
+      title = `Simulator thanh ghi (${e.artifact || "sim"}): ${e.pass ? "PASS" : "FAIL"}`;
+      desc = e.pass ? JSON.stringify(e.effects) : "Lỗi: " + (e.violations || []).join(", ");
+    }
+    else if (e.type === "interrupt_raised") {
+      cls += " int";
+      title = `Dừng tại cổng ${e.kind.toUpperCase()} (${e.interrupt_id})`;
+      desc = e.question || "";
+    }
+    else if (e.type === "resumed") {
+      cls += " sim-ok";
+      title = `Khôi phục từ Checkpoint: ${e.decision.toUpperCase()}`;
+      desc = e.payload || "";
+    }
+    else if (e.type === "replan_required") {
+      cls += " err";
+      title = `Yêu cầu lập lại kế hoạch (${e.code})`;
+      desc = e.reason || "";
+    }
+    else if (e.type === "file_written") {
+      cls += " sim-ok";
+      title = `Ghi tệp thành công: workspace_out/${e.filename} (${e.bytes} bytes)`;
+      desc = `Người duyệt: ${e.approver}`;
+    }
+    else if (e.type === "gate_result") {
+      cls += e.passed ? " sim-ok" : " err";
+      title = `Verification Gate G1–G5: ${e.passed ? "PASS" : "REJECTED"}`;
+      desc = JSON.stringify(e.gates);
+    }
+    else if (e.type === "finish") {
+      cls += e.accepted ? " sim-ok" : " err";
+      title = `Agent gọi finish (lần ${e.attempt || 1}): ${e.accepted ? "Gate chấp nhận" : "Gate từ chối → agent phải sửa"}`;
+      desc = JSON.stringify(e.gate || {});
+    }
+    else if (e.type === "done") {
+      cls += (e.status === "refused" || e.status === "blocked") ? " err" : " sim-ok";
+      title = "Hoàn tất phiên chạy (DONE)";
+      desc = `status = ${e.status}`;
+    }
+    card.className = cls;
+    card.innerHTML = `<div class="step-num">${totalTurns > 1 ? `L${(e.turn || 0) + 1}·S${e.step}` : `Step ${e.step}`}</div>
+                      <div class="step-body"><div class="step-title">${esc(title)}</div><div class="step-desc">${esc(desc)}</div></div>`;
+    card.onclick = () => {
+      $("json-box").style.display = "block";
+      $("json-title").textContent = `Chi tiết sự kiện seq #${e.seq} (${e.type})`;
+      $("json-content").textContent = JSON.stringify(e, null, 2);
+    };
+    fb.appendChild(card);
+  });
+  fb.scrollTop = fb.scrollHeight;
+}
+
+/* Tab 2 & 3 */
+async function refreshWorkspaceBadge() {
+  const res = await api("/api/workspace");
+  const n = (res.files || []).length;
+  const b = $("ws-badge");
+  b.textContent = `${n} tệp`;
+  b.className = "tag " + (n ? "pass" : "todo");
+}
+
+async function refreshWorkspace() {
+  const res = await api("/api/workspace");
+  await refreshWorkspaceBadge();
+  const box = $("ws-content");
+  if (!res.files || !res.files.length) {
+    box.innerHTML = `<div class="empty-state" style="padding:28px">
+      <h3>Thư mục <code>workspace_out/</code> hiện đang trống</h3>
+      <div>Chưa có tệp nào được ghi. Khi chạy kịch bản 1 và bấm <b>Phê duyệt (Approve)</b>, tệp <code>pwm_pa8.c</code> sẽ được ghi vào đây.</div>
+    </div>`;
+    return;
+  }
+  box.innerHTML = res.files.map(f => `
+    <div style="margin-bottom:14px">
+      <div style="font-weight:700; color:var(--teal); margin-bottom:4px">&#10004; ${esc(res.dir)}/${esc(f.name)} (${f.bytes} bytes)</div>
+      <pre class="codebox" style="max-height:420px">${esc(f.content)}</pre>
+    </div>`).join("");
+}
+
+async function loadTools() {
+  try {
+    const info = await api("/api/info");
+    $("tools-total").textContent = `${info.tools.length} tools`;
+    $("tools-tbody").innerHTML = info.tools.map((t, i) => {
+      const p = info.permissions[t] || "read-only";
+      const cls = p === "read-only" ? "pass" : (p === "irreversible-write" ? "fail" : "wait");
+      return `<tr><td>${i+1}</td><td><b><code>${esc(t)}</code></b></td><td>${esc(info.owners[t]||"—")}</td><td><span class="tag ${cls}">${esc(p)}</span></td></tr>`;
+    }).join("");
+  } catch {}
+}
+
+async function init() {
+  SCENARIOS = await api("/api/demo_scenarios");
+  document.querySelectorAll(".chip").forEach(c => {
+    c.onclick = () => selectScenario(c.dataset.sc);
+  });
+  $("btn-run").onclick = startRunAnimation;
+  $("btn-clear").onclick = () => clearScreen(true, true);
+  $("btn-skip").onclick = skipToNextMilestone;
+  $("btn-refresh-ws").onclick = refreshWorkspace;
+  $("prompt-input").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      startRunAnimation();
+    }
+  });
+
+  loadTools();
+  clearScreen(true, true);
+}
+init();
+</script>
+</body>
+</html>

@@ -138,7 +138,7 @@ def test_manifest_has_required_fields_and_never_contains_the_key(tmp_path):
     for k in ("created_at", "model", "temperature", "base_url", "corpus_manifest_sha256", "snapshot_agent_v1_sha256", "commit",
               "seeds", "systems", "task_set_sha256", "known_issues", "split", "python", "price_in_per_m"):
         assert k in m, k
-    assert m["commit"] is None and m["systems"] == ["S0", "S1", "S2"] and m["seeds"] == 3
+    assert (m["commit"] is None or (isinstance(m["commit"], str) and len(m["commit"]) >= 7)) and m["systems"] == ["S0", "S1", "S2"] and m["seeds"] == 3        # dự án đã là git repo: commit là hash (None khi không phải repo)
     assert "SECRET-should-never-appear" not in json.dumps(m)
     assert any("FreeRTOS" in k for k in m["known_issues"])
 
@@ -386,7 +386,7 @@ def test_resume_writes_a_newline_before_appending_if_the_last_line_was_cut(tmp_p
 
 # ---- S2D: Agent v1 loop + dữ liệu P1 (snapshot agent_p1) -----------------------------------------------------------
 def test_s2d_is_a_registered_system_with_its_own_cost_assumptions():
-    assert R.SYSTEMS_ALL == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5"] and R.DEFAULT_SYSTEMS == ["S0", "S1", "S2", "S2D"] and "S2D" in R.ASSUMPTIONS
+    assert R.SYSTEMS_ALL == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5", "S3@P7"] and R.DEFAULT_SYSTEMS == ["S0", "S1", "S2", "S2D"] and "S2D" in R.ASSUMPTIONS
     est = R.estimate_cost(["S2", "S2D"], n_tasks=27, seeds=3, cfg=CFG)
     assert est["per_system"]["S2D"]["runs"] == 81 and est["per_system"]["S2D"]["llm_calls"] > 0 and est["per_system"]["S2D"]["tokens_in"] > 0
 

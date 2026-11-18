@@ -50,11 +50,13 @@ def test_within_limits_request_is_not_refused(agent):
     assert res["status"] == "answered" and agent.llm.calls > before
 
 
-def test_known_limitation_guardrail_is_conservative_across_stm32_pin_types(agent):
-    """evaluate_hw lấy MIN trên mọi hàng input_voltage (FT_xxx 7.3, FT_c 5.5, TT 4.0, khác 4.0) nên 5 V vào chân FT_a (chịu
-    5 V) vẫn bị từ chối. Quá bảo thủ, không sửa ở P1 (D10) — ghi nhận cho P6."""
+def test_p6_guardrail_no_longer_refuses_5v_on_an_unnamed_stm32_pin_class(agent):
+    """P6 (D45) sửa giới hạn đã biết của P1: evaluate_hw từng lấy MIN trên mọi lớp chân (FT_xxx 7.3, FT_c 5.5, TT 4.0, khác 4.0) nên 5 V vào chân FT_a
+    (chịu 5 V) bị từ chối ngay ở INTAKE. Giờ yêu cầu không nêu lớp chân chỉ bị từ chối khi KHÔNG lớp nào chịu được; chân cụ thể do DRC (connect) và G4 kiểm."""
     res = agent.ask("Can I apply 5 V to the PA8 pin of the STM32G474?", session_id="t3")
-    assert res["status"] == "refused" and "4.0 V" in res["answer"]
+    assert res["status"] == "answered"
+    res = agent.ask("Can I apply 12 V to a pin of the STM32G474?", session_id="t3b")
+    assert res["status"] == "refused" and "7.3 V" in res["answer"]
 
 
 def test_tool_observation_feeds_the_verifier_end_to_end():

@@ -50,12 +50,14 @@ SANDBOX_DIR = _resolve_path("SANDBOX_DIR", "workspace_out")
 MEMORY_DB = _resolve_path("MEMORY_DB", "data/memory.sqlite")
 BOARD_STATE_DB = _resolve_path("BOARD_STATE_DB", "data/board_state.sqlite")      # P3: Board State (event log) của server board-state
 CHECKPOINT_DB = _resolve_path("AGENT_CHECKPOINT_DB", "data/checkpoints.sqlite")  # P4: checkpoint AgentState + phiên của runtime v3
+LESSONS_DB = _resolve_path("LESSONS_DB", "data/lessons.sqlite")                  # P7: Lesson memory (bộ nhớ dài hạn, D48); eval đặt riêng cho từng run
 
 AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
 SANDBOX_DIR.mkdir(parents=True, exist_ok=True)
 MEMORY_DB.parent.mkdir(parents=True, exist_ok=True)
 BOARD_STATE_DB.parent.mkdir(parents=True, exist_ok=True)
 CHECKPOINT_DB.parent.mkdir(parents=True, exist_ok=True)
+LESSONS_DB.parent.mkdir(parents=True, exist_ok=True)
 
 # LLM configuration
 LLM_API_KEY = (

@@ -20,6 +20,8 @@ import uuid
 
 import config
 from agent import approval, audit, guardrail
+from agent import lessons as lsn
+from agent import policy as pol
 from agent.llm import parse_entities
 from agent.memory import MAX_OBS_CHARS
 from agent.gate.types import requirement_id
@@ -78,6 +80,92 @@ class AgentRuntime:
         self.current_run_id: str | None = None
         self._state: AgentState | None = None
         self._tick = time.monotonic()
+        self.policy = pol.PolicyEngine(self._policy_lookup)            # P6 (D45): Policy Engine chạy trước mọi tool call của agent
+        self._lesson_store: lsn.LessonStore | None = None               # P7 (D48): Lesson memory, mở lười theo config.LESSONS_DB
+        if not self.ablations.guardrail:                               # A7 -Guardrail: không sanitize observation (INTAKE, Policy và taint cũng tắt)
+            self.hub.sanitize = False
+
+    def _policy_lookup(self, name: str, args: dict) -> dict:
+        """Tra cứu chỉ-đọc cho Policy (get_electrical_specs): đi qua hub như lời gọi nội bộ và được ghi vào trace (internal=True)."""
+        return self.gate_call(name, args)
+
+    # ------------------------------------------------------------------ Lesson memory (P7, D48)
+    def _lessons(self) -> "lsn.LessonStore":
+        if self._lesson_store is None:
+            self._lesson_store = lsn.LessonStore(config.LESSONS_DB)
+        return self._lesson_store
+
+    def _lesson_context(self, state: AgentState, chips: list) -> str | None:
+        """INTAKE: tối đa 3 lesson theo chip + họ ngoại vi nêu trong mục tiêu, đưa vào ngữ cảnh như gợi ý chưa kiểm chứng. A5 tắt."""
+        if not self.ablations.lessons or not chips:
+            return None
+        fams = {lsn.family(p) for p in lsn.extract_peripherals(state.goal)}
+        try:
+            found = self._lessons().search(chips[0], fams)
+            if not found:
+                return None
+            self._lessons().mark_used([l["id"] for l in found])
+        except Exception as exc:                                    # bộ nhớ hỏng không được làm hỏng run (AT2): bỏ qua, ghi audit
+            audit.log("lesson_store_error", op="search", error=f"{type(exc).__name__}: {exc}", session=state.project_id)
+            return None
+        ids = [l["id"] for l in found]
+        state.used["lessons_used"] = state.used.get("lessons_used", 0) + len(ids)
+        audit.log("lesson_used", ids=ids, chip=chips[0], session=state.project_id, run=state.run_id)
+        self._emit(state, "lesson_used", ids=ids, chip=chips[0], families=sorted(fams), when="intake", evidence=[l["evidence_run_id"] for l in found])
+        return lsn.render(found)
+
+    def _learn(self, state: AgentState) -> None:
+        """Sau khi Gate chấp nhận: ghi lesson từ các lần tự sửa đã được simulator xác nhận (chính sách ở lessons.py). Run bị gắn cờ injection không ghi gì (chống đầu độc bộ nhớ)."""
+        if not self.ablations.lessons or (state.policy or {}).get("flagged_calls"):
+            return
+        try:
+            board = self._board_state()
+            for item in lsn.lessons_from_run(state.artifacts, self._infer_chip(state, board), state.run_id):
+                row = self._lessons().add(**item)
+                if row:
+                    state.used["lessons_written"] = state.used.get("lessons_written", 0) + 1
+                    audit.log("lesson_written", id=row["id"], chip=row["chip"], peripheral=row["peripheral"], error_code=row["error_code"], run=state.run_id, session=state.project_id)
+                    self._emit(state, "lesson_written", id=row["id"], chip=row["chip"], peripheral=row["peripheral"], family=row["family"], error_code=row["error_code"],
+                               evidence_run_id=row["evidence_run_id"])
+        except Exception as exc:                                    # không bao giờ làm hỏng một câu trả lời đã được chấp nhận
+            audit.log("lesson_store_error", op="write", error=f"{type(exc).__name__}: {exc}", session=state.project_id)
+
+    def _pstate(self, state: AgentState) -> dict:
+        if not state.policy:
+            state.policy = pol.new_state()
+        return state.policy
+
+    def _policy_check(self, state: AgentState, name: str, args: dict, perm: str | None) -> "pol.Decision":
+        if not self.ablations.guardrail:
+            return pol.ALLOW
+        return self.policy.check(name, args, perm, self._pstate(state), writes_done=len(state.files),
+                                 writes_limit=int(state.budgets.get("files", Budgets().files)), approver=self.ablations.hitl)
+
+    def _deny(self, state: AgentState, name: str, args: dict, dec: "pol.Decision") -> str:
+        """Lời gọi bị Policy từ chối: KHÔNG chạy; agent nhận lý do + trích dẫn + gợi ý như observation. Lỗi cấu trúc => REPLAN_REQUIRED; lặp quá max_repairs => ESCALATED."""
+        ps = self._pstate(state)
+        ps["denied"][dec.code] = ps["denied"].get(dec.code, 0) + 1
+        state.used["policy_denied"] = state.used.get("policy_denied", 0) + 1
+        audit.log("policy_denied", tool=name, code=dec.code, rule=dec.rule, kind=dec.kind, args=clip(args, 200), session=state.project_id, run=state.run_id)
+        self._emit(state, "policy_denied", tool=name, code=dec.code, rule=dec.rule, kind=dec.kind, reason=dec.reason, citation=dec.citation, enforced_by="policy-engine")
+        if dec.kind == "structural" and self.ablations.planner and not state.replan_pending:
+            state.replan_pending = {"reason": f"the policy engine denied {name} ({dec.code}): {dec.reason} A different design is needed (another voltage, a regulator, another pin or chip).",
+                                    "code": dec.code}
+            self._emit(state, "replan_required", reason=state.replan_pending["reason"], code=dec.code)
+        if state.count_error("POLICY:" + str(dec.code)) > self.max_repairs:
+            state.pending_escalation = {"reason": "repeated_error", "code": dec.code}
+        return self._emit_call(state, name, args, dec.observation())
+
+    def _after_call(self, state: AgentState, name: str, res: dict) -> None:
+        """Sau mỗi tool call của agent: lấy các câu bị guardrail xoá khỏi observation (taint) và ghi lại từ chối kiểu mạng của board-state thành sự kiện policy_denied."""
+        frags = self.hub.drain_removed()
+        if not self.ablations.guardrail:
+            return
+        self.policy.note_observation(self._pstate(state), name, res.get("security_flags") or [], frags)
+        ref = pol.PolicyEngine.record_tool_refusal(name, res)
+        if ref:
+            audit.log("policy_denied", **ref, session=state.project_id, run=state.run_id)
+            self._emit(state, "policy_denied", **ref, kind="structural")
 
     def gate_call(self, name: str, args: dict) -> dict:
         """Cầu nối tool cho Gate: gọi qua hub (cùng quyền, cùng project) và ghi sự kiện `tool_call` internal=True (không tính vào tool call của agent)."""
@@ -190,8 +278,8 @@ class AgentRuntime:
 
     # ------------------------------------------------------------------ INTAKE
     def _intake(self, state: AgentState) -> bool:
-        g = guardrail.check_user_input(state.goal)
-        self._emit(state, "guardrail", stage="input", blocked=g["blocked"], flags=g["flags"])
+        g = guardrail.check_user_input(state.goal) if self.ablations.guardrail else {"blocked": False, "flags": []}
+        self._emit(state, "guardrail", stage="input", blocked=g["blocked"], flags=g["flags"], **({} if self.ablations.guardrail else {"disabled": "A7"}))
         if g["blocked"]:
             audit.log("direct_injection_blocked", qid=state.run_id, flags=g["flags"])
             self._terminate(state, "blocked", "Request blocked by the security guardrail (flags: " + ", ".join(g["flags"]) +
@@ -201,7 +289,8 @@ class AgentRuntime:
         sess = self.store.session(state.project_id)
         ent = parse_entities(state.goal)
         chips = ent["chips"] or next((h["chips"] for h in reversed(sess["history"]) if h.get("chips")), [])
-        refusal = intake.hardware_check(self.hub, state.goal, chips, ent, lambda t, **kw: self._emit(state, t, **kw), observe=state.observations.append)
+        refusal = (intake.hardware_check(self.hub, state.goal, chips, ent, lambda t, **kw: self._emit(state, t, **kw), observe=state.observations.append)
+                   if self.ablations.guardrail else None)
         if refusal:
             self._terminate(state, "refused", refusal, "REFUSED", reason="hardware_safety")
             return False
@@ -216,6 +305,9 @@ class AgentRuntime:
         ctx = intake.project_context(state.project_id, board, state.plan, state.start)
         if ctx:
             msgs.append({"role": "system", "content": ctx})
+        lctx = self._lesson_context(state, chips)
+        if lctx:
+            msgs.append({"role": "system", "content": lctx})
         msgs.append({"role": "user", "content": state.goal})
         state.messages = msgs
         state.status = "PLAN"
@@ -373,6 +465,9 @@ class AgentRuntime:
         perm = PERMISSIONS.get(name)
         if name == "write_config_file" and name in self.hub.owner:
             return self._exec_write(state, call)
+        dec = self._policy_check(state, name, args, perm)
+        if not dec.allow:
+            return self._deny(state, name, args, dec)
         if perm in ("state-mutating", "irreversible-write"):       # m4: sandboxed-exec không có trạng thái => chạy lại được khi resume (khớp Ruling P4)
             state.in_flight = {"call_id": call["id"], "tool": name}
             self._checkpoint(state)
@@ -381,6 +476,7 @@ class AgentRuntime:
         if name in self.hub.owner:
             state.used["tool_calls"] += 1
             state.observations.append({"tool": name, "args": args, "result": res})
+            self._after_call(state, name, res)
         text = self._emit_call(state, name, args, res)
         if name in self.hub.owner:
             self._classify(state, name, args, res)
@@ -443,6 +539,9 @@ class AgentRuntime:
         """write_config_file: chính sách (tên/đuôi/kích thước/đường dẫn) kiểm trước; hợp lệ thì tạo interrupt `approval` (Approve => ghi, agent chạy tiếp); A6 tự duyệt."""
         name, args = call["name"], call["arguments"]
         state.used["tool_calls"] += 1
+        dec = self._policy_check(state, name, args, "irreversible-write")
+        if not dec.allow:
+            return self._deny(state, name, args, dec)
         err = hitl.check_args_for_write(args)
         if err:
             audit.log("guarded_action_rejected_by_policy", tool=name, filename=args.get("filename"), reason=err, session=state.project_id)
@@ -451,7 +550,10 @@ class AgentRuntime:
         audit.log("guarded_action_requested", tool=name, filename=args["filename"], bytes=len(args["content"]), session=state.project_id)
         if not self.ablations.hitl:                                 # A6 -HITL: tự duyệt, không interrupt
             return self._emit_call(state, name, args, self._do_write(state, args["filename"], args["content"], "auto:A6"))
-        return self._raise_interrupt(state, hitl.approval_interrupt(call["id"], args["filename"], args["content"]))
+        itr = hitl.approval_interrupt(call["id"], args["filename"], args["content"])
+        if self._pstate(state).get("flagged_calls"):
+            itr["payload"]["tainted"] = True                        # P6: ngữ cảnh của run có chỉ dẫn không tin cậy => thẻ duyệt phải hiện cảnh báo (UI)
+        return self._raise_interrupt(state, itr)
 
     def _do_write(self, state: AgentState, filename: str, content: str, approver: str) -> dict:
         res = approval.write_approved(filename, content, state.project_id, approver)
@@ -569,6 +671,7 @@ class AgentRuntime:
         self._emit(state, "finish", implicit=req.implicit, accepted=report.passed, gate=dict(report.gates), waived=[w["id"] for w in req.waived], attempt=state.finish_attempts)
         if report.passed:
             state.answer = req.answer
+            self._learn(state)
             self._terminate(state, "answered", req.answer, "DONE", reason="gate_passed", gate=report.to_dict())
             return True, {"gates": dict(report.gates)}
         # ---- gate fail: đếm lỗi theo mã, REPLAN cho lỗi cấu trúc, ESCALATED khi lặp quá ngân sách tự sửa

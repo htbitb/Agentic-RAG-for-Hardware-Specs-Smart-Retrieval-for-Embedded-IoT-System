@@ -233,7 +233,7 @@ def test_manifest_section_for_a_legacy_manifest_without_resume_entries(tmp_path)
 
 
 def test_s2d_sits_between_s2_and_s3_and_has_pairs_against_s2_s1_s0():
-    assert report.SYSTEM_ORDER == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5", "S3"]
+    assert report.SYSTEM_ORDER == ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5", "S3@P7", "S3"]
     assert [p for p in report.PAIRS if p[0] == "S2D"] == [("S2D", "S2"), ("S2D", "S1"), ("S2D", "S0")]
     assert ("S2", "S1") in report.PAIRS and ("S1", "S0") in report.PAIRS and ("S2", "S0") in report.PAIRS
 

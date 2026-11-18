@@ -16,3 +16,6 @@ __pycache__/
 .DS_Store
 *.sqlite-wal
 *.sqlite-shm
+
+# P7: bộ nhớ lesson của lượt chạy thật (D48) — không commit
+agent/data/lessons.sqlite*

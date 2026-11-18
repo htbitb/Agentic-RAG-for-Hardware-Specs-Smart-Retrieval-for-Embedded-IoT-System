@@ -237,8 +237,12 @@ Chỉ `G2-UNMODELED` và `G5-SKIPPED` mới được miễn (`finish(waived_requ
 
 ### 4.6. Guardrail và bộ nhớ
 
-- **Guardrail v1** (`guardrail.py`): mã xác định, không phải prompt, nên lời injection không tắt được. Gồm lọc injection trực tiếp trong câu hỏi, quét injection gián tiếp trong observation, và `hardware_check` (từ chối "áp X V vào chân Y" nếu vượt giới hạn). Hạn chế đã biết: `hardware_check` từ chối cả câu chứa "5 V" trước khi agent suy luận nên gây over-refusal (6/11 run thất bại của S3). P6 sẽ thay bằng Policy Engine.
-- **Bộ nhớ**: short-term (danh sách tin nhắn của run, kết quả tool được cắt), episodic (SQLite, chỉ lưu câu trả lời đã được kiểm, phục vụ câu hỏi nối tiếp) và Board State làm project memory. Lesson memory kiểu Reflexion chưa có (P7).
+- **Guardrail** (`guardrail.py`, `policy.py`): mã xác định, không phải prompt, nên lời injection không tắt được. Ba lớp:
+  1. *Đầu vào* (INTAKE): lọc injection trực tiếp trong câu hỏi, và `hardware_check` từ chối "áp X V vào Y" khi vượt Absolute Maximum. Từ P6 (D45) giới hạn được chọn theo **rail** (VDD, VDDH, VBUS...) và **lớp chân** (FT_c, TT...) mà câu nêu; câu không nêu gì chỉ bị từ chối khi không rail/lớp nào của chip chịu được (sửa over-refusal C6-015 và "5 V vào chân FT").
+  2. *Hành động* (Policy Engine, P6, chạy trước MỌI tool call của agent, trên tham số có cấu trúc): `set_target` vượt Absolute Maximum của rail VDD bị từ chối kèm trích dẫn và buộc lập lại kế hoạch; hạn ngạch ghi file; **taint tracking** (đoạn chép từ câu bị gắn cờ injection trong observation không được dùng làm tham số của tool ghi/đổi trạng thái; run đã nhiễm không được tự duyệt ghi file). `connect` đã được board-state từ chối bằng DRC; Policy chỉ ghi lại thành sự kiện `policy_denied`. `set_clock_config` không bị chặn (phản hồi what-if cho tự sửa; G4 chặn ở cuối).
+  3. *Đầu ra*: G4 trong Gate (không đổi; dùng `strict`).
+  Observation vẫn được sanitize; các câu bị xoá được runtime giữ bản sao (không đưa cho mô hình) để taint tracking so khớp.
+- **Bộ nhớ**: short-term (danh sách tin nhắn của run, kết quả tool được cắt), episodic (SQLite, chỉ lưu câu trả lời đã được kiểm, phục vụ câu hỏi nối tiếp), Board State làm project memory, và từ P7 (D48) **Lesson memory** (`lessons.py`, SQLite): ghi sau khi Gate chấp nhận một câu trả lời mà simulator (G2) xác nhận một lần tự sửa — mỗi mã lỗi G2 ở bản nháp trước và đã biến mất ở bản cuối thành một lesson {chip, ngoại vi, mã lỗi, các dòng C thêm/bớt, run làm bằng chứng}; không ghi khi run bị gắn cờ injection. Đọc ở INTAKE theo chip và **họ ngoại vi** nêu trong mục tiêu (TIM1/TIM8/TIM20 cùng họ bộ định thời nâng cao), tối đa 3, đưa vào ngữ cảnh như gợi ý chưa kiểm chứng. Mỗi run của eval có kho lesson trống (không rò dev → test).
 - **Audit** (`audit.py`): nhật ký JSONL append-only, tự che API key.
 
 ### 4.7. Human-in-the-loop và Run API
@@ -266,7 +270,8 @@ Mỗi cờ tắt đúng một cơ chế bằng cấu hình (`AGENT_ABLATIONS="A1
 | A3 `-Sandbox` | Simulator, solver, compile | Ẩn `hw-sandbox`; G2, G5 tắt; G1 quay về verifier v1 |
 | A4 `-Reflection` | Tự sửa | Ngân sách sửa = 0 (Gate fail lần đầu thì leo thang) |
 | A6 `-HITL` | Hỏi người | Ẩn `ask_human`; `write_config_file` tự duyệt |
-| A5, A7 | Lesson memory, Guardrail | Chưa có (P7, P6) |
+| A5 `-Lessons` | Lesson memory | Không ghi, không đọc lesson (P7) |
+| A7 `-Guardrail` | Guardrail xác định ở runtime | Tắt lọc injection trực tiếp + `hardware_check` ở INTAKE, sanitize observation và Policy Engine; Gate G4, kiểm tham số ghi file và cổng duyệt của người vẫn chạy (P6; chỉ chạy trên C6, C7) |
 
 ---
 
@@ -280,7 +285,7 @@ agent/
 │   ├── gate/           G1–G5                                          (§4.5)
 │   ├── prompts/system_v3.md
 │   ├── tools.py        ToolHub + bảng quyền                           (§4.2)
-│   ├── guardrail.py, approval.py, audit.py, memory.py, llm.py
+│   ├── guardrail.py, policy.py (P6), lessons.py (P7), approval.py, audit.py, memory.py, llm.py
 │   ├── react_agent.py, verifier.py   vòng lặp v1 (UI cũ)
 │   └── scripted.py     LLM kịch bản, chỉ dùng cho test
 ├── mcp_servers/        4 server + hw_queries.py (lớp truy vấn SQLite)
@@ -513,8 +518,8 @@ Nguồn: `eval/results/dev_baseline_v2/report.md`. TSR (%), CI 95% theo task xem
 | P3 | Board State, DRC, task C4 | Xong |
 | P4 | Runtime v2, Gate G1–G5, grader `process`, ablation | Xong |
 | P5 | HITL v2, task C5, người dùng mô phỏng, Run API | Xong |
-| P6 | Policy Engine thay `hardware_check`, C7 v2, cờ A7 | Chưa |
-| P7 | Lesson memory, task chuỗi cho learning curve, cờ A5 | Chưa |
+| P6 | Policy Engine + guardrail biết rail/lớp chân, C7 v2 (14 task gián tiếp), cờ A7 | Mã và test offline xong (D45–D47); **chưa đo bằng LLM thật** (chưa đóng băng `agent_p7`) |
+| P7 | Lesson memory, task chuỗi C10 cho learning curve, cờ A5 | Mã và test offline xong (D48–D49); **chưa đo bằng LLM thật** |
 | P8 | UI cho v2 (Plan, Board, Timeline, Interrupt, Lessons, Budget) | Chưa |
 | P9 | Fault injection, C9, ablation đầy đủ, chạy `test`, kiểm định H1–H9 | Chưa |
 

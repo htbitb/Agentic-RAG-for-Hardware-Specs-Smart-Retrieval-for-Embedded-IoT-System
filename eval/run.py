@@ -33,11 +33,12 @@ from eval.sim_human import SimulatedHuman
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIRM_USD = 2.0
-SYSTEMS_ALL = ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5"]
-S3_SYSTEMS = ("S3@P4", "S3@P5")                      # hai thế hệ Agent v3 (mỗi thế hệ có snapshot và hàng kết quả riêng; hàng S3@P4 được giữ nguyên)
-DEFAULT_SYSTEMS = ["S0", "S1", "S2", "S2D"]          # S3@P4/S3@P5 phải được yêu cầu rõ (--systems): cần snapshots/agent_p4 / agent_p5 và tốn nhiều lời gọi hơn hẳn
+SYSTEMS_ALL = ["S0", "S1", "S2", "S2D", "S3@P4", "S3@P5", "S3@P7"]
+S3_SYSTEMS = ("S3@P4", "S3@P5", "S3@P7")             # các thế hệ Agent v3 (S3@P7 = P6 Policy Engine + P7 Lesson memory trong MỘT snapshot; tách đóng góp bằng A7 và A5) (mỗi thế hệ có snapshot và hàng kết quả riêng; hàng S3@P4/S3@P5 được giữ nguyên)
+DEFAULT_SYSTEMS = ["S0", "S1", "S2", "S2D"]          # S3@P4/P5/P7 phải được yêu cầu rõ (--systems): cần snapshots/agent_p4 / agent_p5 / agent_p7 và tốn nhiều lời gọi hơn hẳn
 SNAPSHOT_P4 = ROOT / "snapshots" / "agent_p4"
 SNAPSHOT_P5 = Path(os.environ.get("EVAL_SNAPSHOT_P5") or ROOT / "snapshots" / "agent_p5")      # EVAL_SNAPSHOT_P5 chỉ cho lượt PILOT trên bản chụp tạm; lượt chính thức dùng snapshots/agent_p5 (hash ghim trong manifest)
+SNAPSHOT_P7 = Path(os.environ.get("EVAL_SNAPSHOT_P7") or ROOT / "snapshots" / "agent_p7")      # EVAL_SNAPSHOT_P7 chỉ cho lượt PILOT; lượt chính thức dùng snapshots/agent_p7 (đóng băng bằng eval.tools.freeze_snapshot)
 V3_MIN_TURN_TIMEOUT = 900.0                          # runtime v3 có ngân sách wall riêng bên dưới mức này; --timeout mặc định (180 s) sẽ cắt ngang nó
 
 # Giả định để ước tính TRƯỚC khi chạy (số liệu đo thật từ eval/results/dev_baseline_v2, model ag/gemini-3.8-flash-medium qua gateway, 99 run/hệ, 1 lượt/run):
@@ -47,7 +48,9 @@ ASSUMPTIONS = {"S0": {"calls": 1.0, "in": 3555, "out": 326}, "S1": {"calls": 1.0
                # S3@P4: số đo thật từ eval/results/pilot_p4_full + pilot_p4_round1 (38 run, 49 lượt, 1 seed: 662–685 lời gọi, 14,5 M token vào, 164 k ra); ghi lại khi đổi runtime/prompt
                "S3@P4": {"calls": 13.7, "in": 21600, "out": 240},
                # S3@P5: ước ban đầu = S3@P4 + schema ask_human (~+400 token/lời gọi) + lời mời hỏi/ask; hiệu chỉnh lại từ lượt đo thật đầu tiên của P5
-               "S3@P5": {"calls": 14.5, "in": 22000, "out": 250}}
+               "S3@P5": {"calls": 14.5, "in": 22000, "out": 250},
+               # S3@P7: Policy Engine và Lesson memory không thêm lời gọi LLM (tra cứu nội bộ); lesson thêm tối đa ~1,8 nghìn ký tự vào ngữ cảnh khi có; dùng lại số của S3@P5 cho tới khi có lượt đo thật đầu tiên
+               "S3@P7": {"calls": 14.5, "in": 22000, "out": 250}}
 HISTORY_GROWTH = 0.25        # mỗi lượt thêm làm token đầu vào mỗi lời gọi tăng ~25 % (lịch sử hội thoại được gửi lại); chỉ áp cho task nhiều lượt
 # C5 (P5): task có người dùng mô phỏng được tính thêm ~1 lượt người dùng (baseline hỏi lại rồi nhận câu trả lời / S3 chạy tiếp sau interrupt);
 # giả định thô, chưa đo — ghi lại sau lượt chạy C5 đầu tiên
@@ -145,10 +148,10 @@ class ManifestMismatch(RuntimeError):
 
 RESUME_MUST_MATCH = ("model", "temperature", "split", "snapshot_agent_v1_sha256", "snapshot_agent_p1_sha256",
                      "snapshot_agent_p1_data_sha256", "snapshot_agent_p4_sha256", "snapshot_agent_p4_data_sha256",
-                     "snapshot_agent_p5_sha256", "snapshot_agent_p5_data_sha256")
+                     "snapshot_agent_p5_sha256", "snapshot_agent_p5_data_sha256", "snapshot_agent_p7_sha256", "snapshot_agent_p7_data_sha256")
 RESUME_ENTRY_KEYS = ("cache_mode", "task_set_sha256", "corpus_manifest_sha256", "snapshot_agent_v1_sha256",
                      "snapshot_agent_p1_sha256", "snapshot_agent_p1_data_sha256", "snapshot_agent_p4_sha256", "snapshot_agent_p4_data_sha256",
-                     "snapshot_agent_p5_sha256", "snapshot_agent_p5_data_sha256",
+                     "snapshot_agent_p5_sha256", "snapshot_agent_p5_data_sha256", "snapshot_agent_p7_sha256", "snapshot_agent_p7_data_sha256",
                      "native_rag_changelog_sha256", "hwmodel_vendor_sha256", "hwmodel_data_sha256")
 # hwmodel_vendor_sha256 KHÔNG nằm trong RESUME_MUST_MATCH: chấm điểm đọc runs.jsonl SAU khi chạy nên đổi bản vendor giữa các lần resume là hợp lệ
 # (khác snapshot agent, vốn quyết định output của hệ); mọi lần đổi phải được ghi vào post_run_changes.
@@ -277,6 +280,8 @@ def build_manifest(cfg: LLMConfig, systems, tasks, seeds: int, split, cache_mode
         "snapshot_agent_p4_data_sha256": snapshot_data_checksum(SNAPSHOT_P4) if SNAPSHOT_P4.is_dir() else None,
         "snapshot_agent_p5_sha256": snapshot_checksum(SNAPSHOT_P5) if SNAPSHOT_P5.is_dir() else None,
         "snapshot_agent_p5_data_sha256": snapshot_data_checksum(SNAPSHOT_P5) if SNAPSHOT_P5.is_dir() else None,
+        "snapshot_agent_p7_sha256": snapshot_checksum(SNAPSHOT_P7) if SNAPSHOT_P7.is_dir() else None,
+        "snapshot_agent_p7_data_sha256": snapshot_data_checksum(SNAPSHOT_P7) if SNAPSHOT_P7.is_dir() else None,
         "native_rag_changelog_sha256": _sha256_file(ROOT / "native-RAG" / "CHANGELOG_EVAL.md"),
         **sandbox.vendor_hashes(),                    # hwmodel đóng băng dùng cho grader functional_sim/compile (D19)
         "commit": _commit(), "seeds": seeds, "systems": list(systems), "split": split, "cache_mode": cache_mode,
@@ -529,16 +534,18 @@ def make_factories(cfg: LLMConfig, cache_mode: str, timeout: float) -> dict:
                                       cmd=[str(ROOT / "agent" / ".venv" / "bin" / "python"), "-I", "-B", str(WORKER)]),
         "S3@P4": v3,
         "S3@P5": lambda: v3(name="S3@P5", snapshot=SNAPSHOT_P5),
+        "S3@P7": lambda: v3(name="S3@P7", snapshot=SNAPSHOT_P7),
         # biến thể ablation: khoá (hệ, biến thể); mỗi mục một adapter riêng mang nhãn biến thể và cờ ablation của nó
         **{("S3@P4", variant): (lambda code=code, variant=variant: v3(ablations=[code], variant=variant)) for code, variant in ABLATION_VARIANTS.items()},
         **{("S3@P5", variant): (lambda code=code, variant=variant: v3(name="S3@P5", snapshot=SNAPSHOT_P5, ablations=[code], variant=variant)) for code, variant in ABLATION_VARIANTS.items()},
+        **{("S3@P7", variant): (lambda code=code, variant=variant: v3(name="S3@P7", snapshot=SNAPSHOT_P7, ablations=[code], variant=variant)) for code, variant in ABLATION_VARIANTS.items()},
     }
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--systems", default=",".join(DEFAULT_SYSTEMS), help=f"mặc định {','.join(DEFAULT_SYSTEMS)}; thêm S3@P4 để đo Agent v3")
-    ap.add_argument("--ablations", default="", help="chỉ với S3@P4/S3@P5: A1=-Planner, A2=-BoardState, A3=-Sandbox, A4=-Reflection, A6=-HITL (phân tách bằng dấu phẩy); "
+    ap.add_argument("--ablations", default="", help="chỉ với S3@P4/S3@P5/S3@P7: A1=-Planner, A2=-BoardState, A3=-Sandbox, A4=-Reflection, A6=-HITL, A7=-Guardrail (chỉ C6/C7) (phân tách bằng dấu phẩy); "
                     "mỗi ablation là một biến thể riêng THAY CHO lượt chạy chính của S3@P4")
     ap.add_argument("--split", default="dev", choices=["dev", "test"])
     ap.add_argument("--categories")
@@ -569,7 +576,7 @@ def main(argv=None) -> int:
     except ValueError as exc:
         ap.error(str(exc))
     if ablations and not set(S3_SYSTEMS) & set(systems):
-        ap.error("--ablations chỉ áp dụng cho hệ S3 (thêm S3@P4 hoặc S3@P5 vào --systems)")
+        ap.error("--ablations chỉ áp dụng cho hệ S3 (thêm S3@P4, S3@P5 hoặc S3@P7 vào --systems)")
     seeds = a.seeds if a.seeds is not None else (1 if a.suite else 3)
     cfg = LLMConfig.load()
     if a.cache != "replay" and not cfg.api_key:

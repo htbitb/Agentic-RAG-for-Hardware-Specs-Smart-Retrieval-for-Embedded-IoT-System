@@ -4,9 +4,12 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-# 1. Tự động khởi tạo .env từ .env.example.txt nếu chưa có
+# 1. Tự động khởi tạo .env từ .env.example (hoặc .env.example.txt cũ) nếu chưa có
 if [ ! -f ".env" ]; then
-  if [ -f ".env.example.txt" ]; then
+  if [ -f ".env.example" ]; then
+    cp ".env.example" ".env"
+    echo "[start.sh] Đã tạo file .env từ .env.example"
+  elif [ -f ".env.example.txt" ]; then
     cp ".env.example.txt" ".env"
     echo "[start.sh] Đã tạo file .env từ .env.example.txt"
   fi
