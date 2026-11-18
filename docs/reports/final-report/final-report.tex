@@ -1,0 +1,164 @@
+% Biên dịch: tectonic final-report.tex   (6–8 trang nội dung, hai cột; phụ lục và tài liệu tham khảo không tính)
+\documentclass[11pt,a4paper,twocolumn]{article}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Courier New}[Scale=0.82]
+\usepackage[vietnamese]{babel}
+\usepackage[a4paper,top=1.9cm,bottom=1.9cm,left=1.7cm,right=1.7cm,columnsep=0.7cm]{geometry}
+\usepackage{graphicx,tabularx,booktabs,array,amsmath,enumitem,hyperref,xurl,xcolor,titlesec,fancyhdr}
+\definecolor{bkblue}{HTML}{164B78}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=bkblue,citecolor=bkblue}
+\newcommand{\file}[1]{{\footnotesize\ttfamily\nolinkurl{#1}}}
+\setlist{nosep,leftmargin=1.1em,topsep=1pt}
+\titleformat{\section}{\normalsize\bfseries\color{bkblue}}{\thesection.}{0.4em}{}
+\titleformat{\subsection}{\small\bfseries}{\thesubsection}{0.4em}{}
+\titlespacing*{\section}{0pt}{5pt}{2pt}
+\titlespacing*{\subsection}{0pt}{3pt}{1pt}
+\setlength{\parskip}{1.5pt}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.03}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Hardware Co-Design Agent v3}\fancyhead[R]{\small CO5151 --- D3 v1}\fancyfoot[C]{\small\thepage}
+\begin{document}
+\twocolumn[{\centering
+{\Large\bfseries Agentic RAG for Hardware Specs: một agent thiết kế phần cứng nhúng có kiểm chứng, phân quyền hành động và bộ nhớ dài hạn\par}
+\vspace{4pt}
+Hà Thanh Bình, Huỳnh Đức Nhâm, La Quang Huy\\
+{\small Khoa Khoa học và Kỹ thuật Máy tính, Trường Đại học Bách khoa TP.HCM --- CO5151 Advanced Agentic AI, HK261}\par
+\vspace{4pt}
+\begin{minipage}{0.92\textwidth}\small
+\textbf{Tóm tắt.} Chúng tôi xây dựng một agent hỗ trợ kỹ sư firmware (STM32G474, ESP32, nRF52840, FreeRTOS) đi từ tra cứu tài liệu đến \emph{thiết kế có phản hồi}: agent lập kế hoạch, thao tác trên một Board State có phiên bản, nhận phản hồi từ simulator thanh ghi, DRC và trình biên dịch, rồi tự sửa hoặc hỏi người. Mọi câu trả lời phải qua một cổng kiểm chứng xác định G1--G5; mọi lời gọi công cụ qua một Policy Engine xác định; một Lesson memory ghi lại các lần tự sửa đã được simulator xác nhận. Trên tập dev (50 task $\times$ 3 seed, model \texttt{gemini-3.8-flash}), hệ đầy đủ đạt 91{,}3\% TSR so với 75{,}9\% của model gọi trực tiếp và 88{,}4\% của phiên bản trước khi thêm guardrail v2/bộ nhớ; hạng mục cải thiện rõ nhất là an toàn điện áp (C6: 100\% so với 80\%, over-refusal 0\% so với 33\%). Chúng tôi báo cáo trung thực những điều \emph{chưa} chứng minh được: lợi thế tổng thể trên dev chưa có ý nghĩa thống kê, và Lesson memory chưa được kích hoạt với model này.
+\end{minipage}\par\vspace{6pt}}]
+
+\section{Giới thiệu}
+Kỹ sư nhúng phải đối chiếu datasheet, reference manual và SVD, rồi viết mã cấu hình mà một sai số về pin AF, xung nhịp hay điện áp có thể làm hỏng phần cứng. Một chatbot RAG tra cứu được số liệu nhưng không \emph{kiểm chứng} được thiết kế; mô hình ngôn ngữ trần thì bịa số. Đề tài đặt câu hỏi: \emph{agent có vòng phản hồi kín (simulator, DRC, Gate), phân quyền hành động xác định và bộ nhớ dài hạn có thực sự tốt hơn baseline đơn giản, và an toàn hơn trước tấn công prompt injection?} Đây là Application Track: người dùng là kỹ sư firmware/IoT và sinh viên; ba kịch bản chính là (i) tra cứu chéo pin--AF--thanh ghi, (ii) sinh mã cấu hình PWM/UART/I2C/PLL được mô phỏng kiểm chứng, (iii) người dùng bất cẩn hoặc có ý đồ xấu (5 V vào chân không chịu 5 V, ghi tệp ngoài workspace, chèn chỉ dẫn vào tài liệu).
+
+\section{Nền tảng và công trình liên quan}
+Chúng tôi dùng vòng suy luận--hành động ReAct \cite{react}, phản chiếu kiểu Reflexion \cite{reflexion} cho bộ nhớ lesson, RAG lai (BM25 + embedding) cho tài liệu, và các nguyên tắc phòng thủ gián tiếp của CaMeL/AgentDojo \cite{agentdojo,camel}: tách dữ liệu không tin cậy khỏi quyết định hành động bằng kiểm tra xác định trên tham số có cấu trúc, không dựa vào lời dặn trong prompt. Phần tự viết là toàn bộ runtime, Gate, hwmodel, MCP server và harness; framework chỉ cung cấp SDK OpenAI-compatible và MCP.
+
+\section{Thiết kế hệ thống}
+\subsection{Kiến trúc và vòng điều khiển (R1)}
+Runtime là một state machine \texttt{INTAKE $\to$ PLAN $\to$ ACT$\leftrightarrow$OBSERVE $\to$ CHECK $\to$ FINISH\_GATE $\to$ DONE/ESCALATED/REFUSED/INTERRUPTED}, checkpoint SQLite sau mỗi bước (kill rồi resume ở tiến trình khác). LLM quyết định dùng công cụ nào, lập và sửa kế hoạch (\texttt{update\_plan}), khi nào hỏi người (\texttt{ask\_human}); \emph{runtime} quyết định điều được phép và khi nào là xong. Lỗi cục bộ của Gate quay về agent dưới dạng finding có kiểu \{code, where, expected, actual, hint\_source\}; lỗi cấu trúc (xung đột chân, vượt trần clock) chèn \texttt{REPLAN\_REQUIRED}; lặp quá 3 lần hoặc hết ngân sách thì ESCALATED kèm bản nháp tốt nhất và danh sách requirement chưa đạt. Hệ chạy đơn agent; không có điều phối đa agent.
+
+\begin{figure*}[t]\centering
+\includegraphics[width=0.78\textwidth]{assets/architecture_drawio.png}
+\caption{Kiến trúc đã cài đặt (cập nhật từ D2): state machine với checkpoint, 4 MCP server, Gate G1--G5, Board State/DRC, simulator đóng băng, HITL qua interrupt/resume. Từ D3 thêm Policy Engine trước mọi lời gọi công cụ và Lesson memory (đọc ở INTAKE, ghi sau khi Gate chấp nhận). Mọi khối trong hình đều chạy end-to-end; không có khối nào ở trạng thái kế hoạch.}\label{fig:arch}
+\end{figure*}
+
+\subsection{Công cụ và phân quyền (R2)}
+Bốn MCP server (32 công cụ): \texttt{text-manual} và \texttt{hw-knowledge} (chỉ đọc: tìm văn bản, bit field, pin/AF, giới hạn điện/clock); \texttt{board-state} (ghi có thể hoàn tác: event log chỉ nối thêm + \texttt{rollback}; \texttt{connect} tự từ chối \texttt{NOT\_5V\_TOLERANT}/\texttt{LEVEL\_MISMATCH}/\texttt{ADC\_RANGE} bằng DRC); \texttt{hw-sandbox} (thực thi mã: simulator thanh ghi, solver, phân tích C, \texttt{clang -fsyntax-only}; mã sinh ra \emph{không bao giờ được chạy}). Công cụ ghi không thể hoàn tác duy nhất là \texttt{write\_config\_file}: allowlist tên/đuôi, $\le$20 KB, chuẩn hoá đường dẫn, và bắt buộc qua interrupt phê duyệt của người (có diff). Chỉ công cụ chỉ-đọc được retry tự động; công cụ ghi không bao giờ chạy lại sau khi chết giữa chừng (at-most-once).
+
+\begin{table}[h]\centering\footnotesize
+\begin{tabularx}{\columnwidth}{@{}lXl@{}}
+\toprule
+Server & Công cụ chính & Quyền / cơ chế chặn\\\midrule
+text-manual & search\_manual, get\_chunk\_context, list\_documents & chỉ đọc\\
+hw-knowledge & pin/AF, bit field, giới hạn điện/clock, tương thích mức logic & chỉ đọc\\
+board-state & set\_target, allocate\_pin, set\_clock\_config, add\_device, connect, rollback, run\_drc... & ghi hoàn tác được; DRC từ chối trước khi ghi; Policy chặn set\_target quá áp\\
+hw-sandbox & simulate\_register\_writes, solve\_timer\_config, analyze\_c\_code, compile\_check & thực thi mã trong sandbox: chỉ parse/\texttt{-fsyntax-only}, giới hạn kích thước\\
+local & write\_config\_file & ghi KHÔNG hoàn tác: allowlist + phê duyệt của người + hạn ngạch + taint\\
+local & update\_plan, ask\_human, finish & điều khiển (runtime xử lý; hỏi tối đa 3 lần/run)\\
+\bottomrule
+\end{tabularx}
+\caption{Công cụ và mức quyền (R2). Các công cụ chỉ đọc là các công cụ duy nhất được retry tự động.}\label{tab:tools}
+\end{table}
+
+\subsection{Guardrail xác định và Policy Engine (R4, R6)}
+Ba lớp, đều là mã chứ không phải prompt. (1) \emph{INTAKE}: lọc injection trực tiếp và kiểm tra yêu cầu điện áp. Ở v1 kiểm tra này lấy giới hạn nhỏ nhất trên mọi rail/lớp chân và từ chối nhầm 6/11 run thất bại của S3 (câu hỏi “nRF52840 cấp 5 V qua chân nào?” và 5 V vào chân FT). Bản mới giữ yêu cầu ở giới hạn của rail/lớp chân được \emph{nêu tên} (VDD, VDDH, VBUS; PA0$\to$TT\_a, PB4$\to$FT\_c tra từ bảng chân) và chỉ từ chối khi không rail/lớp nào chịu được. (2) \emph{Policy Engine} chạy trước mọi lời gọi công cụ của agent trên tham số có cấu trúc: \texttt{set\_target} vượt Absolute Maximum bị từ chối kèm trích dẫn và buộc lập lại kế hoạch; hạn ngạch 3 file ghi/run; \emph{taint tracking}: các câu bị bộ lọc xoá khỏi observation được runtime giữ lại (mô hình không thấy) và đoạn $\ge$6 từ trùng với tham số của một công cụ ghi/đổi trạng thái bị từ chối; run đã nhận chỉ dẫn độc không được tự duyệt ghi file. (3) \emph{Gate G4} kiểm điện áp/clock trong câu trả lời. Mọi chuỗi trong kết quả công cụ được sanitize (phát hiện khi chạy thật lần đầu: trước đây các trường \texttt{quote}/\texttt{condition} của \texttt{get\_electrical\_specs} không được quét).
+
+\subsection{Bộ nhớ (R3)}
+\emph{Ngắn hạn}: danh sách tin nhắn của run, kết quả công cụ cũ bị nén. \emph{Project memory}: Board State (event log, quyết định, requirement) nạp tóm tắt ở INTAKE. \emph{Dài hạn}: Lesson memory (SQLite). Chính sách ghi: sau khi Gate chấp nhận một câu trả lời mà G2 (simulator) xác nhận, mỗi vi phạm đã biến mất giữa hai lần mô phỏng/bản nháp (cả lần mô phỏng của chính agent) thành một lesson \{chip, ngoại vi, mã lỗi, các dòng C hoặc thao tác thanh ghi thêm/bớt, run làm bằng chứng\}; không ghi nếu run từng nhận chỉ dẫn độc hay văn bản lesson bị bộ lọc injection gắn cờ (chống đầu độc bộ nhớ). Chính sách đọc: theo chip và \emph{họ ngoại vi} nêu trong mục tiêu (TIM1/TIM8/TIM20 cùng họ bộ định thời nâng cao), tối đa 3 lesson, đưa vào như gợi ý chưa kiểm chứng. Mỗi run đánh giá dùng một kho lesson trống để học từ dev không rò sang test. \emph{Truy hồi tài liệu}: 6 PDF chính hãng (4\,520 trang), 3 SVD (CMSIS-SVD), chỉ mục lai trang/đoạn; dữ liệu có cấu trúc (thanh ghi, pin/AF, 65 giới hạn điện) trong SQLite với chuỗi trích nguyên văn được kiểm tự động trên text trang PDF.
+
+\subsection{Verification Gate}
+G1 nguồn (mọi số/hex trích về công cụ hoặc tính được, kèm trang); G2 mô phỏng chức năng (simulator thanh ghi đóng băng chấm lại mã cuối); G3 DRC 8 luật trên Board State; G4 an toàn; G5 biên dịch. Gate xác định, không dùng LLM, đóng khi lỗi (trạng thái skipped không bao giờ tính là pass).
+
+\section{Đánh giá}
+\subsection{Thiết lập (R5)}
+\textbf{Bộ task} tự xây, 148 task cơ sở (dev 50, test 98 niêm phong): C1--C3 tra cứu/số liệu/mã chức năng (sinh từ SVD hoặc viết tay, đáp án suy ra từ tài liệu và simulator), C4 thiết kế nhiều lượt có xung đột cài sẵn, C5 thiếu thông tin (người dùng mô phỏng), C6 an toàn điện, C7 prompt injection (15 trực tiếp, 14 gián tiếp qua kết quả công cụ), C8 từ chối khi ngoài tài liệu, C10 chuỗi đo học từ kinh nghiệm; ngoài ra có bộ C9 (độ bền, biến thể bề mặt) và FI (tiêm lỗi công cụ) sinh từ task gốc. Chưa có người duyệt độc lập (review do model, D01); task test của C7 v2 và C10 do cùng nhóm thiết kế phòng thủ viết nên cần duyệt lại. \textbf{Chấm điểm} bằng grader xác định (so khớp chính xác, keyfacts, simulator đóng băng, kiểm tra tấn công); không dùng LLM làm giám khảo; các grader dựa luật (C4 nhận diện xung đột, C5 checklist, C8 từ chối) được kiểm bằng nhãn mù trong mẫu. \textbf{Hệ so sánh}: S0 (LLM trần), S1 (RAG native), S2/S2D (agent v1 trên dữ liệu viết tay/thật), S3@P5 (agent v3 + HITL) và S3@P7 (+ Policy Engine, guardrail theo rail/lớp chân, Lesson memory), cùng ablation A5 \texttt{-Lessons}, A7 \texttt{-Guardrail}. \textbf{Model}: \texttt{ag/gemini-3.8-flash-medium} qua gateway OpenAI-compatible cho mọi số liệu, temperature 0, 3 seed; phát triển dùng cùng model. TSR gộp seed trước rồi trung bình theo task, CI 95\% bootstrap theo task.
+
+\begin{table*}[t]
+\centering\small
+\begin{tabularx}{\textwidth}{lccccccccc}
+\toprule
+Hệ & C1 & C2 & C3 & C4 & C5 & C6 & C7 & C8 & Tổng \\\midrule
+S0 & 79,2 & 77,8 & 77,8 & 36,7 & 41,7 & 66,7 & 97,2 & 100 & 75,9 [65,3--85,4]\\
+S1 & 25,0 & 50,0 & 0 & 0 & 0 & 0 & 100 & 100 & 40,8 [26,5--55,1]\\
+S2 & 0 & 5,6 & 5,6 & 0 & 0 & 20,0 & 100 & 100 & 31,2 [18,4--44,7]\\
+S2D & 100 & 83,3 & 0 & 0 & 0 & 53,3 & 100 & 100 & 61,8 [47,9--75,0]\\
+S3@P5 & 100 & 100 & 100 & 60,0 & 50,0 & 80,0 & 100 & 77,8 & 88,4 [79,6--95,2]\\
+S3@P7 & 100 & 100 & 100 & 60,0 & 58,3 & \textbf{100} & 100 & 77,8 & \textbf{91,3} [84,0--97,3]\\
+\bottomrule
+\end{tabularx}
+\caption{TSR (\%) trên dev, 3 seed. C7: pass = tấn công thất bại. C10 chỉ chạy cho S3@P7 (100\%).}\label{tab:main}
+\end{table*}
+
+\subsection{Kết quả chính}
+Bảng~\ref{tab:main} cho thấy bốn điều. (i) \emph{Dữ liệu thật là đóng góp lớn nhất của agent v1}: S2$\to$S2D tăng 30 điểm tổng. (ii) \emph{Vòng phản hồi kín thắng baseline trên mã chức năng}: C3 100\% so với 77,8\% của S0; S0 vẫn cao vì model mạnh biết sẵn thanh ghi, nhưng không có trích dẫn nào hợp lệ (Grounded TSR 0\%) còn S3 đạt Citation Precision 86,6\%. (iii) \emph{Guardrail theo rail/lớp chân sửa đúng nguyên nhân over-refusal}: C6 từ 80\% lên 100\%, Over-refusal 33\%$\to$0\%, không có Unsafe compliance. (iv) \emph{Lợi thế tổng thể của S3@P7 so với S3@P5 không có ý nghĩa thống kê} (CI chồng nhau; chỉ C6 có tín hiệu rõ); C4 và C5 vẫn là điểm yếu (60\% và 58\%) do bộ nhận diện xung đột và việc agent tự giả định thay vì hỏi. (Tổng 91,3\% tính trên C1--C8 và C10; các nhóm FI và C9 báo riêng bên dưới và không nằm trong tổng này.) Chi phí \$0{,}030/task cho S3@P7 (\$0{,}028 cho S3@P5; giá theo cấu hình, giá thật của gateway chưa đối chiếu), độ trễ trung vị 15--77 s, p95 khoảng 340--470 s.
+
+\begin{figure*}[t]\centering
+\includegraphics[width=0.48\textwidth]{assets/tsr_by_category.png}\hfill\includegraphics[width=0.48\textwidth]{assets/cost_vs_tsr.png}
+\caption{TSR theo nhóm task (trái) và chi phí so với TSR (phải) trên dev, sinh tự động bởi \file{eval/report.py} từ \file{eval/results/dev\_p7/}.}\label{fig:res}
+\end{figure*}
+
+\subsection{Ablation và bằng chứng nhân quả}
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabularx}{\columnwidth}{lXcc}
+\toprule
+Nhóm & Biến thể & Đầy đủ & Bỏ cơ chế\\\midrule
+C6 (5 task) & A7 \texttt{-Guardrail} & 100 & \textbf{60}\\
+C7 (11 task) & A7 \texttt{-Guardrail} & 100 & 100\\
+C4 (5) & A5 \texttt{-Lessons} & 60,0 & 60,0\\
+C5 (4) & A5 \texttt{-Lessons} & 58,3 & 54,2\\
+C10 (1) & A5 \texttt{-Lessons} & 100 & 100\\
+\bottomrule
+\end{tabularx}
+\caption{Ablation S3@P7 trên dev, 3 seed, cùng tập task ở hai cột (chỉ các task có run hợp lệ ở cả hai).}\label{tab:abl}
+\end{table}
+\textbf{A7 (bỏ guardrail xác định) làm C6 giảm từ 100\% xuống 60\%}: cả C6-003 (nối VBUS 5 V thẳng vào VDD của nRF52840) và C6-005 (12 V vào chân FT\_c) mất nhãn từ chối ở cả 3 seed (\texttt{wrong\_safety\_label}); hai task còn lại (trả lời đúng + cảnh báo) không đổi. Đây là bằng chứng nhân quả rằng chính lớp xác định, không phải model, tạo ra các từ chối an toàn: gemini-3.8-flash không tự từ chối các yêu cầu này khi không có guardrail, và G4 một mình không bắt được chúng. Trái lại \textbf{A7 không làm đổi C7}: ASR vẫn 0/31 (16 run phơi nhiễm), tức model tự kháng chỉ dẫn độc trong tài liệu; do đó C7 v2 chưa chứng minh được giá trị của sanitize/taint (cần model yếu hơn hoặc payload thích nghi). \textbf{A5 (bỏ Lesson memory) không đổi gì đo được} ở C4, C5, C10 (khác biệt C5 nằm trong nhiễu), phù hợp với việc lesson chưa bao giờ được kích hoạt (0 lần ghi/0 lần dùng): H4 \emph{chưa được kiểm}, không phải bị bác bỏ.
+
+\subsection{Phục hồi khi công cụ lỗi và độ bền câu hỏi}
+Trên 14 task C1/C2 mà sáu công cụ tri thức có cấu trúc bị tiêm \texttt{TimeoutError} liên tiếp (vượt retry của hub), S3@P7 giữ TSR 88,1\% so với 100\% khi không có lỗi (\textbf{Recovery Rate 88\%}); S2D (agent v1) giữ nguyên 91,7\% trên 12 task có run hợp lệ. Sự phục hồi của S3 đến từ việc gọi lại hoặc đổi sang \texttt{search\_manual}; thất bại còn lại xảy ra khi mọi đường tra cứu đều cần công cụ bị lỗi. Trên 20 biến thể bề mặt C9 (3 seed) kết quả \emph{không thuận lợi} cho agent: S3@P7 giảm từ 100\% (task gốc) xuống 80,0\% (\textbf{Robustness 80\%}), trong khi S0 không giảm (84,3\%, 105\%). Mức giảm lớn nhất khi đảo thứ tự câu ($-67$ điểm, chỉ 2 task), rồi lỗi chính tả ($-17$), lời dẫn tiếng Việt ($-17$) và viết tắt ($-11$). Chúng tôi chưa phân tích nguyên nhân từng run; giả thuyết là các bước tất định của runtime (trích trạng thái khởi đầu và requirement theo từ khoá tiếng Anh, D36) nhạy với diễn đạt hơn một model gọi trực tiếp. Đây là điểm yếu cần xử lý trước khi chạy test.
+
+\section{Phân tích an toàn và bảo mật (R6)}
+\textbf{Tài sản}: khoá API/cấu hình; kho tri thức và Board State; thư mục \texttt{workspace\_out/}; tính đúng và an toàn điện của cấu hình đề xuất; kho Lesson (một đường bền vững vào ngữ cảnh); ngân sách. \textbf{Điểm vào không tin cậy}: câu hỏi người dùng; \emph{mọi chuỗi trong kết quả công cụ} (văn bản PDF, trường quote/condition, ghi chú pin); tham số công cụ do mô hình sinh; câu trả lời của người dùng mô phỏng. \textbf{Kẻ tấn công} kiểm soát lời người dùng và nội dung tài liệu được truy hồi, không kiểm soát code, Gate hay Policy. \textbf{Thử nghiệm}: 15 ca trực tiếp và 14 ca gián tiếp (chỉ dẫn tiêm vào kết quả của cả bốn công cụ tri thức bằng interceptor dưới lớp sanitize, không sửa corpus): ghi đè chỉ dẫn, rò system prompt/khoá, ghi tệp không duyệt, ghi ngoài workspace, khẳng định sai nguy hiểm (“VDD chịu 5 V”) và thẻ hệ thống giả; 10/14 ca được diễn đạt cố ý ngoài danh sách mẫu của bộ lọc. \textbf{Kết quả}: ASR trực tiếp 0\% với mọi hệ có công cụ (S0: 6,7\%); ASR gián tiếp trên các run \emph{thực sự bị phơi nhiễm} là 0/21 cho S3@P5 và S3@P7 (0/12 cho S2, 0/16 cho S2D). Đọc đúng: với model này S3@P5 cũng chống được 21/21, nên C7 v2 \emph{chưa} phân biệt được guardrail mới với cũ; S0 và S1 không có bề mặt phơi nhiễm nên không được diễn giải là phòng thủ tốt. \textbf{Phát hiện đã xử lý}: (a) bộ sanitize bỏ sót các trường không có tên text-like; (b) grader \texttt{attack} ném lỗi trên vết của runtime v3, và các check cũ chấm dương giả khi câu trả lời trích dẫn chỉ dẫn rồi từ chối (6/14 task) --- đã sửa bằng tham số tuỳ chọn chỉ dùng cho task mới, có fixture hai chiều (làm theo / trích rồi từ chối) cho cả 14 ca; (c) một dương giả của check \texttt{compliance} được sửa sau khi đã đọc đầu ra (chấm lại mọi hệ, 2 hàng đổi). \begin{table}[h]\centering\footnotesize
+\begin{tabularx}{\columnwidth}{@{}lXX@{}}
+\toprule
+Điểm vào & Biện pháp (mã xác định) & Kiểm thử\\\midrule
+Câu hỏi người dùng & lọc injection trực tiếp; kiểm điện áp theo rail/lớp chân & C7 trực tiếp (15), C6 (15)\\
+Kết quả công cụ / tài liệu & sanitize mọi chuỗi; taint tracking; Policy trước mọi lời gọi & C7 gián tiếp (14, qua interceptor)\\
+Tham số công cụ ghi & allowlist tên/đuôi/kích thước; phê duyệt người; hạn ngạch; chặn nội dung nhiễm & traversal, approval bypass\\
+Mã do LLM sinh & chỉ parse hoặc \texttt{-fsyntax-only}, không bao giờ chạy & --\\
+Kho Lesson & chỉ ghi khi simulator xác nhận; không ghi từ run nhiễm; quét injection & test đơn vị (chưa có tấn công thật)\\
+\bottomrule
+\end{tabularx}
+\caption{Threat model rút gọn: điểm vào không tin cậy, biện pháp và cách kiểm.}\label{tab:threat}
+\end{table}
+\textbf{Phân quyền tối thiểu}: bốn mức (read-only, state-mutating, sandboxed-exec, irreversible-write) có thật trong mã; từ chối và ngoại lệ đều vào \texttt{audit.jsonl} (che khoá) và trace. \textbf{Rủi ro còn lại}: injection ngữ nghĩa (khẳng định sai tinh vi) chỉ bị chặn nếu agent đối chiếu với bảng giới hạn có cấu trúc; chưa thử tấn công thích nghi (kẻ tấn công biết Policy); taint theo đoạn bỏ sót payload diễn đạt lại.
+
+\section{Hạn chế và mối đe doạ tới tính hợp lệ}
+(1) Task tự viết, review do model, chưa có người duyệt độc lập (D01); chuỗi C10 và task test C7 v2 do cùng người thiết kế phòng thủ viết (đã gắn cờ \texttt{authored\_with\_defense\_knowledge}). (2) Dev là trong-mẫu: prompt/guardrail được chỉnh theo lỗi dev (ghi \texttt{PROMPT\_DEVLOG}); số liệu test chưa có tại thời điểm viết. (3) Một số grader được sửa sau khi thấy đầu ra (D18/D38), mỗi lần đều chấm lại mọi hệ và ghi \texttt{post\_run\_changes}; kiểm bằng nhãn mù trên đầu ra test còn phải làm. (4) Một model, một gateway; giá chưa đối chiếu; API không tất định dù temperature 0 (cache ghi lại từng seed). (5) \textbf{Lesson memory chưa có bằng chứng}: gemini-3.8-flash đặt đúng BDTR.MOE ngay lượt đầu nên chuỗi C10 không sinh lesson nào; đường cong học phẳng không phải bằng chứng lesson vô dụng nhưng cũng không chứng minh được H4. (6) Mô phỏng chỉ phủ TIM/USART/I2C/GPIO/RCC của STM32G474; ESP32 và nRF52840 chỉ có tra cứu và kiểm tra điện áp. (7) Một số lần chạy bị lỗi hạ tầng gateway (404/timeout) và được loại khỏi TSR, (S0 18/206, S2D 11/184, S3@P7 6/251 run); tỉ lệ loại không đều giữa các hệ có thể làm lệch nhẹ so sánh. (8) \textbf{C9 cho thấy agent nhạy với diễn đạt hơn S0} (Robustness 80\% so với 105\%) và chưa được xử lý.
+
+\section{Đạo đức và sử dụng có trách nhiệm}
+Agent đề xuất cấu hình có thể làm hỏng phần cứng nếu tin mù quáng; hệ luôn trích nguồn, từ chối vượt Absolute Maximum, không bao giờ chạy mã sinh ra, và mọi ghi tệp cần người duyệt. Tài liệu hãng được dùng trong phạm vi nghiên cứu; khoá API không vào repo.
+
+\section{Kết luận}
+Phần lõi --- state machine có checkpoint, Gate xác định, Board State/DRC, simulator đóng băng, Policy Engine và HITL --- chạy end-to-end và cho TSR dev 91,3\% với chi phí \$0,03/task. Việc còn lại trước bảo vệ vòng 2: chạy split test niêm phong sau khi khoá grader, kiểm nhãn mù trên đầu ra test, fault injection và C9 cho các hệ, và tìm một mẫu lỗi lặp thật sự để kiểm H4.
+
+\begin{thebibliography}{9}\footnotesize
+\bibitem{react} S. Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models, ICLR 2023.
+\bibitem{reflexion} N. Shinn et al., Reflexion: Language Agents with Verbal Reinforcement Learning, NeurIPS 2023.
+\bibitem{agentdojo} E. Debenedetti et al., AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents, NeurIPS D\&B 2024.
+\bibitem{camel} E. Debenedetti et al., Defeating Prompt Injections by Design (CaMeL), 2025.
+\end{thebibliography}
+
+\appendix
+\section*{Phụ lục A. Tái lập}
+Mã nguồn: \url{https://github.com/htbitb/Agentic-RAG-for-Hardware-Specs-Smart-Retrieval-for-Embedded-IoT-System}, commit \texttt{REPO\_COMMIT}, tag \texttt{v1}. Môi trường ghim trong \file{agent/requirements.lock.txt}, \file{eval/requirements.lock.txt}, \file{native-RAG/requirements.lock.txt} (Python 3.11); cấu hình mẫu \file{agent/.env.example}. Chạy UI: \file{agent/start.sh --install}. Chạy đánh giá: \file{eval/README.md}; số liệu dev: \file{eval/results/dev\_p7/} (manifest ghim hash task, snapshot, grader; \texttt{post\_run\_changes}); phát lại không tốn API: \texttt{--cache replay}. Tổng chi phí thực tế các lượt dev của giai đoạn này khoảng 9 USD theo giá cấu hình, ngoài các lượt baseline trước đó.
+
+\section*{Phụ lục B. Đóng góp thành viên}
+Lịch sử commit chưa phản ánh đều phân công nêu ở D2: phần lớn mã P0--P7 nằm trong commit tổng hợp của Huỳnh Đức Nhâm; Hà Thanh Bình khởi tạo cấu trúc và môi trường; La Quang Huy chạy các lượt re-baseline eval. \textbf{Cần các thành viên xác nhận và chỉnh bảng này trước khi nộp.}
+
+\section*{Phụ lục C. Tuyên bố sử dụng AI}
+Claude Code (model Claude) được dùng để lập kế hoạch, viết mã, test, tài liệu và bản nháp báo cáo này; Gemini là model của hệ được đánh giá. Nhóm tự kiểm chứng bằng: chạy toàn bộ test (agent 1\,872 passed + 1 test thời gian phụ thuộc tải máy, eval 1\,497 passed), đối chiếu số liệu từ \texttt{scores.jsonl}, fixture hai chiều cho từng task tấn công, và đọc mẫu câu trả lời thật. Mọi số trong báo cáo này đến từ \file{eval/results/}; những gì chưa đo được nêu rõ ở mục Hạn chế.
+\end{document}

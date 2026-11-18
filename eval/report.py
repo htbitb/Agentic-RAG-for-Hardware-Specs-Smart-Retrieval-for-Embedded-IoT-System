@@ -250,6 +250,60 @@ def c10_section(scores, runs, tasks_by_id) -> str:
             + _table(["Hệ", *[f"Lượt {k}" for k in range(1, width + 1)]], rows))
 
 
+def _task_means(scores, ids=None, prefix=None):
+    """{task_id: TSR trung bình qua seed} cho run không lỗi hạ tầng của một hệ (ids/prefix lọc theo id)."""
+    acc = defaultdict(list)
+    for r in _valid(scores):
+        tid = r["task_id"]
+        if (ids is not None and tid not in ids) or (prefix and not tid.startswith(prefix)):
+            continue
+        acc[tid].append(1.0 if r["tsr_pass"] else 0.0)
+    return {t: sum(v) / len(v) for t, v in acc.items()}
+
+
+def _derived_section(scores, tasks_by_id, cat: str, title: str, blurb: str, base_of, metric: str, by_key=None) -> str:
+    """FI / C9: so TSR của task SINH (kế thừa ground truth) với TSR của task gốc trên CÙNG task. 'metric' = tỉ số TSR(sinh)/TSR(gốc) (Recovery Rate cho FI, Robustness cho C9)."""
+    ids = {t.id for t in tasks_by_id.values() if getattr(t, "category", None) == cat}
+    if not ids:
+        return ""
+    rows = []
+    for s in _systems(scores):
+        sr = [r for r in scores if r["system"] == s]
+        derived = _task_means(sr, ids=ids)
+        if not derived:
+            continue
+        base = _task_means(sr, ids={base_of(t) for t in derived})
+        common = [t for t in derived if base_of(t) in base]
+        if not common:
+            continue
+        d = sum(derived[t] for t in common) / len(common)
+        b = sum(base[base_of(t)] for t in common) / len(common)
+        extra = ""
+        if by_key:
+            groups = defaultdict(list)
+            for t in common:
+                groups[by_key(t)].append(derived[t] - base[base_of(t)])
+            extra = "; ".join(f"{k}: {sum(v) / len(v) * 100:+.0f} đ ({len(v)})" for k, v in sorted(groups.items()))
+        rows.append([s, f"{b * 100:.1f}%", f"{d * 100:.1f}%", f"{d / b * 100:.0f}%" if b else "—", str(len(common)), extra or "—"])
+    if not rows:
+        return ""
+    return f"## {title}\n{blurb}\n\n" + _table(["Hệ", "TSR task gốc", f"TSR {cat}", metric, "Số task chung", "Δ theo loại (điểm %)"], rows)
+
+
+def fi_section(scores, tasks_by_id) -> str:
+    return _derived_section(scores, tasks_by_id, "FI", "FI — Phục hồi khi công cụ lỗi (fault injection)",
+                            "Mỗi task FI là một task C1/C2 gốc mà các công cụ tri thức có cấu trúc bị tiêm TimeoutError (6 lời gọi liên tiếp, vượt retry của hub), nên agent phải tự gọi lại hoặc đổi công cụ. "
+                            "Recovery Rate = TSR(FI) / TSR(task gốc) trên cùng task. Hệ không có công cụ (S0, S1) không bị tác động nên cho tỉ lệ ~100% và KHÔNG được đọc là bền.",
+                            lambda t: t[3:], "Recovery Rate")
+
+
+def c9_section(scores, tasks_by_id) -> str:
+    return _derived_section(scores, tasks_by_id, "C9", "C9 — Độ bền với biến thể bề mặt của câu hỏi",
+                            "Mỗi task C9 là một task C1–C3 gốc đổi bề mặt (lỗi chính tả, viết tắt, đảo câu, lời dẫn tiếng Việt), kế thừa ground truth. Robustness = TSR(C9) / TSR(task gốc).",
+                            lambda t: t.split("-", 1)[1].rsplit("-", 1)[0], "Robustness",
+                            by_key=lambda t: t.rsplit("-", 1)[1])
+
+
 def _pass_at(rows, k_first: bool) -> float:
     """Pass@1 = tỷ lệ task đạt ở seed đầu tiên (nhỏ nhất); Pass@k = tỷ lệ task đạt ở ít nhất một seed."""
     by_task = defaultdict(list)
@@ -651,6 +705,8 @@ def build_report(scores, runs, manifest, tasks, out_dir, secrets=(), n_boot: int
         "Citation Precision của C1 là 'yếu' (trang trích chứa tên thanh ghi **hoặc** giá trị); doc không có PDF thật được đếm riêng (unverifiable)._",
         c7_section(scores, tasks_by_id, n_boot),
         c10_section(scores, runs, tasks_by_id),
+        fi_section(scores, tasks_by_id),
+        c9_section(scores, tasks_by_id),
         c3_section(scores, tasks_by_id, n_boot),
         c4_section(scores, tasks_by_id, n_boot),
         process_section(scores),
