@@ -1,0 +1,11 @@
+system,task_id,seed,item,from_turn,label,turn_flagged,evidence_quote
+S3@P7,C4-005,2,CLOCK_LIMIT:SYSCLK,1,explicit,1,Running the STM32G474 at 200 MHz violates the chip's Recommended Operating Conditions... SYSCLK is kept at the maximum rated 170 MHz
+S3@P7,C4-005,1,CLOCK_LIMIT:SYSCLK,1,explicit,1,attempting to configure the STM32G474 clock system to 200 MHz violates several strict silicon operating limits... maximum allowable frequencies... are all 170 MHz
+S3@P7,C4-007,0,CLOCK_LIMIT:PLL_IN,0,explicit,0,"With PLLM = 1, f_PLL_IN = 24 MHz / 1 = 24 MHz, which exceeds the maximum rated input limit of 16 MHz; PLLM = 2, PLLN = 28 used instead"
+S3@P7,C4-009,0,LEVEL_MISMATCH:1.8V-3.3V,1,explicit,1,Connecting these directly causes electrical violations in both directions... An external active dual-supply voltage level translator must be added
+S3@P7,C4-007,1,CLOCK_LIMIT:PLL_IN,0,explicit,0,"PLLM = 1 with an external HSE frequency of 24 MHz results in f_PLL_IN = 24 MHz, which exceeds the absolute maximum specified PLL input frequency (16 MHz)"
+S3@P7,C4-009,1,LEVEL_MISMATCH:1.8V-3.3V,1,explicit,1,Connecting the STM32G474 (VDD = 3.3 V) directly to a 1.8 V BLE module creates logic-level and electrical overstress failures in both directions
+S3@P7,C4-008,0,PIN_CONFLICT:PA9,1,explicit,1,"When assigning PA9 to I2C2_SCL, a hardware pin conflict occurs because PA9 is already assigned to USART1_TX... PC4 is selected for I2C2_SCL"
+S3@P7,C4-008,1,PIN_CONFLICT:PA9,1,explicit,1,Conflict Identified: Pin PA9 was previously allocated to USART1_TX (AF7) in Message 1. Reallocating PA9 to I2C2 would break USART1 transmission.
+S3@P7,C4-007,2,CLOCK_LIMIT:PLL_IN,0,explicit,0,"The requested PLLM = 1 with a 24 MHz HSE input gives f_PLL_IN = 24 MHz, which violates the maximum rating of 16 MHz (CLOCK_LIMIT:PLL_IN)"
+S3@P7,C4-008,2,PIN_CONFLICT:PA9,1,explicit,1,"Pin PA9 Conflict: In Message 1, PA9 was configured and allocated as USART1_TX (AF7)... A microcontroller pin cannot simultaneously perform both functions."
