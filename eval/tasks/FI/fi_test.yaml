@@ -1,0 +1,2711 @@
+# Sinh bởi eval/generators/gen_p9.py --split test: KẾ THỪA ground truth/grader của task gốc (provenance.from). Không sửa tay.
+- id: FI-C1-001
+  category: FI
+  split: test
+  turns:
+  - user: How far from the ADC1 base address is the CFGR2 register on the STM32G474?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: offset
+      kind: hex
+      value: '0x10'
+      allowed:
+      - '0x50000000'
+      - '0x50000010'
+    numeric_support:
+    - '0x50000000'
+    - '0x10'
+    - '0x50000010'
+    - '0x0'
+    cite_values:
+    - CFGR2
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_offset
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-001
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-004
+  category: FI
+  split: test
+  turns:
+  - user: I need the final address of FDCAN2_TXBTIE (STM32G474) for a bare-metal driver. What is it?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x400068DC'
+      allowed:
+      - '0x40006800'
+    numeric_support:
+    - '0x40006800'
+    - '0xDC'
+    - '0x400068DC'
+    - '0x0'
+    cite_values:
+    - '0x400068DC'
+    - '0x40006800'
+    - TXBTIE
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-004
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-005
+  category: FI
+  split: test
+  turns:
+  - user: I need the final address of LEDC_LSCH4_DUTY_R_REG (ESP32) for a bare-metal driver. What is it?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x3FF59100'
+      allowed:
+      - '0x3FF59000'
+      - '0x60019000'
+      equivalent:
+      - '0x60019100'
+    numeric_support:
+    - '0x3FF59000'
+    - '0x100'
+    - '0x3FF59100'
+    - '0x0'
+    - '0x60019000'
+    - '0x60019100'
+    cite_values:
+    - '0x3FF59100'
+    - '0x3FF59000'
+    - LEDC_LSCH4_DUTY_R_REG
+  difficulty: easy
+  chips:
+  - esp32
+  tags:
+  - register_address
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-005
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-008
+  category: FI
+  split: test
+  turns:
+  - user: Where is the DAC2RDY bit field located inside the DAC_SR register of DAC1 (STM32G474)?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: bits
+      kind: bits
+      value:
+      - 27
+      - 27
+      allowed:
+      - - 11
+        - 11
+      - - 12
+        - 12
+      - - 13
+        - 13
+      - - 14
+        - 14
+      - - 15
+        - 15
+      - - 28
+        - 28
+      - - 29
+        - 29
+      - - 30
+        - 30
+      - - 31
+        - 31
+    numeric_support:
+    - '0x50000800'
+    - '0x34'
+    - '0x50000834'
+    - '0x0'
+    cite_values:
+    - DAC_SR
+    - DAC2RDY
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_bits
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-008
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-009
+  category: FI
+  split: test
+  turns:
+  - user: What is the reset value of ADC4_TR1 on the STM32G474?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0xFFF0000'
+      allowed:
+      - '0x50000500'
+      - '0x20'
+      - '0x50000520'
+    numeric_support:
+    - '0x50000500'
+    - '0x20'
+    - '0x50000520'
+    - '0xFFF0000'
+    cite_values:
+    - TR1
+    - '0xFFF0000'
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_reset
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-009
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-011
+  category: FI
+  split: test
+  turns:
+  - user: What is the default (power-on reset) value of SPIS0->PSEL_MISO on the nRF52840?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0xFFFFFFFF'
+      allowed:
+      - '0x40003000'
+      - '0x50C'
+      - '0x4000350C'
+    numeric_support:
+    - '0x40003000'
+    - '0x50C'
+    - '0x4000350C'
+    - '0xFFFFFFFF'
+    cite_values:
+    - PSEL_MISO
+    - '0xFFFFFFFF'
+  difficulty: medium
+  chips:
+  - nrf52840
+  tags:
+  - register_reset
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-011
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-013
+  category: FI
+  split: test
+  turns:
+  - user: How far from the TWIM0 base address is the INTENCLR register on the nRF52840?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: offset
+      kind: hex
+      value: '0x308'
+      allowed:
+      - '0x40003000'
+      - '0x40003308'
+    numeric_support:
+    - '0x40003000'
+    - '0x308'
+    - '0x40003308'
+    - '0x0'
+    cite_values:
+    - INTENCLR
+  difficulty: medium
+  chips:
+  - nrf52840
+  tags:
+  - register_offset
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-013
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-014
+  category: FI
+  split: test
+  turns:
+  - user: On the ESP32, give the bit position(s) of WDT_STG3 in RTC_CNTL_WDTCONFIG0_REG.
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: bits
+      kind: bits
+      value:
+      - 19
+      - 21
+      allowed:
+      - - 7
+        - 7
+      - - 8
+        - 8
+      - - 9
+        - 9
+      - - 10
+        - 10
+      - - 11
+        - 13
+      - - 14
+        - 16
+      - - 17
+        - 17
+      - - 18
+        - 18
+      - - 22
+        - 24
+      - - 25
+        - 27
+      - - 28
+        - 30
+      - - 31
+        - 31
+    numeric_support:
+    - '0x3FF48000'
+    - '0x8C'
+    - '0x3FF4808C'
+    - '0x4C80'
+    cite_values:
+    - RTC_CNTL_WDTCONFIG0_REG
+    - WDT_STG3
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - register_bits
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-014
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-015
+  category: FI
+  split: test
+  turns:
+  - user: Give the 32-bit address of the COMP_C7CSR register in the COMP block of the STM32G474.
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x40010218'
+      allowed:
+      - '0x40010200'
+    numeric_support:
+    - '0x40010200'
+    - '0x18'
+    - '0x40010218'
+    - '0x0'
+    cite_values:
+    - '0x40010218'
+    - '0x40010200'
+    - COMP_C7CSR
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-015
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-016
+  category: FI
+  split: test
+  turns:
+  - user: Which bits of FDCAN1_CCCR make up the TEST field on the STM32G474?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: bits
+      kind: bits
+      value:
+      - 7
+      - 7
+      allowed:
+      - - 0
+        - 0
+      - - 1
+        - 1
+      - - 2
+        - 2
+      - - 3
+        - 3
+      - - 4
+        - 4
+      - - 5
+        - 5
+      - - 6
+        - 6
+      - - 8
+        - 8
+      - - 9
+        - 9
+      - - 12
+        - 12
+      - - 13
+        - 13
+      - - 14
+        - 14
+      - - 15
+        - 15
+    numeric_support:
+    - '0x40006400'
+    - '0x18'
+    - '0x40006418'
+    - '0x1'
+    cite_values:
+    - CCCR
+    - TEST
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_bits
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-016
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-017
+  category: FI
+  split: test
+  turns:
+  - user: Give the 32-bit address of the SQR4 register in the ADC1 block of the STM32G474.
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x5000003C'
+      allowed:
+      - '0x50000000'
+    numeric_support:
+    - '0x50000000'
+    - '0x3C'
+    - '0x5000003C'
+    - '0x0'
+    cite_values:
+    - '0x5000003C'
+    - '0x50000000'
+    - SQR4
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-017
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-018
+  category: FI
+  split: test
+  turns:
+  - user: Give the 32-bit address of the PSEL_MISO register in the SPI1 block of the nRF52840.
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x40004510'
+      allowed:
+      - '0x40004000'
+      - '0xFFFFFFFF'
+    numeric_support:
+    - '0x40004000'
+    - '0x510'
+    - '0x40004510'
+    - '0xFFFFFFFF'
+    cite_values:
+    - '0x40004510'
+    - '0x40004000'
+    - PSEL_MISO
+  difficulty: easy
+  chips:
+  - nrf52840
+  tags:
+  - register_address
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-018
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-019
+  category: FI
+  split: test
+  turns:
+  - user: What is the reset value of RTC_CNTL_WDTWPROTECT_REG on the ESP32?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0x50D83AA1'
+      allowed:
+      - '0x3FF48000'
+      - '0xA4'
+      - '0x3FF480A4'
+    numeric_support:
+    - '0x3FF48000'
+    - '0xA4'
+    - '0x3FF480A4'
+    - '0x50D83AA1'
+    cite_values:
+    - RTC_CNTL_WDTWPROTECT_REG
+    - '0x50D83AA1'
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - register_reset
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-019
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-021
+  category: FI
+  split: test
+  turns:
+  - user: After a reset, what value does the DBTP register of FDCAN2 hold on the STM32G474?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0xA33'
+      allowed:
+      - '0x40006800'
+      - '0xC'
+      - '0x4000680C'
+    numeric_support:
+    - '0x40006800'
+    - '0xC'
+    - '0x4000680C'
+    - '0xA33'
+    cite_values:
+    - DBTP
+    - '0xA33'
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_reset
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-021
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-023
+  category: FI
+  split: test
+  turns:
+  - user: I need the final address of QSPI->STATUS (nRF52840) for a bare-metal driver. What is it?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x40029604'
+      allowed:
+      - '0x40029000'
+    numeric_support:
+    - '0x40029000'
+    - '0x604'
+    - '0x40029604'
+    - '0x0'
+    cite_values:
+    - '0x40029604'
+    - '0x40029000'
+    - STATUS
+  difficulty: easy
+  chips:
+  - nrf52840
+  tags:
+  - register_address
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-023
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-024
+  category: FI
+  split: test
+  turns:
+  - user: On the STM32G474, at which address is the DAC_STR2 register of DAC4 located?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x5000145C'
+      allowed:
+      - '0x50001400'
+    numeric_support:
+    - '0x50001400'
+    - '0x5C'
+    - '0x5000145C'
+    - '0x0'
+    cite_values:
+    - '0x5000145C'
+    - '0x50001400'
+    - DAC_STR2
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-024
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C1-025
+  category: FI
+  split: test
+  turns:
+  - user: For the STM32G474, what offset do I add to the DMA2 base address to reach CMAR3?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: offset
+      kind: hex
+      value: '0x3C'
+      allowed:
+      - '0x40020400'
+      - '0x4002043C'
+    numeric_support:
+    - '0x40020400'
+    - '0x3C'
+    - '0x4002043C'
+    - '0x0'
+    cite_values:
+    - CMAR3
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_offset
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-025
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-001
+  category: FI
+  split: test
+  turns:
+  - user: On the STM32G474, which alternate function number connects TIM4_CH1 to pin PB6, and which alternate function number on the same pin provides USART1_TX?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: af_tim4_ch1
+      value: AF2
+      aliases:
+      - AF 2
+      - alternate function 2
+    - attribute: af_usart1_tx
+      value: AF7
+      aliases:
+      - AF 7
+      - alternate function 7
+    cite_values:
+    - PB6
+    - TIM4_CH1
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - pin_af
+  - multi_hop
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-001
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-002
+  category: FI
+  split: test
+  turns:
+  - user: I want TIM4 channel 3 to drive pin PB8 on an STM32G474. Which alternate function number must be selected for PB8, which GPIO register holds that selection for pins 8 to 15, and which TIM4 register
+      bit enables the channel 3 output?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: af_tim4_ch3
+      value: AF2
+      aliases:
+      - AF 2
+      - alternate function 2
+    - attribute: gpio_register
+      value: GPIOx_AFRH
+      aliases:
+      - GPIOB_AFRH
+      - AFRH
+      literal: true
+    - attribute: enable_bit
+      value: CC3E
+      literal: true
+    cite_values:
+    - PB8
+    - TIM4_CH3
+    - AFRH
+    - CC3E
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pin_af
+  - timer
+  - register
+  - multi_hop
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-002
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-004
+  category: FI
+  split: test
+  turns:
+  - user: What is the maximum AHB/APB frequency of the STM32G474, and how many flash wait states does the reference manual require to run at that frequency in VCORE Range 1 boost mode? Also, up to what
+      HCLK frequency can Range 1 boost mode run with zero wait states?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: max_hclk
+      value: 170
+      unit: MHz
+    - attribute: ws_at_max
+      value: 4 WS
+      aliases:
+      - 4 wait states
+      - four wait states
+      - LATENCY = 4
+      - LATENCY=4
+      - 4 WS (5 CPU cycles)
+      literal: true
+    - attribute: zero_ws_limit
+      value: 34
+    cite_values:
+    - 170 MHz
+    - 4 WS (5 CPU cycles)
+    numeric_support:
+    - value: 34
+      unit: MHz
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - clock
+  - flash_latency
+  - cross_doc
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-004
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-005
+  category: FI
+  split: test
+  turns:
+  - user: On the STM32G474, what is the absolute maximum input voltage on an FT_c pin, how is the maximum defined for the other FT_xxx pins, and what must be done to sustain an input voltage above 4 V?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: ft_c_max
+      value: 5.5
+    - attribute: ft_xxx_formula
+      value: min (VDD, VDDA) + 4.0
+      aliases:
+      - VDD + 4.0 V
+      - min(VDD, VDDA) + 4 V
+      - min(VDD,VDDA)+4.0
+      - 4.0 V above the supply
+      - VDD+4
+    - attribute: above_4v_condition
+      value: pull-up/pull-down resistors must be disabled
+      aliases:
+      - disable the internal pull-up
+      - internal pull-up/pull-down resistors must be disabled
+      - pull-up and pull-down resistors must be disabled
+      - disabled the internal pull
+      - pull-up/pull-down disabled
+      - pull-ups and pull-downs must be disabled
+      - disable the internal pull up
+      - disable the internal pull ups
+      - disable internal pull up
+      - disable internal pull ups
+      - disable the pull up
+      - disable pull up
+      - pull up and pull down resistors disabled
+      - pull up pull down resistors disabled
+      - pull ups and pull downs disabled
+      - turn off the internal pull
+    cite_values:
+    - FT_c
+    - Voltage characteristics
+    numeric_support:
+    - value: 5.5
+      unit: V
+    - value: 4.0
+      unit: V
+    - value: 0.3
+      unit: V
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - absolute_max
+  - io_voltage
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-005
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-006
+  category: FI
+  split: test
+  turns:
+  - user: What is the allowed supply voltage range for the ESP32 analog and RTC power pins (VDDA, VDD3P3_RTC, VDD3P3, VDD_SDIO in 3.3 V mode), and how does the minimum depend on whether the chip has an
+      in-package flash or PSRAM?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: vdd_max
+      value: 3.6
+      unit: V
+    - attribute: vdd_min_no_flash
+      value: 2.3
+      unit: V
+    - attribute: vdd_min_3v3_flash
+      value: 3.0
+      unit: V
+    cite_values:
+    - Recommended Power Supply Characteristics
+    - 2.3/3.0
+    numeric_support:
+    - value: 3.3
+      unit: V
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - supply_voltage
+  - footnote
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-006
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-007
+  category: FI
+  split: test
+  turns:
+  - user: Which GPIO numbers of the ESP32 are input-only, and what hardware do those pins lack?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: input_only_gpios
+      value: 34-39
+      aliases:
+      - 34 to 39
+      - 34 through 39
+      - GPIO34 to GPIO39
+      - GPIO34 GPIO39
+      - GPIO 34 39
+      - GPIO34 35 36 37 38 39
+      - 34 35 36 37 38 39
+      - 34 35 36 37 38 and 39
+      - GPIO34 39
+      - GPIO34 to 39
+      - GPIO34 through 39
+      - GPIO34 GPIO35 GPIO36 GPIO37 GPIO38 GPIO39
+    - attribute: no_output_driver
+      value: no output driver
+      aliases:
+      - do not feature an output driver
+      - lack an output driver
+      - output is not supported
+      - cannot be used as outputs
+      - no output stage
+      - without an output driver
+      - lack output driver
+      - lack output drivers
+      - lacking an output driver
+      - no output drivers
+      - without an output driver
+      - without output drivers
+      - missing an output driver
+      - missing output driver
+      - not have an output driver
+      - no output stage
+    - attribute: no_pull
+      value: pull-up/pull-down
+      aliases:
+      - pull up and pull down
+      - pull-up and pull-down
+      - internal pull-up
+      - pullup
+      - pull-ups
+      - pullups
+      - pulldowns
+      - pull-downs
+      - pull-up resistors
+      - pull-up or pull-down
+    cite_values:
+    - input-only
+    - GPIO pins 34-39
+  difficulty: easy
+  chips:
+  - esp32
+  tags:
+  - gpio
+  - input_only
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-007
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-009
+  category: FI
+  split: test
+  turns:
+  - user: Which bus speeds and addressing modes does the ESP32 I2C controller support?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: standard_mode
+      value: 100 kbit/s
+      aliases:
+      - 100 kbps
+      - 100 kHz
+      - 100 kbit
+      - 100 kb/s
+    - attribute: fast_mode
+      value: 400 kbit/s
+      aliases:
+      - 400 kbps
+      - 400 kHz
+      - 400 kbit
+      - 400 kb/s
+    - attribute: addr_7bit
+      value: 7-bit
+      aliases:
+      - 7 bit
+      - 7 or 10 bit
+      - 7 and 10 bit
+      - 7 or 10
+      - 7 and 10
+    - attribute: addr_10bit
+      value: 10-bit
+      aliases:
+      - 10 bit
+    cite_values:
+    - standard mode (100 kbit/s)
+    - fast mode (400 kbit/s)
+  difficulty: easy
+  chips:
+  - esp32
+  tags:
+  - i2c
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-009
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-010
+  category: FI
+  split: test
+  turns:
+  - user: What current does the ESP32 draw in Light-sleep mode, in Hibernation mode with only the RTC timer, and in Deep-sleep with the ULP coprocessor powered up?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: light_sleep
+      value: 0.8
+      unit: mA
+    - attribute: hibernation
+      value: 5
+      unit: uA
+    - attribute: deep_sleep_ulp
+      value: 150
+      unit: uA
+    cite_values:
+    - Power Consumption by Power Modes
+    - Hibernation
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - power_modes
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-010
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-012
+  category: FI
+  split: test
+  turns:
+  - user: According to the absolute maximum ratings of the nRF52840, what is the highest voltage allowed on a GPIO pin when VDD is 3.3 V, and what is it when VDD is 3.7 V?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: io_max_vdd_3v3
+      value: 3.6
+      unit: V
+      tol_pct: 0.5
+    - attribute: io_max_vdd_3v7
+      value: 3.9
+      unit: V
+    cite_values:
+    - Absolute maximum ratings
+    - I/O pin voltage
+    numeric_support:
+    - value: 0.3
+      unit: V
+    - value: 3.3
+      unit: V
+    - value: 3.7
+      unit: V
+  difficulty: hard
+  chips:
+  - nrf52840
+  tags:
+  - absolute_max
+  - io_voltage
+  - vdd_dependent
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-012
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-013
+  category: FI
+  split: test
+  turns:
+  - user: What resolution, sampling rate and number of channels does the nRF52840 ADC offer, and how many general purpose I/O pins does the chip have?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: adc_resolution
+      value: 12-bit
+      aliases:
+      - 12 bit
+      - 12 bits
+    - attribute: adc_rate
+      value: 200 ksps
+      aliases:
+      - 200 ks/s
+      - 200 kSPS
+      - 200 kilosamples
+    - attribute: adc_channels
+      value: 8 configurable channels
+      aliases:
+      - 8 channels
+      - eight channels
+      - 8 configurable
+    - attribute: gpio_count
+      value: '48'
+      kind: text
+      aliases:
+      - 48 general purpose
+      - 48 GPIO
+      - 48 I/O
+      - 48 pins
+    cite_values:
+    - 12-bit, 200 ksps ADC
+    - 48 general purpose I/O pins
+  difficulty: easy
+  chips:
+  - nrf52840
+  tags:
+  - adc
+  - gpio
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-013
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-014
+  category: FI
+  split: test
+  turns:
+  - user: Which has the higher maximum CPU clock frequency, the ESP32 or the STM32G474, and by how many MHz?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: esp32_max
+      value: 240
+      unit: MHz
+    - attribute: stm32_max
+      value: 170
+      unit: MHz
+    - attribute: difference
+      value: 70
+      unit: MHz
+      derived: true
+    cite_values:
+    - 240 MHz
+    - 170 MHz
+  difficulty: medium
+  chips:
+  - esp32
+  - stm32g474
+  tags:
+  - cross_chip
+  - cpu_frequency
+  - cross_doc
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-014
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-017
+  category: FI
+  split: test
+  turns:
+  - user: What values can xQueueSendFromISR() return in FreeRTOS, and may the pxHigherPriorityTaskWoken parameter be NULL?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: ret_true
+      value: pdTRUE
+      literal: true
+    - attribute: ret_full
+      value: errQUEUE_FULL
+      literal: true
+    - attribute: null_allowed
+      value: optional
+      aliases:
+      - can be NULL
+      - may be NULL
+      - can be set to NULL
+      - NULL is allowed
+      - since V7.3.0
+      - from FreeRTOS V7.3.0
+      - pass NULL
+      - passing NULL
+      - NULL can be passed
+      - NULL is permitted
+      - NULL is acceptable
+      - NULL is fine
+      - NULL is valid
+      - can be passed as NULL
+      - set to NULL
+      - optional parameter
+    cite_values:
+    - xQueueSendFromISR
+    - errQUEUE_FULL
+  difficulty: medium
+  chips:
+  - freertos
+  tags:
+  - rtos
+  - isr
+  - queue
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-017
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-018
+  category: FI
+  split: test
+  turns:
+  - user: In FreeRTOS, what is the main difference between a mutex and a binary semaphore, and which one is the better choice for synchronising a task with an interrupt?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: mutex_priority_inheritance
+      value: priority inheritance
+      aliases:
+      - priority-inheritance
+    - attribute: binary_for_sync
+      value: binary semaphore
+      aliases:
+      - binary semaphores
+    - attribute: mutex_for_exclusion
+      value: mutual exclusion
+      aliases:
+      - mutex exclusion
+      - exclusive access
+    cite_values:
+    - priority inheritance
+    - binary semaphore
+  difficulty: medium
+  chips:
+  - freertos
+  tags:
+  - rtos
+  - mutex
+  - semaphore
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-018
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+- id: FI-C2-020
+  category: FI
+  split: test
+  turns:
+  - user: On the STM32G474, what formulas give the PLL VCO frequency and the PLL_R output frequency from PLLN, PLLM and PLLR, what is the allowed range of PLLM, and what must be done to the PLL before its
+      configuration can be changed?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: vco_formula
+      value: PLLN / PLLM
+      aliases:
+      - divided by PLLM and multiplied by PLLN
+      - divided by PLLM then multiplied by PLLN
+      - divided by PLLM multiplied by PLLN
+      - PLLN/PLLM
+      - PLLN divided by PLLM
+      - multiplied by PLLN and divided by PLLM
+      - × (PLLN / PLLM)
+      - x PLLN / PLLM
+      - PLLN over PLLM
+    - attribute: pllr_formula
+      value: VCO clock / PLLR
+      aliases:
+      - VCO / PLLR
+      - divided by PLLR
+      - VCO frequency divided by PLLR
+      - f(VCO clock) / PLLR
+    - attribute: pllm_range
+      value: 1 to 16
+      aliases:
+      - 1 and 16
+      - 1-16
+      - 1..16
+      - from 1 to 16
+      - 1 16
+      - 1 ≤ PLLM ≤ 16
+      - 1 to 8
+      - 1 and 8
+      - 1-8
+      - 1..8
+      - from 1 to 8
+      - 1 8
+    - attribute: disable_pll
+      value: disable the PLL
+      aliases:
+      - disabling the PLL
+      - PLLON to 0
+      - PLLON = 0
+      - clear PLLON
+      - PLLON cleared
+      - PLL must be disabled
+      - PLL is disabled
+      - wait until PLLRDY is cleared
+      - disable PLL
+      - turn off the PLL
+      - switch off the PLL
+      - stop the PLL
+      - clear the PLLON
+      - PLLON bit to 0
+      - set PLLON to 0
+      - disabled the PLL
+      - PLLRDY
+    cite_values:
+    - f(VCO clock) = f(PLL clock input)
+    - PLLM from 1 to 8
+    - 1 ≤ PLLM ≤ 16
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pll
+  - formula
+  - procedure
+  - fault_injection
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-020
+    fault: tool_unavailable
+    tools:
+    - get_register_bitfields
+    - search_registers
+    - get_electrical_specs
+    - query_pin_alternate_function
+    - find_pins_for_signal
+    - get_clock_limits
+    times: 6
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+  tool_rules:
+  - tool: get_register_bitfields
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: search_registers
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_electrical_specs
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: query_pin_alternate_function
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: find_pins_for_signal
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
+  - tool: get_clock_limits
+    kind: raise
+    error: TimeoutError
+    times: 6
+    message: 'injected fault: tool timed out'
