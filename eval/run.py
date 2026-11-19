@@ -508,7 +508,7 @@ class Runner:
 
 
 # ------------------------------------------------------------------------ CLI
-def make_factories(cfg: LLMConfig, cache_mode: str, timeout: float) -> dict:
+def make_factories(cfg: LLMConfig, cache_mode: str, timeout: float, v3_wall_s: float | None = None) -> dict:
     from eval import ratelimit
     from eval.adapters.agent_v1 import WORKER, AgentV1Adapter
     from eval.adapters.agent_v3 import WORKER as WORKER_V3, AgentV3Adapter
@@ -521,7 +521,10 @@ def make_factories(cfg: LLMConfig, cache_mode: str, timeout: float) -> dict:
 
     def v3(name="S3@P4", snapshot=SNAPSHOT_P4, **kw):
         # S3@P4/S3@P5: snapshot tương ứng trên interpreter của agent/.venv; timeout mỗi lượt không thấp hơn 600 s (runtime tự có ngân sách wall bên dưới)
-        return AgentV3Adapter(cfg, cache_mode=cache_mode, cache_path=llm_db, timeout=max(timeout, V3_MIN_TURN_TIMEOUT), snapshot=snapshot, name=name,
+        # D54: gateway chậm (~25 s/bước) làm trần wall_s=600 s cắt oan các run C3 dài; --v3-wall-s nâng trần và timeout lượt tương ứng (ghi trong manifest.args)
+        if v3_wall_s:
+            kw.setdefault("budgets", {"wall_s": v3_wall_s})
+        return AgentV3Adapter(cfg, cache_mode=cache_mode, cache_path=llm_db, timeout=max(timeout, V3_MIN_TURN_TIMEOUT, 1.5 * (v3_wall_s or 0)), snapshot=snapshot, name=name,
                               cmd=[str(ROOT / "agent" / ".venv" / "bin" / "python"), "-I", "-B", str(WORKER_V3)], **kw)
 
     return {
@@ -555,6 +558,7 @@ def main(argv=None) -> int:
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--cache", default="record", choices=["off", "record", "replay"])
     ap.add_argument("--timeout", type=float, default=180)
+    ap.add_argument("--v3-wall-s", type=float, default=None, help="D54: trần giây hoạt động mỗi run của S3 (mặc định runtime: 600); timeout lượt = max(--timeout, 900, 1,5 x giá trị này)")
     ap.add_argument("--rps", type=float, default=4.0, help="tốc độ KHỞI ĐỘNG run (không phải tốc độ gọi API)")
     ap.add_argument("--llm-rpm", type=float, default=12.0,
                     help="giới hạn số lời gọi LLM THẬT mỗi phút, dùng chung mọi hệ/tiến trình (free tier Gemini: 15 RPM); 0 = không giới hạn")
@@ -641,7 +645,7 @@ def main(argv=None) -> int:
 
     os.environ["EVAL_LLM_RPM"] = str(a.llm_rpm if live else 0)           # tiến trình con kế thừa
     os.environ["EVAL_RATE_FILE"] = str(ROOT / "eval" / ".cache" / "llm_rate.lock")
-    runner = Runner(out_dir, make_factories(cfg, a.cache, a.timeout), workers=a.workers, rps=a.rps)
+    runner = Runner(out_dir, make_factories(cfg, a.cache, a.timeout, **({"v3_wall_s": a.v3_wall_s} if a.v3_wall_s else {})), workers=a.workers, rps=a.rps)
     t0 = time.time()
 
     def close_manifest(status: str, reason: str | None = None) -> None:

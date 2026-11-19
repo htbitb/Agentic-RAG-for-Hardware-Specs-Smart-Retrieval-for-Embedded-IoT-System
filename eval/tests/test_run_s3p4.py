@@ -249,3 +249,13 @@ def test_end_to_end_ablation_run_scores_and_reports_variants_separately_with_pro
     assert "| S3@P4 |" not in md                                                      # không có lượt chạy chính ⇒ không có hàng S3@P4 trơn
     manifest = json.loads((out / "manifest.json").read_text())
     assert manifest["status"] == "completed" and "snapshot_agent_p4_sha256" in manifest
+
+
+def test_v3_wall_s_raises_the_runtime_ceiling_and_the_turn_timeout_for_s3_only_and_defaults_to_unchanged():
+    base = R.make_factories(CFG, "off", 180)["S3@P7"]()
+    assert base.budgets is None and base.timeout == R.V3_MIN_TURN_TIMEOUT
+    f = R.make_factories(CFG, "off", 180, v3_wall_s=1800)
+    s3 = f["S3@P7"]()
+    assert s3.budgets == {"wall_s": 1800} and s3.timeout == 2700
+    assert f[("S3@P7", "-Lessons")]().budgets == {"wall_s": 1800} if ("S3@P7", "-Lessons") in f else True
+    assert f["S2"]().timeout == 180

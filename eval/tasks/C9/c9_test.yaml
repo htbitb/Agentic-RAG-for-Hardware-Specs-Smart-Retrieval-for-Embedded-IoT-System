@@ -1,0 +1,2137 @@
+# Sinh bởi eval/generators/gen_p9.py --split test: KẾ THỪA ground truth/grader của task gốc (provenance.from). Không sửa tay.
+- id: C9-C1-001-typos
+  category: C9
+  split: test
+  turns:
+  - user: How far from the ADC1 base addrses is the CFGR2 register on the STM32G474?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: offset
+      kind: hex
+      value: '0x10'
+      allowed:
+      - '0x50000000'
+      - '0x50000010'
+    numeric_support:
+    - '0x50000000'
+    - '0x10'
+    - '0x50000010'
+    - '0x0'
+    cite_values:
+    - CFGR2
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_offset
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-001
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-004-abbrev
+  category: C9
+  split: test
+  turns:
+  - user: I need the final addr of FDCAN2_TXBTIE (STM32G474) for a bare-metal driver. What is it?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x400068DC'
+      allowed:
+      - '0x40006800'
+    numeric_support:
+    - '0x40006800'
+    - '0xDC'
+    - '0x400068DC'
+    - '0x0'
+    cite_values:
+    - '0x400068DC'
+    - '0x40006800'
+    - TXBTIE
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - robustness
+  - abbrev
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-004
+    transform: abbrev
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-005-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: I need the final address of LEDC_LSCH4_DUTY_R_REG
+      (ESP32) for a bare-metal driver. What is it?'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x3FF59100'
+      allowed:
+      - '0x3FF59000'
+      - '0x60019000'
+      equivalent:
+      - '0x60019100'
+    numeric_support:
+    - '0x3FF59000'
+    - '0x100'
+    - '0x3FF59100'
+    - '0x0'
+    - '0x60019000'
+    - '0x60019100'
+    cite_values:
+    - '0x3FF59100'
+    - '0x3FF59000'
+    - LEDC_LSCH4_DUTY_R_REG
+  difficulty: easy
+  chips:
+  - esp32
+  tags:
+  - register_address
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-005
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-008-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Where is the DAC2RDY bit field located inside the
+      DAC_SR register of DAC1 (STM32G474)?'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: bits
+      kind: bits
+      value:
+      - 27
+      - 27
+      allowed:
+      - - 11
+        - 11
+      - - 12
+        - 12
+      - - 13
+        - 13
+      - - 14
+        - 14
+      - - 15
+        - 15
+      - - 28
+        - 28
+      - - 29
+        - 29
+      - - 30
+        - 30
+      - - 31
+        - 31
+    numeric_support:
+    - '0x50000800'
+    - '0x34'
+    - '0x50000834'
+    - '0x0'
+    cite_values:
+    - DAC_SR
+    - DAC2RDY
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_bits
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-008
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-009-typos
+  category: C9
+  split: test
+  turns:
+  - user: What is the rseet value of ADC4_TR1 on the STM32G474?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0xFFF0000'
+      allowed:
+      - '0x50000500'
+      - '0x20'
+      - '0x50000520'
+    numeric_support:
+    - '0x50000500'
+    - '0x20'
+    - '0x50000520'
+    - '0xFFF0000'
+    cite_values:
+    - TR1
+    - '0xFFF0000'
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_reset
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-009
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-011-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: What is the default (power-on reset) value of SPIS0->PSEL_MISO
+      on the nRF52840?'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0xFFFFFFFF'
+      allowed:
+      - '0x40003000'
+      - '0x50C'
+      - '0x4000350C'
+    numeric_support:
+    - '0x40003000'
+    - '0x50C'
+    - '0x4000350C'
+    - '0xFFFFFFFF'
+    cite_values:
+    - PSEL_MISO
+    - '0xFFFFFFFF'
+  difficulty: medium
+  chips:
+  - nrf52840
+  tags:
+  - register_reset
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-011
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-013-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: How far from the TWIM0 base address is the INTENCLR
+      register on the nRF52840?'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: offset
+      kind: hex
+      value: '0x308'
+      allowed:
+      - '0x40003000'
+      - '0x40003308'
+    numeric_support:
+    - '0x40003000'
+    - '0x308'
+    - '0x40003308'
+    - '0x0'
+    cite_values:
+    - INTENCLR
+  difficulty: medium
+  chips:
+  - nrf52840
+  tags:
+  - register_offset
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-013
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-014-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: On the ESP32, give the bit position(s) of WDT_STG3
+      in RTC_CNTL_WDTCONFIG0_REG.'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: bits
+      kind: bits
+      value:
+      - 19
+      - 21
+      allowed:
+      - - 7
+        - 7
+      - - 8
+        - 8
+      - - 9
+        - 9
+      - - 10
+        - 10
+      - - 11
+        - 13
+      - - 14
+        - 16
+      - - 17
+        - 17
+      - - 18
+        - 18
+      - - 22
+        - 24
+      - - 25
+        - 27
+      - - 28
+        - 30
+      - - 31
+        - 31
+    numeric_support:
+    - '0x3FF48000'
+    - '0x8C'
+    - '0x3FF4808C'
+    - '0x4C80'
+    cite_values:
+    - RTC_CNTL_WDTCONFIG0_REG
+    - WDT_STG3
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - register_bits
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-014
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-015-typos
+  category: C9
+  split: test
+  turns:
+  - user: Give the 32-bit adderss of the COMP_C7CSR register in the COMP block of the STM32G474.
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x40010218'
+      allowed:
+      - '0x40010200'
+    numeric_support:
+    - '0x40010200'
+    - '0x18'
+    - '0x40010218'
+    - '0x0'
+    cite_values:
+    - '0x40010218'
+    - '0x40010200'
+    - COMP_C7CSR
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-015
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-016-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Which bits of FDCAN1_CCCR make up the TEST field on
+      the STM32G474?'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: bits
+      kind: bits
+      value:
+      - 7
+      - 7
+      allowed:
+      - - 0
+        - 0
+      - - 1
+        - 1
+      - - 2
+        - 2
+      - - 3
+        - 3
+      - - 4
+        - 4
+      - - 5
+        - 5
+      - - 6
+        - 6
+      - - 8
+        - 8
+      - - 9
+        - 9
+      - - 12
+        - 12
+      - - 13
+        - 13
+      - - 14
+        - 14
+      - - 15
+        - 15
+    numeric_support:
+    - '0x40006400'
+    - '0x18'
+    - '0x40006418'
+    - '0x1'
+    cite_values:
+    - CCCR
+    - TEST
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_bits
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-016
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-017-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Give the 32-bit address of the SQR4 register in the
+      ADC1 block of the STM32G474.'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x5000003C'
+      allowed:
+      - '0x50000000'
+    numeric_support:
+    - '0x50000000'
+    - '0x3C'
+    - '0x5000003C'
+    - '0x0'
+    cite_values:
+    - '0x5000003C'
+    - '0x50000000'
+    - SQR4
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-017
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-018-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Give the 32-bit address of the PSEL_MISO register
+      in the SPI1 block of the nRF52840.'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x40004510'
+      allowed:
+      - '0x40004000'
+      - '0xFFFFFFFF'
+    numeric_support:
+    - '0x40004000'
+    - '0x510'
+    - '0x40004510'
+    - '0xFFFFFFFF'
+    cite_values:
+    - '0x40004510'
+    - '0x40004000'
+    - PSEL_MISO
+  difficulty: easy
+  chips:
+  - nrf52840
+  tags:
+  - register_address
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-018
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-019-typos
+  category: C9
+  split: test
+  turns:
+  - user: What is the rseet value of RTC_CNTL_WDTWPROTECT_REG on the ESP32?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0x50D83AA1'
+      allowed:
+      - '0x3FF48000'
+      - '0xA4'
+      - '0x3FF480A4'
+    numeric_support:
+    - '0x3FF48000'
+    - '0xA4'
+    - '0x3FF480A4'
+    - '0x50D83AA1'
+    cite_values:
+    - RTC_CNTL_WDTWPROTECT_REG
+    - '0x50D83AA1'
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - register_reset
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-019
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-021-abbrev
+  category: C9
+  split: test
+  turns:
+  - user: After a reset, what value does the DBTP reg of FDCAN2 hold on the STM32G474?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: reset
+      kind: hex
+      value: '0xA33'
+      allowed:
+      - '0x40006800'
+      - '0xC'
+      - '0x4000680C'
+    numeric_support:
+    - '0x40006800'
+    - '0xC'
+    - '0x4000680C'
+    - '0xA33'
+    cite_values:
+    - DBTP
+    - '0xA33'
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - register_reset
+  - robustness
+  - abbrev
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-021
+    transform: abbrev
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-023-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: I need the final address of QSPI->STATUS (nRF52840)
+      for a bare-metal driver. What is it?'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x40029604'
+      allowed:
+      - '0x40029000'
+    numeric_support:
+    - '0x40029000'
+    - '0x604'
+    - '0x40029604'
+    - '0x0'
+    cite_values:
+    - '0x40029604'
+    - '0x40029000'
+    - STATUS
+  difficulty: easy
+  chips:
+  - nrf52840
+  tags:
+  - register_address
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-023
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-024-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: On the STM32G474, at which address is the DAC_STR2
+      register of DAC4 located?'
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: address
+      kind: hex
+      value: '0x5000145C'
+      allowed:
+      - '0x50001400'
+    numeric_support:
+    - '0x50001400'
+    - '0x5C'
+    - '0x5000145C'
+    - '0x0'
+    cite_values:
+    - '0x5000145C'
+    - '0x50001400'
+    - DAC_STR2
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_address
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-024
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C1-025-typos
+  category: C9
+  split: test
+  turns:
+  - user: For the STM32G474, what offset do I add to the DMA2 base adrdess to reach CMAR3?
+  graders:
+  - exact
+  - numeric_claims
+  - citation
+  expected:
+    exact:
+      attribute: offset
+      kind: hex
+      value: '0x3C'
+      allowed:
+      - '0x40020400'
+      - '0x4002043C'
+    numeric_support:
+    - '0x40020400'
+    - '0x3C'
+    - '0x4002043C'
+    - '0x0'
+    cite_values:
+    - CMAR3
+  difficulty: easy
+  chips:
+  - stm32g474
+  tags:
+  - register_offset
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C1-025
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-001-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: On the STM32G474, which alternate function number
+      connects TIM4_CH1 to pin PB6, and which alternate function number on the same pin provides USART1_TX?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: af_tim4_ch1
+      value: AF2
+      aliases:
+      - AF 2
+      - alternate function 2
+    - attribute: af_usart1_tx
+      value: AF7
+      aliases:
+      - AF 7
+      - alternate function 7
+    cite_values:
+    - PB6
+    - TIM4_CH1
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - pin_af
+  - multi_hop
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-001
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-002-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: I want TIM4 channel 3 to drive pin PB8 on an STM32G474.
+      Which alternate function number must be selected for PB8, which GPIO register holds that selection for pins 8 to 15, and which TIM4 register bit enables the channel 3 output?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: af_tim4_ch3
+      value: AF2
+      aliases:
+      - AF 2
+      - alternate function 2
+    - attribute: gpio_register
+      value: GPIOx_AFRH
+      aliases:
+      - GPIOB_AFRH
+      - AFRH
+      literal: true
+    - attribute: enable_bit
+      value: CC3E
+      literal: true
+    cite_values:
+    - PB8
+    - TIM4_CH3
+    - AFRH
+    - CC3E
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pin_af
+  - timer
+  - register
+  - multi_hop
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-002
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-004-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: What is the maximum AHB/APB frequency of the STM32G474,
+      and how many flash wait states does the reference manual require to run at that frequency in VCORE Range 1 boost mode? Also, up to what HCLK frequency can Range 1 boost mode run with zero wait states?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: max_hclk
+      value: 170
+      unit: MHz
+    - attribute: ws_at_max
+      value: 4 WS
+      aliases:
+      - 4 wait states
+      - four wait states
+      - LATENCY = 4
+      - LATENCY=4
+      - 4 WS (5 CPU cycles)
+      literal: true
+    - attribute: zero_ws_limit
+      value: 34
+    cite_values:
+    - 170 MHz
+    - 4 WS (5 CPU cycles)
+    numeric_support:
+    - value: 34
+      unit: MHz
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - clock
+  - flash_latency
+  - cross_doc
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-004
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-005-typos
+  category: C9
+  split: test
+  turns:
+  - user: On the STM32G474, what is the absolute maximum input votlage on an FT_c pin, how is the maximum defined for the other FT_xxx pins, and what must be done to sutsain an input voltage above 4 V?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: ft_c_max
+      value: 5.5
+    - attribute: ft_xxx_formula
+      value: min (VDD, VDDA) + 4.0
+      aliases:
+      - VDD + 4.0 V
+      - min(VDD, VDDA) + 4 V
+      - min(VDD,VDDA)+4.0
+      - 4.0 V above the supply
+      - VDD+4
+    - attribute: above_4v_condition
+      value: pull-up/pull-down resistors must be disabled
+      aliases:
+      - disable the internal pull-up
+      - internal pull-up/pull-down resistors must be disabled
+      - pull-up and pull-down resistors must be disabled
+      - disabled the internal pull
+      - pull-up/pull-down disabled
+      - pull-ups and pull-downs must be disabled
+      - disable the internal pull up
+      - disable the internal pull ups
+      - disable internal pull up
+      - disable internal pull ups
+      - disable the pull up
+      - disable pull up
+      - pull up and pull down resistors disabled
+      - pull up pull down resistors disabled
+      - pull ups and pull downs disabled
+      - turn off the internal pull
+    cite_values:
+    - FT_c
+    - Voltage characteristics
+    numeric_support:
+    - value: 5.5
+      unit: V
+    - value: 4.0
+      unit: V
+    - value: 0.3
+      unit: V
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - absolute_max
+  - io_voltage
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-005
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-006-abbrev
+  category: C9
+  split: test
+  turns:
+  - user: What is the allowed supply volt range for the ESP32 analog and RTC power pins (VDDA, VDD3P3_RTC, VDD3P3, VDD_SDIO in 3.3 V mode), and how does the min depend on whether the chip has an in-package
+      flash or PSRAM?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: vdd_max
+      value: 3.6
+      unit: V
+    - attribute: vdd_min_no_flash
+      value: 2.3
+      unit: V
+    - attribute: vdd_min_3v3_flash
+      value: 3.0
+      unit: V
+    cite_values:
+    - Recommended Power Supply Characteristics
+    - 2.3/3.0
+    numeric_support:
+    - value: 3.3
+      unit: V
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - supply_voltage
+  - footnote
+  - robustness
+  - abbrev
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-006
+    transform: abbrev
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-007-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Which GPIO numbers of the ESP32 are input-only, and
+      what hardware do those pins lack?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: input_only_gpios
+      value: 34-39
+      aliases:
+      - 34 to 39
+      - 34 through 39
+      - GPIO34 to GPIO39
+      - GPIO34 GPIO39
+      - GPIO 34 39
+      - GPIO34 35 36 37 38 39
+      - 34 35 36 37 38 39
+      - 34 35 36 37 38 and 39
+      - GPIO34 39
+      - GPIO34 to 39
+      - GPIO34 through 39
+      - GPIO34 GPIO35 GPIO36 GPIO37 GPIO38 GPIO39
+    - attribute: no_output_driver
+      value: no output driver
+      aliases:
+      - do not feature an output driver
+      - lack an output driver
+      - output is not supported
+      - cannot be used as outputs
+      - no output stage
+      - without an output driver
+      - lack output driver
+      - lack output drivers
+      - lacking an output driver
+      - no output drivers
+      - without an output driver
+      - without output drivers
+      - missing an output driver
+      - missing output driver
+      - not have an output driver
+      - no output stage
+    - attribute: no_pull
+      value: pull-up/pull-down
+      aliases:
+      - pull up and pull down
+      - pull-up and pull-down
+      - internal pull-up
+      - pullup
+      - pull-ups
+      - pullups
+      - pulldowns
+      - pull-downs
+      - pull-up resistors
+      - pull-up or pull-down
+    cite_values:
+    - input-only
+    - GPIO pins 34-39
+  difficulty: easy
+  chips:
+  - esp32
+  tags:
+  - gpio
+  - input_only
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-007
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-009-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Which bus speeds and addressing modes does the ESP32
+      I2C controller support?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: standard_mode
+      value: 100 kbit/s
+      aliases:
+      - 100 kbps
+      - 100 kHz
+      - 100 kbit
+      - 100 kb/s
+    - attribute: fast_mode
+      value: 400 kbit/s
+      aliases:
+      - 400 kbps
+      - 400 kHz
+      - 400 kbit
+      - 400 kb/s
+    - attribute: addr_7bit
+      value: 7-bit
+      aliases:
+      - 7 bit
+      - 7 or 10 bit
+      - 7 and 10 bit
+      - 7 or 10
+      - 7 and 10
+    - attribute: addr_10bit
+      value: 10-bit
+      aliases:
+      - 10 bit
+    cite_values:
+    - standard mode (100 kbit/s)
+    - fast mode (400 kbit/s)
+  difficulty: easy
+  chips:
+  - esp32
+  tags:
+  - i2c
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-009
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-010-typos
+  category: C9
+  split: test
+  turns:
+  - user: What crurent does the ESP32 draw in Light-sleep mode, in Hibernation mode with only the RTC timer, and in Deep-sleep with the ULP coprocessor powered up?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: light_sleep
+      value: 0.8
+      unit: mA
+    - attribute: hibernation
+      value: 5
+      unit: uA
+    - attribute: deep_sleep_ulp
+      value: 150
+      unit: uA
+    cite_values:
+    - Power Consumption by Power Modes
+    - Hibernation
+  difficulty: medium
+  chips:
+  - esp32
+  tags:
+  - power_modes
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-010
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-012-abbrev
+  category: C9
+  split: test
+  turns:
+  - user: According to the absolute max ratings of the nRF52840, what is the highest volt allowed on a GPIO pin when VDD is 3.3 V, and what is it when VDD is 3.7 V?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: io_max_vdd_3v3
+      value: 3.6
+      unit: V
+      tol_pct: 0.5
+    - attribute: io_max_vdd_3v7
+      value: 3.9
+      unit: V
+    cite_values:
+    - Absolute maximum ratings
+    - I/O pin voltage
+    numeric_support:
+    - value: 0.3
+      unit: V
+    - value: 3.3
+      unit: V
+    - value: 3.7
+      unit: V
+  difficulty: hard
+  chips:
+  - nrf52840
+  tags:
+  - absolute_max
+  - io_voltage
+  - vdd_dependent
+  - robustness
+  - abbrev
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-012
+    transform: abbrev
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-013-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: What resolution, sampling rate and number of channels
+      does the nRF52840 ADC offer, and how many general purpose I/O pins does the chip have?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: adc_resolution
+      value: 12-bit
+      aliases:
+      - 12 bit
+      - 12 bits
+    - attribute: adc_rate
+      value: 200 ksps
+      aliases:
+      - 200 ks/s
+      - 200 kSPS
+      - 200 kilosamples
+    - attribute: adc_channels
+      value: 8 configurable channels
+      aliases:
+      - 8 channels
+      - eight channels
+      - 8 configurable
+    - attribute: gpio_count
+      value: '48'
+      kind: text
+      aliases:
+      - 48 general purpose
+      - 48 GPIO
+      - 48 I/O
+      - 48 pins
+    cite_values:
+    - 12-bit, 200 ksps ADC
+    - 48 general purpose I/O pins
+  difficulty: easy
+  chips:
+  - nrf52840
+  tags:
+  - adc
+  - gpio
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-013
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-014-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Which has the higher maximum CPU clock frequency,
+      the ESP32 or the STM32G474, and by how many MHz?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: esp32_max
+      value: 240
+      unit: MHz
+    - attribute: stm32_max
+      value: 170
+      unit: MHz
+    - attribute: difference
+      value: 70
+      unit: MHz
+      derived: true
+    cite_values:
+    - 240 MHz
+    - 170 MHz
+  difficulty: medium
+  chips:
+  - esp32
+  - stm32g474
+  tags:
+  - cross_chip
+  - cpu_frequency
+  - cross_doc
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-014
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-017-typos
+  category: C9
+  split: test
+  turns:
+  - user: What vlaues can xQueueSendFromISR() return in FreeRTOS, and may the pxHigherPriorityTaskWoken parameter be NULL?
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: ret_true
+      value: pdTRUE
+      literal: true
+    - attribute: ret_full
+      value: errQUEUE_FULL
+      literal: true
+    - attribute: null_allowed
+      value: optional
+      aliases:
+      - can be NULL
+      - may be NULL
+      - can be set to NULL
+      - NULL is allowed
+      - since V7.3.0
+      - from FreeRTOS V7.3.0
+      - pass NULL
+      - passing NULL
+      - NULL can be passed
+      - NULL is permitted
+      - NULL is acceptable
+      - NULL is fine
+      - NULL is valid
+      - can be passed as NULL
+      - set to NULL
+      - optional parameter
+    cite_values:
+    - xQueueSendFromISR
+    - errQUEUE_FULL
+  difficulty: medium
+  chips:
+  - freertos
+  tags:
+  - rtos
+  - isr
+  - queue
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-017
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-018-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: In FreeRTOS, what is the main difference between a
+      mutex and a binary semaphore, and which one is the better choice for synchronising a task with an interrupt?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: mutex_priority_inheritance
+      value: priority inheritance
+      aliases:
+      - priority-inheritance
+    - attribute: binary_for_sync
+      value: binary semaphore
+      aliases:
+      - binary semaphores
+    - attribute: mutex_for_exclusion
+      value: mutual exclusion
+      aliases:
+      - mutex exclusion
+      - exclusive access
+    cite_values:
+    - priority inheritance
+    - binary semaphore
+  difficulty: medium
+  chips:
+  - freertos
+  tags:
+  - rtos
+  - mutex
+  - semaphore
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-018
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C2-020-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: On the STM32G474, what formulas give the PLL VCO frequency
+      and the PLL_R output frequency from PLLN, PLLM and PLLR, what is the allowed range of PLLM, and what must be done to the PLL before its configuration can be changed?'
+  graders:
+  - keyfacts
+  - numeric_claims
+  - citation
+  expected:
+    keyfacts:
+    - attribute: vco_formula
+      value: PLLN / PLLM
+      aliases:
+      - divided by PLLM and multiplied by PLLN
+      - divided by PLLM then multiplied by PLLN
+      - divided by PLLM multiplied by PLLN
+      - PLLN/PLLM
+      - PLLN divided by PLLM
+      - multiplied by PLLN and divided by PLLM
+      - × (PLLN / PLLM)
+      - x PLLN / PLLM
+      - PLLN over PLLM
+    - attribute: pllr_formula
+      value: VCO clock / PLLR
+      aliases:
+      - VCO / PLLR
+      - divided by PLLR
+      - VCO frequency divided by PLLR
+      - f(VCO clock) / PLLR
+    - attribute: pllm_range
+      value: 1 to 16
+      aliases:
+      - 1 and 16
+      - 1-16
+      - 1..16
+      - from 1 to 16
+      - 1 16
+      - 1 ≤ PLLM ≤ 16
+      - 1 to 8
+      - 1 and 8
+      - 1-8
+      - 1..8
+      - from 1 to 8
+      - 1 8
+    - attribute: disable_pll
+      value: disable the PLL
+      aliases:
+      - disabling the PLL
+      - PLLON to 0
+      - PLLON = 0
+      - clear PLLON
+      - PLLON cleared
+      - PLL must be disabled
+      - PLL is disabled
+      - wait until PLLRDY is cleared
+      - disable PLL
+      - turn off the PLL
+      - switch off the PLL
+      - stop the PLL
+      - clear the PLLON
+      - PLLON bit to 0
+      - set PLLON to 0
+      - disabled the PLL
+      - PLLRDY
+    cite_values:
+    - f(VCO clock) = f(PLL clock input)
+    - PLLM from 1 to 8
+    - 1 ≤ PLLM ≤ 16
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pll
+  - formula
+  - procedure
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C2-020
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-002-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Write bare-metal C for the STM32G474 that accesses
+      registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock`
+      or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = 170 MHz (PLL fed
+      by HSI16, voltage Range 1 boost mode, Flash wait states already set); the APB1 prescaler is 1 and the APB2 prescaler is 2, so PCLK2 = 85 MHz. Every peripheral clock that is off at reset is still off,
+      and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 20 kHz PWM signal with a 25 % duty cycle on pin PA8 using TIM1 channel 1. The PWM frequency must be within ±1 % and the
+      duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include "stm32g4xx.h"`,
+      then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb2_div2
+    spec:
+    - type: pwm
+      pin: PA8
+      freq_hz: 20000
+      duty_pct: 25
+      tol_pct: 1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pwm
+  - advanced_timer
+  - x2_rule
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-002
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-004-typos
+  category: C9
+  split: test
+  turns:
+  - user: 'Write bare-metal C for the STM32G474 that accesses rgeisters the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h`
+      device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequenices as numeric constants. Do not use interrupts; busy-wait loops on status flags are
+      fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltgae Range 1 boost mode, Flash wait states already set). Every peripheral clock that
+      is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, gneerate a 500 Hz PWM signal with a 30 % duty cycle on pin PA6 using TIM3 channel 1 (TIM3 has a 16-bit
+      counter). The PWM frqeuency must be within ±1 % and the duty cycle (high time / period) within ±1 perecntage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer
+      with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configrues everything and finally loops foerver with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: pwm
+      pin: PA6
+      freq_hz: 500
+      duty_pct: 30
+      tol_pct: 1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pwm
+  - general_timer
+  - prescaler
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-004
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-005-abbrev
+  category: C9
+  split: test
+  turns:
+  - user: 'Write bare-metal C for the STM32G474 that accesses regs the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the reg and bit names of ST''s `stm32g4xx.h` device
+      header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine.
+      Initial state: SYSCLK = HCLK = PCLK1 = 170 MHz (PLL fed by HSI16, volt Range 1 boost mode, Flash wait states already set); the APB1 prescaler is 1 and the APB2 prescaler is 2, so PCLK2 = 85 MHz. Every
+      periph clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 10 kHz PWM signal with a 40 % duty cycle on pin PC6 using TIM8 channel
+      1. The PWM freq must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete
+      C code block (`#include "stm32g4xx.h"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb2_div2
+    spec:
+    - type: pwm
+      pin: PC6
+      freq_hz: 10000
+      duty_pct: 40
+      tol_pct: 1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pwm
+  - advanced_timer
+  - x2_rule
+  - robustness
+  - abbrev
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-005
+    transform: abbrev
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-006-reorder
+  category: C9
+  split: test
+  turns:
+  - user: 'Answer with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation. Write
+      bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h` device
+      header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine.
+      Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off
+      at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 5 kHz PWM signal with a 60 % duty cycle on pin PA2 using TIM15 channel 1. The PWM frequency must
+      be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: pwm
+      pin: PA2
+      freq_hz: 5000
+      duty_pct: 60
+      tol_pct: 1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pwm
+  - advanced_timer
+  - moe_tim15
+  - robustness
+  - reorder
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-006
+    transform: reorder
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-007-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Write bare-metal C for the STM32G474 that accesses
+      registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock`
+      or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz
+      (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their
+      reset state. Task: on the STM32G474, generate a 2 kHz PWM signal with a 75 % duty cycle on pin PA6 using TIM16 channel 1 (TIM16 has a 16-bit counter). The PWM frequency must be within ±1 % and the
+      duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block (`#include "stm32g4xx.h"`,
+      then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: pwm
+      pin: PA6
+      freq_hz: 2000
+      duty_pct: 75
+      tol_pct: 1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pwm
+  - advanced_timer
+  - prescaler
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-007
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-008-typos
+  category: C9
+  split: test
+  turns:
+  - user: 'Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h`
+      device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as nuemric constants. Do not use interrupts; busy-wait loops on status flags are
+      fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that
+      is off at reset is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate a 50 kHz PWM signal with a 10 % duty cycle on pin PB8 using TIM4 channel 3. The PWM frequency
+      must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts. Answer with one complete C code block
+      (`#include "stm32g4xx.h"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: pwm
+      pin: PB8
+      freq_hz: 50000
+      duty_pct: 10
+      tol_pct: 1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pwm
+  - general_timer
+  - channel3
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-008
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-010-abbrev
+  category: C9
+  split: test
+  turns:
+  - user: 'Write bare-metal C for the STM32G474 that accesses regs the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the reg and bit names of ST''s `stm32g4xx.h` device
+      header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine.
+      Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, volt Range 1 boost mode, Flash wait states already set). Every periph clock that is off at reset
+      is still off, and all GPIO pins are in their reset state. Task: on the STM32G474, generate two PWM signals from TIM1, both at 20 kHz: channel 1 on pin PA8 with a 25 % duty cycle and channel 2 on pin
+      PA9 with a 75 % duty cycle. The PWM freq must be within ±1 % and the duty cycle (high time / period) within ±1 percentage point; edge-aligned PWM mode 1, active-high output, no dead time, no interrupts.
+      Answer with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: pwm
+      pin: PA8
+      freq_hz: 20000
+      duty_pct: 25
+      tol_pct: 1
+    - type: pwm
+      pin: PA9
+      freq_hz: 20000
+      duty_pct: 75
+      tol_pct: 1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - combo
+  - pwm
+  - two_channels
+  - robustness
+  - abbrev
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-010
+    transform: abbrev
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-011-reorder
+  category: C9
+  split: test
+  turns:
+  - user: 'Answer with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation. Write
+      bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h` device
+      header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine.
+      Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off
+      at reset is still off, and all GPIO pins are in their reset state. Task: configure USART1 for 115200 baud, with TX on pin PA9 and RX on pin PA10. Use 8 data bits, no parity, 1 stop bit and oversampling
+      by 16, enable both the transmitter and the receiver (write the baud-rate register before enabling the USART), and make the baud rate accurate to within ±2 %; no interrupts or DMA.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: uart
+      instance: USART1
+      baud: 115200
+      tol_pct: 2
+      tx_pin: PA9
+      rx_pin: PA10
+      frame: 8N1
+      te: true
+      re: true
+      over8: 0
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - uart
+  - usart1
+  - robustness
+  - reorder
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-011
+    transform: reorder
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-013-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Write bare-metal C for the STM32G474 that accesses
+      registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock`
+      or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz
+      (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off at reset is still off, and all GPIO pins are in their
+      reset state. Task: configure USART3 for 921600 baud with oversampling by 16, with TX on pin PB10 and RX on pin PB11. Use 8 data bits, no parity, 1 stop bit and oversampling by 16, enable both the
+      transmitter and the receiver (write the baud-rate register before enabling the USART), and make the baud rate accurate to within ±2 %; no interrupts or DMA. Answer with one complete C code block (`#include
+      "stm32g4xx.h"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: uart
+      instance: USART3
+      baud: 921600
+      tol_pct: 2
+      tx_pin: PB10
+      rx_pin: PB11
+      frame: 8N1
+      te: true
+      re: true
+      over8: 0
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - uart
+  - usart3
+  - oversampling
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-013
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-014-typos
+  category: C9
+  split: test
+  turns:
+  - user: 'Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h`
+      device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are
+      fine. Intiial state: SYSCLK = HCLK = PCLK1 = 170 MHz (PLL fed by HSI16, voltage Range 1 boost mode, Flash wait sattes alreday set); the APB1 prescaler is 1 and the APB2 prescaler is 2, so PCLK2 =
+      85 MHz. Every periphearl clock that is off at reset is still off, and all GPIO pins are in their reset state. Task: configure USART1 for 115200 baud, with TX on pin PA9 and RX on pin PA10. Keep the
+      default USART1 kernel clock source. Use 8 data bits, no parity, 1 stop bit and oversampling by 16, enable both the transmitter and the receiver (write the baud-rate register bfeore enabling the USART),
+      and make the baud rate accurate to wihtin ±2 %; no interrupts or DMA. Answer with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configures everything and finally loops
+      forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb2_div2
+    spec:
+    - type: uart
+      instance: USART1
+      baud: 115200
+      tol_pct: 2
+      tx_pin: PA9
+      rx_pin: PA10
+      frame: 8N1
+      te: true
+      re: true
+      over8: 0
+      kernel_source: PCLK2
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - uart
+  - usart1
+  - no_x2_for_usart
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-014
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-015-abbrev
+  category: C9
+  split: test
+  turns:
+  - user: 'Write bare-metal C for the STM32G474 that accesses regs the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the reg and bit names of ST''s `stm32g4xx.h` device
+      header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine.
+      Initial state: the chip has just come out of reset: SYSCLK = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no periph clock beyond the reset defaults is enabled, and all GPIO pins are
+      in their reset state. Task: configure I2C1 for 100 kHz (standard mode) with SCL on pin PB8 and SDA on pin PB9. I2C1 uses its default kernel clock (PCLK1). Configure the periph for controller operation:
+      program I2C_TIMINGR (while the periph is still disabled) so that the target fSCL is reachable, where fSCL = 1 / tSCL with tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] x (PRESC+1) x tI2CCLK (RM0440
+      §39.4.9) and tSYNC1 + tSYNC2 anywhere between its min 4 x tI2CCLK and 1000 ns (the largest value in the manual''s examples): the target must lie within ±5 % of the freq range this gives. The bus timing
+      must also meet the standard-mode (Sm) minimums of RM0440 Table 358 (tLOW >= 4.7 us and tHIGH >= 4.0 us), estimating tLOW as tSCLL + tSYNC1 and tHIGH as tSCLH + tSYNC2 with tSYNC1 = tSYNC2 = 2 x tI2CCLK.
+      Then enable the peripheral; SCL and SDA are open-drain alternate-function pins; no interrupts or DMA. Answer with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configures
+      everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: reset
+    spec:
+    - type: i2c
+      instance: I2C1
+      scl_hz: 100000
+      tol_pct: 5
+      scl_pin: PB8
+      sda_pin: PB9
+      open_drain: true
+      kernel_clk_hz: 16000000
+      mode: Sm
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - i2c
+  - i2c1
+  - rm_example
+  - robustness
+  - abbrev
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-015
+    transform: abbrev
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-017-reorder
+  category: C9
+  split: test
+  turns:
+  - user: 'Answer with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configures everything and finally loops forever with `while (1)`), followed by a short explanation. Write
+      bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h` device
+      header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine.
+      Initial state: SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz (PLL fed by HSI16, AHB/APB1/APB2 prescalers = 1, voltage Range 1 boost mode, Flash wait states already set). Every peripheral clock that is off
+      at reset is still off, and all GPIO pins are in their reset state. Task: configure I2C1 for 400 kHz (fast mode) with SCL on pin PB8 and SDA on pin PB9. The I2C1 kernel clock must be HSI16 (16 MHz),
+      selected with RCC_CCIPR.I2C1SEL. Configure the peripheral for controller operation: program I2C_TIMINGR (while the peripheral is still disabled) so that the target fSCL is reachable, where fSCL =
+      1 / tSCL with tSCL = tSYNC1 + tSYNC2 + [(SCLH+1) + (SCLL+1)] x (PRESC+1) x tI2CCLK (RM0440 §39.4.9) and tSYNC1 + tSYNC2 anywhere between its minimum 4 x tI2CCLK and 1000 ns (the largest value in the
+      manual''s examples): the target must lie within ±5 % of the frequency range this gives. The bus timing must also meet the fast-mode (Fm) minimums of RM0440 Table 358 (tLOW >= 1.3 us and tHIGH >= 0.6
+      us), estimating tLOW as tSCLL + tSYNC1 and tHIGH as tSCLH + tSYNC2 with tSYNC1 = tSYNC2 = 2 x tI2CCLK. Then enable the peripheral; SCL and SDA are open-drain alternate-function pins; no interrupts
+      or DMA.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: sysclk_170mhz_pll_hsi16_apb_div1
+    spec:
+    - type: i2c
+      instance: I2C1
+      scl_hz: 400000
+      tol_pct: 5
+      scl_pin: PB8
+      sda_pin: PB9
+      open_drain: true
+      kernel_clk_hz: 16000000
+      mode: Fm
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - i2c
+  - i2c1
+  - kernel_clock_select
+  - robustness
+  - reorder
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-017
+    transform: reorder
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-018-vi
+  category: C9
+  split: test
+  turns:
+  - user: 'Trả lời bằng tiếng Việt (giữ nguyên tên thanh ghi, tên bit, số liệu và mã nguồn bằng tiếng Anh, vẫn trích dẫn nguồn như thường lệ). Câu hỏi: Write bare-metal C for the STM32G474 that accesses
+      registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h` device header. Do not use HAL or LL drivers, `SystemCoreClock`
+      or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are fine. Initial state: the chip has just come out of reset: SYSCLK
+      = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no peripheral clock beyond the reset defaults is enabled, and all GPIO pins are in their reset state. Task: configure the clock tree
+      so that SYSCLK = HCLK = PCLK1 = PCLK2 = 170 MHz, using the PLL fed by HSI16 (AHB, APB1 and APB2 prescalers = 1). The resulting clock frequencies must be accurate to within 0.1 %; wait for each oscillator/PLL
+      to be ready before using it and for the clock switch to take effect (busy-wait on the status flags). Answer with one complete C code block (`#include "stm32g4xx.h"`, then a `main()` that configures
+      everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: reset
+    spec:
+    - type: clock
+      sysclk_hz: 170000000
+      hclk_hz: 170000000
+      pclk1_hz: 170000000
+      pclk2_hz: 170000000
+      tol_pct: 0.1
+  difficulty: hard
+  chips:
+  - stm32g474
+  tags:
+  - pll
+  - sysclk_170
+  - boost_mode
+  - robustness
+  - vi
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-018
+    transform: vi
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
+- id: C9-C3-019-typos
+  category: C9
+  split: test
+  turns:
+  - user: 'Write bare-metal C for the STM32G474 that accesses registers the CMSIS way (e.g. `TIM1->PSC = ...;`, `RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;`) using the register and bit names of ST''s `stm32g4xx.h`
+      device header. Do not use HAL or LL drivers, `SystemCoreClock` or any other library function; write clock frequencies as numeric constants. Do not use interrupts; busy-wait loops on status flags are
+      fine. Iniital state: the chip has just come out of reset: SYSCLK = HCLK = PCLK1 = PCLK2 = 16 MHz (HSI16), all prescalers are 1, no peripheral clock beyond the reset defaults is enabled, and all GPIO
+      pins are in their reset state. Task: configure the clock tree so that SYSCLK = HCLK = PCLK2 = 80 MHz and PCLK1 = 40 MHz, using the PLL fed by HSI16. The resultnig clock frequencies must be accurate
+      to within 0.1 %; wait for each oscillator/PLL to be ready before using it and for the clock switch to take effect (busy-wait on the status flags). Answer with one complete C code block (`#include
+      "stm32g4xx.h"`, then a `main()` that confiugres everything and finally loops forever with `while (1)`), followed by a short explanation.'
+  graders:
+  - functional_sim
+  - compile
+  expected:
+    initial: reset
+    spec:
+    - type: clock
+      sysclk_hz: 80000000
+      hclk_hz: 80000000
+      pclk1_hz: 40000000
+      pclk2_hz: 80000000
+      tol_pct: 0.1
+  difficulty: medium
+  chips:
+  - stm32g474
+  tags:
+  - pll
+  - sysclk_80
+  - prescalers
+  - robustness
+  - typos
+  review_status: verified
+  provenance:
+    kind: derived
+    from: C3-019
+    transform: typos
+  suites: []
+  version: 1
+  human_policy: {}
+  hidden_info: []
