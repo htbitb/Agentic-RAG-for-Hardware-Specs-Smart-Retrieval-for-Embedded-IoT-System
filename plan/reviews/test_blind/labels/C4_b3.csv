@@ -1,0 +1,20 @@
+system,task_id,seed,item,from_turn,label,turn_flagged,evidence_quote
+S3@P7,C4-010,1,PIN_CONFLICT:PB6,1,explicit,1,Attempting to assign USART1_TX and USART1_RX to PB6 and PB7 caused a direct resource conflict (DRC-PIN-01 / CONFLICT:PB6)
+S3@P7,C4-010,1,PIN_CONFLICT:PB7,1,explicit,1,"In Message 1, pins PB6 and PB7 were configured as TIM4_CH1 and TIM4_CH2 ... each physical pin ... can only serve one peripheral function at a time"
+S3@P7,C4-010,0,PIN_CONFLICT:PB6,1,explicit,1,Assigning PB6 and PB7 to USART1_TX and USART1_RX causes a pin conflict if TIM4 remains mapped to those physical pins
+S3@P7,C4-010,0,PIN_CONFLICT:PB7,1,explicit,1,"In Message 1, pins PB6 and PB7 were assigned to TIM4_CH1 and TIM4_CH2. Assigning PB6 and PB7 to USART1_TX and USART1_RX causes a pin conflict"
+S3@P7,C4-010,2,PIN_CONFLICT:PB6,1,explicit,1,"Assigning USART1_TX to PB6 and USART1_RX to PB7 creates a pin collision (CONFLICT: PB6, PB7)"
+S3@P7,C4-010,2,PIN_CONFLICT:PB7,1,explicit,1,"creates a pin collision (CONFLICT: PB6, PB7), as a microcontroller pin cannot simultaneously output a timer PWM signal and serve as a USART transceiver line"
+S3@P7,C4-013,1,PIN_CONFLICT:PB10,1,explicit,1,Assigning TIM2_CH3 (which on PB10 requires AF1) to PB10 creates a pin conflict with USART3_TX
+S3@P7,C4-013,2,PIN_CONFLICT:PB10,1,explicit,1,Assigning TIM2_CH3 to PB10 causes a direct pin conflict (DRC-PIN-01: one owner per pin)
+S3@P7,C4-013,0,PIN_CONFLICT:PB10,1,explicit,1,"Because a single pin cannot simultaneously output USART3_TX and TIM2_CH3, a pin conflict occurred (CONFLICT:PB10)"
+S3@P7,C4-009,2,LEVEL_MISMATCH:1.8V-3.3V,1,explicit,1,Connecting the STM32G474 (powered at VDD = 3.3 V) directly to the 1.8 V BLE module causes electrical incompatibility in both directions
+S3@P7,C4-015,0,PIN_CONFLICT:PA9,2,explicit,2,Assigning PA9 to I2C2_SCL (AF4) creates a pin collision on PA9
+S3@P7,C4-015,0,LEVEL_MISMATCH:1.8V-3.3V,2,explicit,2,"The sensor powered at 1.8 V cannot generate a logic high reaching 2.31 V, violating the minimum high-level input threshold"
+S3@P7,C4-015,0,CLOCK_LIMIT:SYSCLK,4,explicit,4,The requested frequency of 180 MHz for SYSCLK and HCLK cannot be configured because it exceeds multiple absolute hardware and operating limits
+S3@P7,C4-015,1,PIN_CONFLICT:PA9,2,explicit,2,Reallocating PA9 causes a pin conflict (CONFLICT:PA9) and would break the debug serial interface
+S3@P7,C4-015,1,LEVEL_MISMATCH:1.8V-3.3V,2,explicit,2,Because a 1.8 V signal cannot drive above 2.31 V ... a direct connection fails logic-level margins
+S3@P7,C4-015,1,CLOCK_LIMIT:SYSCLK,4,explicit,4,The request to configure SYSCLK = HCLK = 180 MHz cannot be implemented because it directly violates the maximum operating limits of the STM32G474
+S3@P7,C4-015,2,PIN_CONFLICT:PA9,2,explicit,2,"PA9 Pin Conflict Resolution: In Message 2, PA9 was allocated to USART1_TX ... USART1_TX was remapped to pin PB6 (AF7)"
+S3@P7,C4-015,2,LEVEL_MISMATCH:1.8V-3.3V,2,explicit,2,"Because 1.8 V < 2.31 V, the STM32 cannot reliably read a high level from a 1.8 V bus without a bidirectional I2C level shifter"
+S3@P7,C4-015,2,CLOCK_LIMIT:SYSCLK,4,explicit,4,Operating SYSCLK and HCLK at 180 MHz violates the electrical and functional operating specifications of the STM32G474

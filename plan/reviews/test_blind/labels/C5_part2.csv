@@ -1,0 +1,196 @@
+answer_id,item_id,verdict,evidence_quote
+A025,steps,NO,I could not find this in the documents.
+A025,pll,NO,I could not find this in the documents.
+A025,flash_ws,NO,I could not find this in the documents.
+A025,regout0,NO,I could not find this in the documents.
+A025,headroom,NO,I could not find this in the documents.
+A025,nrf_link_compat,NO,I could not find this in the documents.
+A026,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A026,pll,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A026,boost_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A026,flash_ws,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A026,pwm_freq,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A026,low_power_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A026,sleep_total,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A026,esp_link_compat,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A027,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A027,pll,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A027,flash_ws,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A027,regout0,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A027,headroom,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A027,nrf_link_compat,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A028,steps,NO,I could not find this in the documents.
+A028,pll,NO,I could not find this in the documents.
+A028,boost_mode,NO,I could not find this in the documents.
+A028,flash_ws,NO,I could not find this in the documents.
+A028,regout0,NO,I could not find this in the documents.
+A028,nrf_io_1v8,NO,I could not find this in the documents.
+A028,level_shifter,NO,I could not find this in the documents.
+A028,no_direct,YES,no such claim made: I could not find this in the documents.
+A028,standby,NO,I could not find this in the documents.
+A028,not_shutdown,YES,no such claim made: I could not find this in the documents.
+A028,sleep_total,NO,I could not find this in the documents.
+A028,no_boost_claim,YES,no such claim made: I could not find this in the documents.
+A029,steps,NO,I could not find this in the documents.
+A029,pll,NO,I could not find this in the documents.
+A029,flash_ws,NO,I could not find this in the documents.
+A029,regout0,NO,I could not find this in the documents.
+A029,headroom,NO,I could not find this in the documents.
+A029,nrf_link_compat,NO,I could not find this in the documents.
+A030,steps,YES,Step 1 ... Step 5
+A030,nrf_link_compat,YES,The two chips are directly compatible without any external level shifters.
+A030,low_power_mode,YES,Selected Mode: Standby Mode with RTC enabled ... Shutdown mode cannot be used
+A030,not_shutdown,YES,"Therefore, Shutdown mode cannot be used."
+A030,sleep_total,YES,(2 µA + 0.655 µA + 0.40 µA) sleep components (~3.06 uA; no explicit total line)
+A030,avg_current,YES,average current of ... 28.047 µA
+A030,lifetime,YES,92701 hours ... 10.58 years
+A030,trade_offs,YES,Reduce Active Wake Duration; Increase Wake-Up Interval; ultra-low LDO; higher-capacity cell
+A030,no_false_claim,YES,falls short of the required 12-year target
+A031,steps,YES,1. System & Clock ... 5. Firmware Sequence
+A031,pll,YES,M = 5 ... N = 60 ... R = 2 => 150.0 MHz
+A031,flash_ws,YES,4 wait states (LATENCY = 4WS) are required
+A031,regout0,YES,Target configured output: VDD = 3.3 V (UICR.REGOUT0 = 5); nRF52840 (VDD = 3.3 V) logic levels
+A031,headroom,YES,4.0 V - 3.3 V = 0.7 V > 0.3 V. REG0 operates stably
+A031,nrf_link_compat,YES,fully level-compatible without external level shifters
+A032,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A032,pll,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A032,boost_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A032,flash_ws,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A032,regout0,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A032,nrf_io_1v8,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A032,level_shifter,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A032,no_direct,YES,no such claim made: Insufficient evidence: step budget exhausted before a verified answer was found.
+A033,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A033,pll,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A033,flash_ws,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A033,regout0,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A033,headroom,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A033,nrf_link_compat,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,nrf_link_compat,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,low_power_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,not_shutdown,YES,no such claim made: Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,sleep_total,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,avg_current,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,lifetime,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,trade_offs,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A034,no_false_claim,YES,no such claim made: Insufficient evidence: step budget exhausted before a verified answer was found.
+A035,steps,YES,five numbered plan steps
+A035,pll,YES,M = 2 ... N = 85 ... R = 2 => 170 MHz
+A035,boost_mode,YES,Range 1 Boost mode (... R1MODE = 0 in PWR_CR5)
+A035,flash_ws,YES,Set Flash latency to 4 wait states
+A035,low_power_mode,NO,Selected Mode: Stop 2 mode (or Standby mode)
+A035,not_shutdown,YES,Shutdown not chosen (Stop 2 / Standby)
+A035,sleep_total,YES,Total Estimated Idle Current: ~18.0 µA
+A035,esp_link_compat,YES,fully compliant without bidirectional level shifters
+A036,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,nrf_link_compat,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,low_power_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,not_shutdown,YES,no such claim made: Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,sleep_total,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,avg_current,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,lifetime,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,trade_offs,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A036,no_false_claim,YES,no such claim made: Insufficient evidence: step budget exhausted before a verified answer was found.
+A037,steps,YES,Step 1 ... Step 5
+A037,pll,YES,25 MHz/5 ... x 60 = 300 MHz ... /2 = 150.0 MHz
+A037,flash_ws,YES,4 Wait States (LATENCY = 4)
+A037,regout0,YES,REG0 stage to maintain a regulated 3.3 V I/O rail
+A037,headroom,YES,4.0 V - 3.3 V = 0.7 V > 0.3 V
+A037,nrf_link_compat,YES,Both chips run on VDD = 3.3 V ... fully compatible without external level translation
+A038,steps,YES,sections 1-5
+A038,nrf_link_compat,YES,directly compatible (no level shifting required)
+A038,low_power_mode,YES,Selected Mode: Standby Mode ... Shutdown mode ... disables the BOR
+A038,not_shutdown,YES,Shutdown disables the BOR; Standby selected
+A038,sleep_total,YES,Total Sleep Current ≈ 3.70 µA
+A038,avg_current,YES,I_avg = 28.69 µA
+A038,lifetime,YES,"≈ 90,624 hours ... ≈ 10.34 years"
+A038,trade_offs,YES,Shorten Active Duration; Increase Logging Interval; Ultra-Low-Iq LDO
+A038,no_false_claim,YES,The 12-year target is not met
+A039,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A039,pll,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A039,boost_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A039,flash_ws,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A039,regout0,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A039,nrf_io_1v8,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A039,level_shifter,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A039,no_direct,YES,no such claim made: Insufficient evidence: step budget exhausted before a verified answer was found.
+A040,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A040,pll,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A040,flash_ws,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A040,low_power_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A040,esp32_off,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A040,sleep_total,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A040,esp_link_compat,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A041,steps,NO,I could not find this in the documents.
+A041,nrf_link_compat,NO,I could not find this in the documents.
+A041,low_power_mode,NO,I could not find this in the documents.
+A041,not_shutdown,YES,no such claim made: I could not find this in the documents.
+A041,sleep_total,NO,I could not find this in the documents.
+A041,avg_current,NO,I could not find this in the documents.
+A041,lifetime,NO,I could not find this in the documents.
+A041,trade_offs,NO,I could not find this in the documents.
+A041,no_false_claim,YES,no such claim made: I could not find this in the documents.
+A042,steps,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,pll,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,boost_mode,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,flash_ws,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,regout0,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,nrf_io_1v8,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,level_shifter,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,no_direct,YES,no such claim made: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,standby,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,not_shutdown,YES,no such claim made: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,sleep_total,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A042,no_boost_claim,YES,no such claim made: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,steps,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,pll,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,boost_mode,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,flash_ws,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,regout0,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,nrf_io_1v8,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,level_shifter,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,no_direct,YES,no such claim made: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,standby,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,not_shutdown,YES,no such claim made: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,sleep_total,NO,REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A043,no_boost_claim,YES,no such claim made: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0 V (Supply
+A044,steps,YES,five numbered plan steps
+A044,pll,YES,PLLM = 5 ... PLLN = 60 ... PLLR = 2 => 150 MHz
+A044,flash_ws,YES,4 wait states (FLASH_ACR_LATENCY_4WS) are required
+A044,regout0,YES,UICR.REGOUT0 configured to 3.3 V ... nRF52840 (VDD = 3.3 V)
+A044,headroom,YES,700 mV of headroom ... satisfying the REG0 dropout requirement
+A044,nrf_link_compat,YES,directly compatible without level shifters
+A045,steps,NO,I could not find this in the documents.
+A045,pll,NO,I could not find this in the documents.
+A045,boost_mode,NO,I could not find this in the documents.
+A045,flash_ws,NO,I could not find this in the documents.
+A045,low_power_mode,NO,I could not find this in the documents.
+A045,not_shutdown,YES,no such claim made: I could not find this in the documents.
+A045,sleep_total,NO,I could not find this in the documents.
+A045,esp_link_compat,NO,I could not find this in the documents.
+A046,steps,YES,sections 1-5
+A046,nrf_link_compat,YES,no external level shifters are required
+A046,low_power_mode,YES,Selected Mode: Standby Mode ... Shutdown Mode ... disables the BOR
+A046,not_shutdown,YES,Standby selected; Shutdown disables BOR
+A046,sleep_total,YES,Total Sleep Current 3.0 µA
+A046,avg_current,YES,I_avg ≈ 20.77 µA
+A046,lifetime,NO,no lifetime for the actual cell; sizes Target Capacity ≥ 683 mAh instead
+A046,trade_offs,YES,Shorten the Active Window; Increase Sleep Interval; Upgrade Battery
+A046,no_false_claim,YES,does not claim the current battery meets 3 years
+A047,steps,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A047,pll,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A047,boost_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A047,flash_ws,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A047,pwm_freq,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A047,low_power_mode,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A047,sleep_total,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A047,esp_link_compat,NO,Insufficient evidence: step budget exhausted before a verified answer was found.
+A048,steps,YES,Step 1 ... Step 5
+A048,pll,YES,"f_HSE = 24 MHz; M = 6, N = 85, R = 2 => 170.0 MHz"
+A048,boost_mode,YES,Range 1 Boost Mode (clearing bit R1MODE in PWR_CR5)
+A048,flash_ws,YES,4 wait states (LATENCY = 4WS)
+A048,pwm_freq,YES,Target Frequency: f_PWM = 16.0 kHz
+A048,low_power_mode,YES,Standby Mode with RTC
+A048,sleep_total,YES,I_total = ... = 11.88 µA
+A048,esp_link_compat,YES,fully directly compatible without level shifters

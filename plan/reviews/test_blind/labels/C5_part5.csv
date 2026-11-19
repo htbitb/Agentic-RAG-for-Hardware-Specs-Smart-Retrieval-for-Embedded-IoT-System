@@ -1,0 +1,209 @@
+answer_id,item_id,verdict,evidence_quote
+A097,steps,NO,no answer: I could not find this in the documents.
+A097,pll,NO,no answer: I could not find this in the documents.
+A097,boost_mode,NO,no answer: I could not find this in the documents.
+A097,flash_ws,NO,no answer: I could not find this in the documents.
+A097,low_power_mode,NO,no answer: I could not find this in the documents.
+A097,not_shutdown,YES,"no answer given, no such claim: I could not find this in the documents."
+A097,sleep_total,NO,no answer: I could not find this in the documents.
+A097,esp_link_compat,NO,no answer: I could not find this in the documents.
+A098,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A098,pll,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A098,flash_ws,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A098,regout0,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A098,headroom,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A098,nrf_link_compat,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A099,steps,YES,### Design Plan 1. ... 5. USART3 Clock & Baud Rate Generation
+A099,pll,YES,"M = 3, N = 85, R = 2 -> 12 MHz/3*85/2 = 170 MHz"
+A099,boost_mode,YES,clear PWR_CR5_R1MODE to activate Boost mode
+A099,flash_ws,YES,set Flash latency to 4 wait states (FLASH_ACR_LATENCY_4WS)
+A099,regout0,NO,REGOUT0/REG0 never mentioned; assumes nRF at VDD = 3.3 V
+A099,nrf_io_1v8,NO,states both devices powered from VDD = 3.3 V; no 1.8 V I/O level
+A099,level_shifter,NO,The interfaces are fully DC compatible without level shifters
+A099,no_direct,NO,The interfaces are fully DC compatible without level shifters
+A100,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A100,pll,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A100,boost_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A100,flash_ws,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A100,low_power_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A100,not_shutdown,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A100,sleep_total,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A100,esp_link_compat,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A101,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A101,pll,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A101,boost_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A101,flash_ws,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A101,low_power_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A101,not_shutdown,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A101,sleep_total,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A101,esp_link_compat,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A102,steps,YES,Design Plan sections 1-5 (Clock Tree ... Low-Power Strategy)
+A102,pll,YES,"24 MHz HSE, M = 6, N = 85, R = 2 -> 170.0 MHz"
+A102,boost_mode,YES,requires Range 1 Boost Mode (PWR_CR5_R1MODE = 0)
+A102,flash_ws,YES,Flash latency must be configured to 4 wait states (4 WS)
+A102,pwm_freq,NO,f_PWM = 20 kHz (not 16 kHz)
+A102,low_power_mode,NO,STM32 enters Stop 2 mode (or Standby mode); budget uses Stop 2 + RTC 2.8 uA
+A102,sleep_total,YES,Total Estimated Sleep Current: ~15.8 uA
+A102,esp_link_compat,YES,Direct connection on PA9/PA10 without level translation (both 3.3 V)
+A103,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A103,nrf_link_compat,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A103,low_power_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A103,not_shutdown,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A103,sleep_total,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A103,avg_current,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A103,lifetime,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A103,trade_offs,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A103,no_false_claim,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A104,steps,NO,no answer: I could not find this in the documents.
+A104,pll,NO,no answer: I could not find this in the documents.
+A104,flash_ws,NO,no answer: I could not find this in the documents.
+A104,low_power_mode,NO,no answer: I could not find this in the documents.
+A104,esp32_off,NO,no answer: I could not find this in the documents.
+A104,sleep_total,NO,no answer: I could not find this in the documents.
+A104,esp_link_compat,NO,no answer: I could not find this in the documents.
+A105,steps,YES,sections 1-5 (Clock Tree ... Sleep-Current Budget Table)
+A105,pll,NO,"assumes 8 MHz HSE: M = 2, N = 75, R = 2; not derived from 25 MHz HSE"
+A105,flash_ws,YES,150 MHz ... requires 4 wait states (LATENCY = 4)
+A105,low_power_mode,YES,Placed into Standby Mode with RTC Enabled
+A105,esp32_off,YES,Kept in Hardware Shutdown / Chip Off by driving the ESP32 EN pin LOW
+A105,sleep_total,NO,Total Sleep Current ~4.9 uA (outside 2.0-4.5)
+A105,esp_link_compat,YES,"single VDD = 3.3 V rail, directly compatible without level shifters"
+A106,steps,NO,no answer: I could not find this in the documents.
+A106,pll,NO,no answer: I could not find this in the documents.
+A106,boost_mode,NO,no answer: I could not find this in the documents.
+A106,flash_ws,NO,no answer: I could not find this in the documents.
+A106,regout0,NO,no answer: I could not find this in the documents.
+A106,nrf_io_1v8,NO,no answer: I could not find this in the documents.
+A106,level_shifter,NO,no answer: I could not find this in the documents.
+A106,no_direct,YES,"no answer given, no such claim: I could not find this in the documents."
+A106,standby,NO,no answer: I could not find this in the documents.
+A106,not_shutdown,YES,"no answer given, no such claim: I could not find this in the documents."
+A106,sleep_total,NO,no answer: I could not find this in the documents.
+A106,no_boost_claim,YES,"no answer given, no such claim: I could not find this in the documents."
+A107,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A107,pll,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A107,boost_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A107,flash_ws,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A107,regout0,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A107,nrf_io_1v8,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A107,level_shifter,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A107,no_direct,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A108,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A108,nrf_link_compat,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A108,low_power_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A108,not_shutdown,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A108,sleep_total,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A108,avg_current,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A108,lifetime,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A108,trade_offs,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A108,no_false_claim,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A109,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A109,pll,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A109,boost_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A109,flash_ws,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A109,pwm_freq,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A109,low_power_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A109,sleep_total,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A109,esp_link_compat,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A110,steps,NO,no answer: I could not find this in the documents.
+A110,pll,NO,no answer: I could not find this in the documents.
+A110,flash_ws,NO,no answer: I could not find this in the documents.
+A110,low_power_mode,NO,no answer: I could not find this in the documents.
+A110,esp32_off,NO,no answer: I could not find this in the documents.
+A110,sleep_total,NO,no answer: I could not find this in the documents.
+A110,esp_link_compat,NO,no answer: I could not find this in the documents.
+A111,steps,YES,sections 1-5 (Pin Allocation ... Corrective Measures)
+A111,nrf_link_compat,YES,share the same regulated 3.0 V rail ... no level shifters are required
+A111,low_power_mode,YES,Standby Mode with RTC and BOR enabled; Shutdown ... disables Brown-out Reset
+A111,not_shutdown,YES,"Shutdown mode offers lower current, but disables BOR -> Standby chosen"
+A111,sleep_total,YES,Total Sleep Current ~2.80 uA
+A111,avg_current,YES,8 mA x 2 s + 2.80 uA sleep over 900 s -> I_avg ~20.57 uA
+A111,lifetime,NO,no 400 mAh cell; assumes CR123A/1/2AA/CR2477 cells
+A111,trade_offs,YES,Shorten Active Duration; Adaptive Reporting; Extend Measurement Interval
+A111,no_false_claim,NO,CR123A ... CR2477 easily exceeds the 3-year requirement
+A112,steps,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,pll,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,boost_mode,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,flash_ws,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,regout0,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,nrf_io_1v8,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,level_shifter,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,no_direct,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,standby,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,not_shutdown,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,sleep_total,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A112,no_boost_claim,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A113,steps,NO,no answer: I could not find this in the documents.
+A113,pll,NO,no answer: I could not find this in the documents.
+A113,boost_mode,NO,no answer: I could not find this in the documents.
+A113,flash_ws,NO,no answer: I could not find this in the documents.
+A113,pwm_freq,NO,no answer: I could not find this in the documents.
+A113,low_power_mode,NO,no answer: I could not find this in the documents.
+A113,sleep_total,NO,no answer: I could not find this in the documents.
+A113,esp_link_compat,NO,no answer: I could not find this in the documents.
+A114,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A114,pll,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A114,boost_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A114,flash_ws,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A114,regout0,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A114,nrf_io_1v8,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A114,level_shifter,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A114,no_direct,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A115,steps,YES,Step 1 ... Step 5
+A115,pll,YES,"25 MHz, M = 5, N = 60, R = 2 -> 150 MHz"
+A115,flash_ws,YES,Flash latency must be configured to 4 wait states
+A115,low_power_mode,YES,Configured in Standby mode with RTC enabled
+A115,esp32_off,YES,Power off mode by maintaining CHIP_PU low via PA4 ... 1 uA
+A115,sleep_total,YES,Total Node Sleep Current = 3.475 uA
+A115,esp_link_compat,YES,Direct connection without level translation is electrically safe and compatible
+A116,steps,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,pll,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,boost_mode,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,flash_ws,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,regout0,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,nrf_io_1v8,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,level_shifter,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,no_direct,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,standby,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,not_shutdown,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,sleep_total,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A116,no_boost_claim,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,steps,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,pll,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,boost_mode,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,flash_ws,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,regout0,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,nrf_io_1v8,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,level_shifter,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,no_direct,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,standby,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,not_shutdown,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,sleep_total,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A117,no_boost_claim,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,steps,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,pll,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,boost_mode,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,flash_ws,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,regout0,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,nrf_io_1v8,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,level_shifter,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,no_direct,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,standby,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,not_shutdown,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,sleep_total,NO,refused (misreads 4.2 V as STM32 supply); no plan: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A118,no_boost_claim,YES,refusal makes no such claim: REFUSED (hardware safety): applying 4.2 V to the stm32g474 supply exceeds the limit of 4.0
+A119,steps,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A119,pll,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A119,boost_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A119,flash_ws,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A119,low_power_mode,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A119,not_shutdown,YES,"no answer given, no such claim: Insufficient evidence: step budget exhausted before a verified answer was found."
+A119,sleep_total,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A119,esp_link_compat,NO,no answer: Insufficient evidence: step budget exhausted before a verified answer was found.
+A120,steps,YES,Step 1 ... Step 5
+A120,pll,YES,"HSE 25 MHz, M = 5, N = 60, R = 2 -> 150 MHz"
+A120,flash_ws,YES,4 wait states (5 CPU cycles) (FLASH_ACR.LATENCY = 4)
+A120,low_power_mode,YES,STM32 must enter Standby mode with RTC enabled
+A120,esp32_off,YES,"CHIP_PU low ... Power off mode, consuming only 1 uA"
+A120,sleep_total,YES,Sum of All Components ... = 3.475 uA
+A120,esp_link_compat,YES,Direct point-to-point connection is fully compatible without level shifters

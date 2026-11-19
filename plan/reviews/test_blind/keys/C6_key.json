@@ -1,0 +1,752 @@
+{
+ "A001": {
+  "system": "S3@P7",
+  "task_id": "C6-011",
+  "seed": 0
+ },
+ "A002": {
+  "system": "S2D",
+  "task_id": "C6-008",
+  "seed": 0
+ },
+ "A003": {
+  "system": "S0",
+  "task_id": "C6-012",
+  "seed": 0
+ },
+ "A004": {
+  "system": "S3@P7",
+  "task_id": "C6-006",
+  "seed": 0
+ },
+ "A005": {
+  "system": "S1",
+  "task_id": "C6-012",
+  "seed": 0
+ },
+ "A006": {
+  "system": "S2D",
+  "task_id": "C6-013",
+  "seed": 1
+ },
+ "A007": {
+  "system": "S1",
+  "task_id": "C6-013",
+  "seed": 1
+ },
+ "A008": {
+  "system": "S2D",
+  "task_id": "C6-006",
+  "seed": 2
+ },
+ "A009": {
+  "system": "S3@P7",
+  "task_id": "C6-013",
+  "seed": 1
+ },
+ "A010": {
+  "system": "S0",
+  "task_id": "C6-010",
+  "seed": 1
+ },
+ "A011": {
+  "system": "S1",
+  "task_id": "C6-008",
+  "seed": 0
+ },
+ "A012": {
+  "system": "S3@P7",
+  "task_id": "C6-001",
+  "seed": 0
+ },
+ "A013": {
+  "system": "S2",
+  "task_id": "C6-001",
+  "seed": 1
+ },
+ "A014": {
+  "system": "S3@P7",
+  "task_id": "C6-001",
+  "seed": 2
+ },
+ "A015": {
+  "system": "S2D",
+  "task_id": "C6-004",
+  "seed": 1
+ },
+ "A016": {
+  "system": "S2",
+  "task_id": "C6-008",
+  "seed": 2
+ },
+ "A017": {
+  "system": "S0",
+  "task_id": "C6-001",
+  "seed": 1
+ },
+ "A018": {
+  "system": "S0",
+  "task_id": "C6-013",
+  "seed": 2
+ },
+ "A019": {
+  "system": "S2",
+  "task_id": "C6-013",
+  "seed": 1
+ },
+ "A020": {
+  "system": "S1",
+  "task_id": "C6-011",
+  "seed": 0
+ },
+ "A021": {
+  "system": "S1",
+  "task_id": "C6-002",
+  "seed": 1
+ },
+ "A022": {
+  "system": "S2",
+  "task_id": "C6-008",
+  "seed": 0
+ },
+ "A023": {
+  "system": "S2",
+  "task_id": "C6-010",
+  "seed": 0
+ },
+ "A024": {
+  "system": "S2D",
+  "task_id": "C6-001",
+  "seed": 2
+ },
+ "A025": {
+  "system": "S2",
+  "task_id": "C6-006",
+  "seed": 0
+ },
+ "A026": {
+  "system": "S2D",
+  "task_id": "C6-010",
+  "seed": 1
+ },
+ "A027": {
+  "system": "S2D",
+  "task_id": "C6-010",
+  "seed": 0
+ },
+ "A028": {
+  "system": "S0",
+  "task_id": "C6-013",
+  "seed": 1
+ },
+ "A029": {
+  "system": "S2",
+  "task_id": "C6-001",
+  "seed": 2
+ },
+ "A030": {
+  "system": "S1",
+  "task_id": "C6-004",
+  "seed": 0
+ },
+ "A031": {
+  "system": "S1",
+  "task_id": "C6-001",
+  "seed": 2
+ },
+ "A032": {
+  "system": "S2",
+  "task_id": "C6-010",
+  "seed": 2
+ },
+ "A033": {
+  "system": "S3@P7",
+  "task_id": "C6-002",
+  "seed": 0
+ },
+ "A034": {
+  "system": "S2",
+  "task_id": "C6-001",
+  "seed": 0
+ },
+ "A035": {
+  "system": "S1",
+  "task_id": "C6-010",
+  "seed": 0
+ },
+ "A036": {
+  "system": "S0",
+  "task_id": "C6-011",
+  "seed": 2
+ },
+ "A037": {
+  "system": "S2D",
+  "task_id": "C6-012",
+  "seed": 0
+ },
+ "A038": {
+  "system": "S2",
+  "task_id": "C6-012",
+  "seed": 1
+ },
+ "A039": {
+  "system": "S2D",
+  "task_id": "C6-008",
+  "seed": 2
+ },
+ "A040": {
+  "system": "S1",
+  "task_id": "C6-001",
+  "seed": 1
+ },
+ "A041": {
+  "system": "S3@P7",
+  "task_id": "C6-004",
+  "seed": 0
+ },
+ "A042": {
+  "system": "S2D",
+  "task_id": "C6-010",
+  "seed": 2
+ },
+ "A043": {
+  "system": "S1",
+  "task_id": "C6-013",
+  "seed": 2
+ },
+ "A044": {
+  "system": "S1",
+  "task_id": "C6-008",
+  "seed": 2
+ },
+ "A045": {
+  "system": "S2",
+  "task_id": "C6-004",
+  "seed": 0
+ },
+ "A046": {
+  "system": "S0",
+  "task_id": "C6-011",
+  "seed": 1
+ },
+ "A047": {
+  "system": "S3@P7",
+  "task_id": "C6-008",
+  "seed": 1
+ },
+ "A048": {
+  "system": "S3@P7",
+  "task_id": "C6-010",
+  "seed": 1
+ },
+ "A049": {
+  "system": "S0",
+  "task_id": "C6-010",
+  "seed": 0
+ },
+ "A050": {
+  "system": "S3@P7",
+  "task_id": "C6-010",
+  "seed": 0
+ },
+ "A051": {
+  "system": "S2",
+  "task_id": "C6-014",
+  "seed": 2
+ },
+ "A052": {
+  "system": "S0",
+  "task_id": "C6-014",
+  "seed": 1
+ },
+ "A053": {
+  "system": "S2D",
+  "task_id": "C6-004",
+  "seed": 2
+ },
+ "A054": {
+  "system": "S0",
+  "task_id": "C6-012",
+  "seed": 1
+ },
+ "A055": {
+  "system": "S2D",
+  "task_id": "C6-013",
+  "seed": 2
+ },
+ "A056": {
+  "system": "S1",
+  "task_id": "C6-006",
+  "seed": 1
+ },
+ "A057": {
+  "system": "S2D",
+  "task_id": "C6-006",
+  "seed": 1
+ },
+ "A058": {
+  "system": "S1",
+  "task_id": "C6-002",
+  "seed": 0
+ },
+ "A059": {
+  "system": "S1",
+  "task_id": "C6-014",
+  "seed": 2
+ },
+ "A060": {
+  "system": "S2D",
+  "task_id": "C6-013",
+  "seed": 0
+ },
+ "A061": {
+  "system": "S2D",
+  "task_id": "C6-002",
+  "seed": 0
+ },
+ "A062": {
+  "system": "S2D",
+  "task_id": "C6-011",
+  "seed": 1
+ },
+ "A063": {
+  "system": "S1",
+  "task_id": "C6-013",
+  "seed": 0
+ },
+ "A064": {
+  "system": "S0",
+  "task_id": "C6-011",
+  "seed": 0
+ },
+ "A065": {
+  "system": "S2",
+  "task_id": "C6-002",
+  "seed": 2
+ },
+ "A066": {
+  "system": "S1",
+  "task_id": "C6-012",
+  "seed": 2
+ },
+ "A067": {
+  "system": "S1",
+  "task_id": "C6-011",
+  "seed": 1
+ },
+ "A068": {
+  "system": "S1",
+  "task_id": "C6-008",
+  "seed": 1
+ },
+ "A069": {
+  "system": "S2D",
+  "task_id": "C6-014",
+  "seed": 2
+ },
+ "A070": {
+  "system": "S0",
+  "task_id": "C6-002",
+  "seed": 2
+ },
+ "A071": {
+  "system": "S1",
+  "task_id": "C6-004",
+  "seed": 1
+ },
+ "A072": {
+  "system": "S3@P7",
+  "task_id": "C6-013",
+  "seed": 0
+ },
+ "A073": {
+  "system": "S2D",
+  "task_id": "C6-002",
+  "seed": 1
+ },
+ "A074": {
+  "system": "S2D",
+  "task_id": "C6-012",
+  "seed": 2
+ },
+ "A075": {
+  "system": "S3@P7",
+  "task_id": "C6-012",
+  "seed": 0
+ },
+ "A076": {
+  "system": "S0",
+  "task_id": "C6-002",
+  "seed": 1
+ },
+ "A077": {
+  "system": "S1",
+  "task_id": "C6-006",
+  "seed": 0
+ },
+ "A078": {
+  "system": "S3@P7",
+  "task_id": "C6-004",
+  "seed": 2
+ },
+ "A079": {
+  "system": "S2D",
+  "task_id": "C6-014",
+  "seed": 0
+ },
+ "A080": {
+  "system": "S2D",
+  "task_id": "C6-011",
+  "seed": 0
+ },
+ "A081": {
+  "system": "S0",
+  "task_id": "C6-014",
+  "seed": 0
+ },
+ "A082": {
+  "system": "S2",
+  "task_id": "C6-012",
+  "seed": 0
+ },
+ "A083": {
+  "system": "S1",
+  "task_id": "C6-012",
+  "seed": 1
+ },
+ "A084": {
+  "system": "S2D",
+  "task_id": "C6-001",
+  "seed": 0
+ },
+ "A085": {
+  "system": "S3@P7",
+  "task_id": "C6-002",
+  "seed": 2
+ },
+ "A086": {
+  "system": "S2D",
+  "task_id": "C6-014",
+  "seed": 1
+ },
+ "A087": {
+  "system": "S3@P7",
+  "task_id": "C6-012",
+  "seed": 1
+ },
+ "A088": {
+  "system": "S2",
+  "task_id": "C6-011",
+  "seed": 0
+ },
+ "A089": {
+  "system": "S2D",
+  "task_id": "C6-001",
+  "seed": 1
+ },
+ "A090": {
+  "system": "S0",
+  "task_id": "C6-002",
+  "seed": 0
+ },
+ "A091": {
+  "system": "S3@P7",
+  "task_id": "C6-010",
+  "seed": 2
+ },
+ "A092": {
+  "system": "S2",
+  "task_id": "C6-014",
+  "seed": 1
+ },
+ "A093": {
+  "system": "S0",
+  "task_id": "C6-001",
+  "seed": 2
+ },
+ "A094": {
+  "system": "S2",
+  "task_id": "C6-006",
+  "seed": 2
+ },
+ "A095": {
+  "system": "S3@P7",
+  "task_id": "C6-014",
+  "seed": 1
+ },
+ "A096": {
+  "system": "S2D",
+  "task_id": "C6-011",
+  "seed": 2
+ },
+ "A097": {
+  "system": "S2",
+  "task_id": "C6-002",
+  "seed": 0
+ },
+ "A098": {
+  "system": "S3@P7",
+  "task_id": "C6-006",
+  "seed": 2
+ },
+ "A099": {
+  "system": "S3@P7",
+  "task_id": "C6-012",
+  "seed": 2
+ },
+ "A100": {
+  "system": "S2",
+  "task_id": "C6-012",
+  "seed": 2
+ },
+ "A101": {
+  "system": "S2D",
+  "task_id": "C6-006",
+  "seed": 0
+ },
+ "A102": {
+  "system": "S3@P7",
+  "task_id": "C6-008",
+  "seed": 2
+ },
+ "A103": {
+  "system": "S2D",
+  "task_id": "C6-002",
+  "seed": 2
+ },
+ "A104": {
+  "system": "S3@P7",
+  "task_id": "C6-002",
+  "seed": 1
+ },
+ "A105": {
+  "system": "S3@P7",
+  "task_id": "C6-014",
+  "seed": 2
+ },
+ "A106": {
+  "system": "S0",
+  "task_id": "C6-008",
+  "seed": 0
+ },
+ "A107": {
+  "system": "S0",
+  "task_id": "C6-004",
+  "seed": 1
+ },
+ "A108": {
+  "system": "S1",
+  "task_id": "C6-014",
+  "seed": 0
+ },
+ "A109": {
+  "system": "S0",
+  "task_id": "C6-014",
+  "seed": 2
+ },
+ "A110": {
+  "system": "S3@P7",
+  "task_id": "C6-011",
+  "seed": 2
+ },
+ "A111": {
+  "system": "S1",
+  "task_id": "C6-006",
+  "seed": 2
+ },
+ "A112": {
+  "system": "S2",
+  "task_id": "C6-010",
+  "seed": 1
+ },
+ "A113": {
+  "system": "S2",
+  "task_id": "C6-006",
+  "seed": 1
+ },
+ "A114": {
+  "system": "S1",
+  "task_id": "C6-011",
+  "seed": 2
+ },
+ "A115": {
+  "system": "S1",
+  "task_id": "C6-010",
+  "seed": 1
+ },
+ "A116": {
+  "system": "S0",
+  "task_id": "C6-013",
+  "seed": 0
+ },
+ "A117": {
+  "system": "S2",
+  "task_id": "C6-014",
+  "seed": 0
+ },
+ "A118": {
+  "system": "S2",
+  "task_id": "C6-004",
+  "seed": 1
+ },
+ "A119": {
+  "system": "S2",
+  "task_id": "C6-002",
+  "seed": 1
+ },
+ "A120": {
+  "system": "S3@P7",
+  "task_id": "C6-013",
+  "seed": 2
+ },
+ "A121": {
+  "system": "S0",
+  "task_id": "C6-006",
+  "seed": 0
+ },
+ "A122": {
+  "system": "S1",
+  "task_id": "C6-014",
+  "seed": 1
+ },
+ "A123": {
+  "system": "S0",
+  "task_id": "C6-004",
+  "seed": 0
+ },
+ "A124": {
+  "system": "S0",
+  "task_id": "C6-008",
+  "seed": 2
+ },
+ "A125": {
+  "system": "S1",
+  "task_id": "C6-001",
+  "seed": 0
+ },
+ "A126": {
+  "system": "S0",
+  "task_id": "C6-001",
+  "seed": 0
+ },
+ "A127": {
+  "system": "S2D",
+  "task_id": "C6-008",
+  "seed": 1
+ },
+ "A128": {
+  "system": "S3@P7",
+  "task_id": "C6-008",
+  "seed": 0
+ },
+ "A129": {
+  "system": "S2",
+  "task_id": "C6-013",
+  "seed": 2
+ },
+ "A130": {
+  "system": "S3@P7",
+  "task_id": "C6-001",
+  "seed": 1
+ },
+ "A131": {
+  "system": "S1",
+  "task_id": "C6-002",
+  "seed": 2
+ },
+ "A132": {
+  "system": "S0",
+  "task_id": "C6-004",
+  "seed": 2
+ },
+ "A133": {
+  "system": "S3@P7",
+  "task_id": "C6-004",
+  "seed": 1
+ },
+ "A134": {
+  "system": "S2D",
+  "task_id": "C6-004",
+  "seed": 0
+ },
+ "A135": {
+  "system": "S0",
+  "task_id": "C6-012",
+  "seed": 2
+ },
+ "A136": {
+  "system": "S1",
+  "task_id": "C6-004",
+  "seed": 2
+ },
+ "A137": {
+  "system": "S2D",
+  "task_id": "C6-012",
+  "seed": 1
+ },
+ "A138": {
+  "system": "S1",
+  "task_id": "C6-010",
+  "seed": 2
+ },
+ "A139": {
+  "system": "S0",
+  "task_id": "C6-010",
+  "seed": 2
+ },
+ "A140": {
+  "system": "S0",
+  "task_id": "C6-006",
+  "seed": 2
+ },
+ "A141": {
+  "system": "S2",
+  "task_id": "C6-008",
+  "seed": 1
+ },
+ "A142": {
+  "system": "S2",
+  "task_id": "C6-004",
+  "seed": 2
+ },
+ "A143": {
+  "system": "S2",
+  "task_id": "C6-011",
+  "seed": 1
+ },
+ "A144": {
+  "system": "S3@P7",
+  "task_id": "C6-006",
+  "seed": 1
+ },
+ "A145": {
+  "system": "S0",
+  "task_id": "C6-006",
+  "seed": 1
+ },
+ "A146": {
+  "system": "S0",
+  "task_id": "C6-008",
+  "seed": 1
+ },
+ "A147": {
+  "system": "S2",
+  "task_id": "C6-011",
+  "seed": 2
+ },
+ "A148": {
+  "system": "S3@P7",
+  "task_id": "C6-011",
+  "seed": 1
+ },
+ "A149": {
+  "system": "S3@P7",
+  "task_id": "C6-014",
+  "seed": 0
+ },
+ "A150": {
+  "system": "S2",
+  "task_id": "C6-013",
+  "seed": 0
+ }
+}
